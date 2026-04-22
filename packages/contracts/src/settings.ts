@@ -33,6 +33,12 @@ export const SidebarProjectGroupingMode = Schema.Literals([
 export type SidebarProjectGroupingMode = typeof SidebarProjectGroupingMode.Type;
 export const DEFAULT_SIDEBAR_PROJECT_GROUPING_MODE: SidebarProjectGroupingMode = "repository";
 
+export const RepositoryIdentityPreferredRemoteName = Schema.Literals(["origin", "upstream"]);
+export type RepositoryIdentityPreferredRemoteName =
+  typeof RepositoryIdentityPreferredRemoteName.Type;
+export const DEFAULT_REPOSITORY_IDENTITY_PREFERRED_REMOTE_NAME: RepositoryIdentityPreferredRemoteName =
+  "origin";
+
 export const ClientSettingsSchema = Schema.Struct({
   confirmThreadArchive: Schema.Boolean.pipe(Schema.withDecodingDefault(Effect.succeed(false))),
   confirmThreadDelete: Schema.Boolean.pipe(Schema.withDecodingDefault(Effect.succeed(true))),
@@ -125,6 +131,9 @@ export const ServerSettings = Schema.Struct({
     Schema.withDecodingDefault(Effect.succeed("local" as const satisfies ThreadEnvMode)),
   ),
   addProjectBaseDirectory: TrimmedString.pipe(Schema.withDecodingDefault(Effect.succeed(""))),
+  repositoryIdentityPreferredRemoteName: RepositoryIdentityPreferredRemoteName.pipe(
+    Schema.withDecodingDefault(Effect.succeed(DEFAULT_REPOSITORY_IDENTITY_PREFERRED_REMOTE_NAME)),
+  ),
   textGenerationModelSelection: ModelSelection.pipe(
     Schema.withDecodingDefault(
       Effect.succeed({
@@ -251,6 +260,7 @@ export const ServerSettingsPatch = Schema.Struct({
   enableAssistantStreaming: Schema.optionalKey(Schema.Boolean),
   defaultThreadEnvMode: Schema.optionalKey(ThreadEnvMode),
   addProjectBaseDirectory: Schema.optionalKey(Schema.String),
+  repositoryIdentityPreferredRemoteName: Schema.optionalKey(RepositoryIdentityPreferredRemoteName),
   textGenerationModelSelection: Schema.optionalKey(ModelSelectionPatch),
   observability: Schema.optionalKey(
     Schema.Struct({

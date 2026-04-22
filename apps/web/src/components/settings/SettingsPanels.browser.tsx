@@ -23,6 +23,8 @@ import { resetServerStateForTests, setServerConfigSnapshot } from "../../rpc/ser
 import { ConnectionsSettings } from "./ConnectionsSettings";
 import { GeneralSettingsPanel } from "./SettingsPanels";
 
+const reconnectPrimaryEnvironmentMock = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
+
 const authAccessHarness = vi.hoisted(() => {
   type Snapshot = AuthAccessSnapshot;
   let snapshot: Snapshot = {
@@ -134,7 +136,7 @@ vi.mock("../../environments/runtime", () => {
       },
     },
     ensureBootstrapped: async () => undefined,
-    reconnect: async () => undefined,
+    reconnect: reconnectPrimaryEnvironmentMock,
     dispose: async () => undefined,
   };
 
@@ -344,6 +346,7 @@ describe("GeneralSettingsPanel observability", () => {
     await __resetLocalApiForTests();
     localStorage.clear();
     authAccessHarness.reset();
+    reconnectPrimaryEnvironmentMock.mockClear();
   });
 
   afterEach(async () => {
@@ -700,6 +703,49 @@ describe("GeneralSettingsPanel observability", () => {
     await openLogsButton.click();
 
     expect(openInEditor).toHaveBeenCalledWith("/repo/project/.t3/logs", "cursor");
+  });
+
+  it("shows a project identity remote preference in general settings", async () => {
+    setServerConfigSnapshot(createBaseServerConfig());
+
+    mounted = await render(
+      <AppAtomRegistryProvider>
+        <GeneralSettingsPanel />
+      </AppAtomRegistryProvider>,
+    );
+
+    await expect.element(page.getByText("Project identity remote")).toBeInTheDocument();
+    await expect.element(page.getByLabelText("Preferred repository remote")).toBeInTheDocument();
+  });
+
+  it("reconnects the primary environment after changing the project identity remote", async () => {
+    const updateSettings = vi.fn<LocalApi["server"]["updateSettings"]>().mockResolvedValue({
+      ...DEFAULT_SERVER_SETTINGS,
+      repositoryIdentityPreferredRemoteName: "upstream",
+    });
+    window.nativeApi = {
+      server: {
+        updateSettings,
+      },
+    } as unknown as LocalApi;
+
+    setServerConfigSnapshot(createBaseServerConfig());
+
+    mounted = await render(
+      <AppAtomRegistryProvider>
+        <GeneralSettingsPanel />
+      </AppAtomRegistryProvider>,
+    );
+
+    await page.getByLabelText("Preferred repository remote").click();
+    await page.getByRole("option", { name: "upstream", exact: true }).click();
+
+    await vi.waitFor(() => {
+      expect(updateSettings).toHaveBeenCalledWith({
+        repositoryIdentityPreferredRemoteName: "upstream",
+      });
+      expect(reconnectPrimaryEnvironmentMock).toHaveBeenCalledTimes(1);
+    });
   });
 
   it("shows an OpenCode server URL field in provider settings", async () => {

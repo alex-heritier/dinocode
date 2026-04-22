@@ -22,6 +22,7 @@ import { ensureLocalApi } from "~/localApi";
 import { Struct } from "effect";
 import { applyServerSettingsPatch } from "@t3tools/shared/serverSettings";
 import { applySettingsUpdated, getServerConfig, useServerSettings } from "~/rpc/serverState";
+import { getPrimaryEnvironmentConnection } from "~/environments/runtime";
 
 const CLIENT_SETTINGS_PERSISTENCE_ERROR_SCOPE = "[CLIENT_SETTINGS]";
 
@@ -167,7 +168,18 @@ export function useUpdateSettings() {
         applySettingsUpdated(applyServerSettingsPatch(currentServerConfig.settings, serverPatch));
       }
       // Fire-and-forget RPC — push will reconcile on success
-      void ensureLocalApi().server.updateSettings(serverPatch);
+      void ensureLocalApi()
+        .server.updateSettings(serverPatch)
+        .then(() => {
+          if (serverPatch.repositoryIdentityPreferredRemoteName === undefined) {
+            return;
+          }
+
+          return getPrimaryEnvironmentConnection().reconnect();
+        })
+        .catch((error) => {
+          console.warn("Failed to apply server settings", error);
+        });
     }
 
     if (Object.keys(clientPatch).length > 0) {

@@ -12,6 +12,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { type ReactNode, useCallback, useMemo, useRef, useState } from "react";
 import {
   PROVIDER_DISPLAY_NAMES,
+  DEFAULT_REPOSITORY_IDENTITY_PREFERRED_REMOTE_NAME,
   type DesktopUpdateChannel,
   type ScopedThreadRef,
   type ProviderKind,
@@ -99,6 +100,11 @@ const TIMESTAMP_FORMAT_LABELS = {
   locale: "System default",
   "12-hour": "12-hour",
   "24-hour": "24-hour",
+} as const;
+
+const REPOSITORY_IDENTITY_PREFERRED_REMOTE_LABELS = {
+  origin: "origin",
+  upstream: "upstream",
 } as const;
 
 type InstallProviderSettings = {
@@ -482,6 +488,10 @@ export function useSettingsRestore(onRestored?: () => void) {
       ...(settings.addProjectBaseDirectory !== DEFAULT_UNIFIED_SETTINGS.addProjectBaseDirectory
         ? ["Add project base directory"]
         : []),
+      ...(settings.repositoryIdentityPreferredRemoteName !==
+      DEFAULT_UNIFIED_SETTINGS.repositoryIdentityPreferredRemoteName
+        ? ["Project identity remote"]
+        : []),
       ...(settings.confirmThreadArchive !== DEFAULT_UNIFIED_SETTINGS.confirmThreadArchive
         ? ["Archive confirmation"]
         : []),
@@ -497,6 +507,7 @@ export function useSettingsRestore(onRestored?: () => void) {
       settings.confirmThreadArchive,
       settings.confirmThreadDelete,
       settings.addProjectBaseDirectory,
+      settings.repositoryIdentityPreferredRemoteName,
       settings.defaultThreadEnvMode,
       settings.diffWordWrap,
       settings.enableAssistantStreaming,
@@ -1012,6 +1023,53 @@ export function GeneralSettingsPanel() {
               spellCheck={false}
               aria-label="Add project base directory"
             />
+          }
+        />
+
+        <SettingsRow
+          title="Project identity remote"
+          description="Prefer this remote name when deriving a repository label from git remotes."
+          resetAction={
+            settings.repositoryIdentityPreferredRemoteName !==
+            DEFAULT_REPOSITORY_IDENTITY_PREFERRED_REMOTE_NAME ? (
+              <SettingResetButton
+                label="project identity remote"
+                onClick={() =>
+                  updateSettings({
+                    repositoryIdentityPreferredRemoteName:
+                      DEFAULT_REPOSITORY_IDENTITY_PREFERRED_REMOTE_NAME,
+                  })
+                }
+              />
+            ) : null
+          }
+          control={
+            <Select
+              value={settings.repositoryIdentityPreferredRemoteName}
+              onValueChange={(value) => {
+                if (value === "origin" || value === "upstream") {
+                  updateSettings({ repositoryIdentityPreferredRemoteName: value });
+                }
+              }}
+            >
+              <SelectTrigger className="w-full sm:w-44" aria-label="Preferred repository remote">
+                <SelectValue>
+                  {
+                    REPOSITORY_IDENTITY_PREFERRED_REMOTE_LABELS[
+                      settings.repositoryIdentityPreferredRemoteName
+                    ]
+                  }
+                </SelectValue>
+              </SelectTrigger>
+              <SelectPopup align="end" alignItemWithTrigger={false}>
+                <SelectItem hideIndicator value="origin">
+                  origin
+                </SelectItem>
+                <SelectItem hideIndicator value="upstream">
+                  upstream
+                </SelectItem>
+              </SelectPopup>
+            </Select>
           }
         />
 
