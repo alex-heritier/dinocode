@@ -44,6 +44,10 @@ export function createEnvironmentApi(rpcClient: WsRpcClient): EnvironmentApi {
         rpcClient.orchestration.subscribeShell(callback, options),
       subscribeThread: (input, callback, options) =>
         rpcClient.orchestration.subscribeThread(input, callback, options),
+      subscribeBoard: (input, callback, options) =>
+        rpcClient.orchestration.subscribeBoard(input, callback, options),
+      subscribeTask: (input, callback, options) =>
+        rpcClient.orchestration.subscribeTask(input, callback, options),
     },
   };
 }

@@ -173,6 +173,7 @@ function createMinimalSnapshot(): OrchestrationReadModel {
         },
       },
     ],
+    tasks: [],
     updatedAt: NOW_ISO,
   };
 }

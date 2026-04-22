@@ -214,6 +214,8 @@ function createMockEnvironmentApi(input: {
       subscribeShell: (() => () => undefined) as EnvironmentApi["orchestration"]["subscribeShell"],
       subscribeThread: (() => () =>
         undefined) as EnvironmentApi["orchestration"]["subscribeThread"],
+      subscribeBoard: (() => () => undefined) as EnvironmentApi["orchestration"]["subscribeBoard"],
+      subscribeTask: (() => () => undefined) as EnvironmentApi["orchestration"]["subscribeTask"],
     },
   };
 }
@@ -364,6 +366,7 @@ function createSnapshotForTargetUser(options: {
         },
       },
     ],
+    tasks: [],
     updatedAt: NOW_ISO,
   };
 }
