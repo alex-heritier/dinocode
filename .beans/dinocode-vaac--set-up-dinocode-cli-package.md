@@ -5,8 +5,10 @@ status: todo
 type: task
 priority: normal
 created_at: 2026-04-22T07:15:13Z
-updated_at: 2026-04-22T07:36:04Z
+updated_at: 2026-04-22T08:31:18Z
 parent: dinocode-lhp0
+blocked_by:
+    - dinocode-0syf
 ---
 
 Stand up the `dinocode` CLI as a separate package that reuses the FileStore code path (parser/writer/etag/config) via `@t3tools/shared/fileStore` subpath — no duplication with the server.
