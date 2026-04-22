@@ -1007,15 +1007,18 @@ function resolveResourcePath(fileName: string): string | null {
 }
 
 function resolveIconPath(ext: "ico" | "icns" | "png"): string | null {
-  if (isDevelopment && process.platform === "darwin" && ext === "png") {
-    const developmentDockIconPath = Path.join(
-      ROOT_DIR,
-      "assets",
-      "dev",
-      "blueprint-macos-1024.png",
-    );
-    if (FS.existsSync(developmentDockIconPath)) {
-      return developmentDockIconPath;
+  if (process.platform === "darwin") {
+    if (ext === "icns") {
+      const macosIcnsPath = Path.join(ROOT_DIR, "assets", "macos", "AppIcon.icns");
+      if (FS.existsSync(macosIcnsPath)) {
+        return macosIcnsPath;
+      }
+    }
+    if (ext === "png") {
+      const macosPngPath = Path.join(ROOT_DIR, "assets", "macos", "AppIcon1024.png");
+      if (FS.existsSync(macosPngPath)) {
+        return macosPngPath;
+      }
     }
   }
 
