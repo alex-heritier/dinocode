@@ -5,8 +5,8 @@ status: todo
 type: task
 priority: normal
 tags:
-    - phase-5
-    - ui
+  - phase-5
+  - ui
 created_at: 2026-04-22T07:38:56Z
 updated_at: 2026-04-22T07:38:56Z
 parent: dinocode-b6x6

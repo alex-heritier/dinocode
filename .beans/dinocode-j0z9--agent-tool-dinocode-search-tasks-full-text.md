@@ -1,18 +1,18 @@
 ---
 # dinocode-j0z9
-title: 'Agent tool: dinocode_search_tasks (full-text)'
+title: "Agent tool: dinocode_search_tasks (full-text)"
 status: todo
 type: task
 priority: low
 tags:
-    - phase-4
-    - tools
+  - phase-4
+  - tools
 created_at: 2026-04-22T07:37:30Z
 updated_at: 2026-04-22T09:56:16Z
 parent: dinocode-lhp0
 blocked_by:
-    - dinocode-ndam
-    - dinocode-3230
+  - dinocode-ndam
+  - dinocode-3230
 ---
 
 Discoverability tool for agents: full-text search across tasks without dumping the whole list.

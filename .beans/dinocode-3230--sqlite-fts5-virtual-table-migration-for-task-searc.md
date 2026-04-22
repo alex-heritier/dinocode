@@ -5,8 +5,8 @@ status: todo
 type: task
 priority: normal
 tags:
-    - infrastructure
-    - phase-6
+  - infrastructure
+  - phase-6
 created_at: 2026-04-22T09:56:06Z
 updated_at: 2026-04-22T12:51:40Z
 parent: dinocode-xd5m

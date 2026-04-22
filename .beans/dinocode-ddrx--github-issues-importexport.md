@@ -14,11 +14,13 @@ Bi-directional sync between GitHub Issues and `.dinocode/tasks/`. Supports one-o
 ## Subtasks
 
 ### CLI
+
 - [ ] `dinocode import github --repo owner/name [--labels foo,bar] [--since 2024-01-01]`
 - [ ] `dinocode export github --repo owner/name [--filter status:todo]`
 - [ ] `dinocode sync github --repo owner/name --mode bidirectional` (long-running)
 
 ### Mapping
+
 - [ ] Issue `title` ↔ task `title`
 - [ ] Issue `body` ↔ task `body`
 - [ ] Issue `state: open/closed` ↔ task `status: todo/completed`
@@ -27,26 +29,32 @@ Bi-directional sync between GitHub Issues and `.dinocode/tasks/`. Supports one-o
 - [ ] Store GitHub metadata in front-matter: `github: { issueNumber, repo, url }`
 
 ### Auth
+
 - [ ] Read GitHub token from `gh auth token` first; fallback to `GITHUB_TOKEN` env; interactive login prompt last
 - [ ] Token stored via `safeStorage` on desktop (no plaintext)
 
 ### Import flow
+
 - [ ] `--dry-run` prints mapping preview table
 - [ ] Default interactive: paginate through 50 issues at a time with [accept / skip / edit] per issue
 - [ ] `--yes` accepts all without prompting
 
 ### Export flow
+
 - [ ] Creates new issues for tasks lacking `github.issueNumber`
 - [ ] Updates existing issues when `updated_at` has advanced
 - [ ] Dry-run diff view shows what would change
 
 ### Sync (bidirectional)
+
 - [ ] Last-write-wins with a timestamp-based heuristic; ties broken in favor of GitHub
 - [ ] Conflict resolution CLI prompt with per-field choice
 
 ### Rate limiting
+
 - [ ] Respect GitHub's REST rate limit headers; exponential backoff; resumes after reset
 
 ### Tests
+
 - [ ] Record/replay HTTP fixtures
 - [ ] Round-trip import → export → deep-equal on fixture data

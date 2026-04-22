@@ -8,8 +8,8 @@ created_at: 2026-04-22T07:13:15Z
 updated_at: 2026-04-22T12:49:04Z
 parent: dinocode-x8dw
 blocked_by:
-    - dinocode-j3do
-    - dinocode-j5i8
+  - dinocode-j3do
+  - dinocode-j5i8
 ---
 
 Server-side reactor integration that uses Soil to project committed task events onto `.dinocode/tasks/` files. Keeps orchestration startup and event-bus wiring in the server while delegating task-file semantics to Soil.

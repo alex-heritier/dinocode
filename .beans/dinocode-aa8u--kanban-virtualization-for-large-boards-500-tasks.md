@@ -5,8 +5,8 @@ status: todo
 type: task
 priority: low
 tags:
-    - phase-6
-    - performance
+  - phase-6
+  - performance
 created_at: 2026-04-22T07:40:10Z
 updated_at: 2026-04-22T07:40:10Z
 parent: dinocode-0ub1

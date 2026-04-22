@@ -13,21 +13,26 @@ Fix all issues found in comprehensive bean audit: duplicates, stale refs, missin
 ## Summary of Changes
 
 ### Scrapped (5 duplicate beans)
+
 - dinocode-wzdy, dinocode-koa7, dinocode-d95o, dinocode-dmcp, dinocode-u17w — thin duplicates of canonical CLI beans
 
 ### Reparented / hierarchy fixes (3)
+
 - dinocode-r7mw → moved from Phase 1 to Phase 4
 - dinocode-0syf (Soil epic) → parent set to v0.2 milestone (dinocode-dizj)
 - dinocode-lhp0 (Phase 4 epic) → blocked-by Soil epic (dinocode-0syf)
 
 ### Priority fix (1)
+
 - dinocode-lc1k: low → normal
 
 ### Body reference fixes (2)
+
 - dinocode-ucr3: stale ref dinocode-yjt9 → dinocode-ndam
 - dinocode-h551: removed dangling '(from dinocode-w94z task)' reference
 
 ### Missing blocking relationships added (16)
+
 - dinocode-82w7 blocked-by dinocode-5kre (toast infra)
 - dinocode-kmza blocked-by dinocode-5kre (toast infra)
 - dinocode-h551 blocked-by dinocode-56yo
@@ -43,6 +48,7 @@ Fix all issues found in comprehensive bean audit: duplicates, stale refs, missin
 - dinocode-tpk6 blocked-by dinocode-vdno
 
 ### Created missing beans (2)
+
 - dinocode-y7dm: subscribeArchivedTasks RPC endpoint (Phase 2, blocks dinocode-kky3)
 - dinocode-3230: SQLite FTS5 virtual table migration (Phase 1, blocks dinocode-j0z9 + dinocode-4hhr)
 

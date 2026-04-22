@@ -1,6 +1,6 @@
 ---
 # dinocode-b6x6
-title: 'Phase 5: Automation & Home Agent'
+title: "Phase 5: Automation & Home Agent"
 status: todo
 type: epic
 priority: normal

@@ -5,13 +5,13 @@ status: todo
 type: task
 priority: high
 tags:
-    - phase-3
-    - persistence
+  - phase-3
+  - persistence
 created_at: 2026-04-22T07:35:20Z
 updated_at: 2026-04-22T07:35:20Z
 parent: dinocode-0apu
 blocked_by:
-    - dinocode-56yo
+  - dinocode-56yo
 ---
 
 The set of tasks referenced by a thread must be queryable (for "threads that touched this task" UI and for home-agent recommendations). Store as a projection table and keep it in sync via the projector.

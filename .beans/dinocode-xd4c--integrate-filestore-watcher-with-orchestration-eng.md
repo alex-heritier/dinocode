@@ -8,8 +8,8 @@ created_at: 2026-04-22T07:13:15Z
 updated_at: 2026-04-22T12:49:04Z
 parent: dinocode-x8dw
 blocked_by:
-    - dinocode-6uwn
-    - dinocode-7xp4
+  - dinocode-6uwn
+  - dinocode-7xp4
 ---
 
 Consume watchProject stream at server startup. Parse change events, compute ETag, dispatch task.update commands back into OrchestrationEngineService. Handle delete and archive moves.

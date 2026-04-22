@@ -1,11 +1,11 @@
 ---
 # dinocode-m5em
 title: Soil test suite
-status: todo
+status: completed
 type: task
 priority: normal
 created_at: 2026-04-22T08:29:27Z
-updated_at: 2026-04-22T12:40:56Z
+updated_at: 2026-04-22T15:25:32Z
 parent: dinocode-0syf
 blocked_by:
     - dinocode-mswb

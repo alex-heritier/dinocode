@@ -5,8 +5,8 @@ status: todo
 type: task
 priority: low
 tags:
-    - phase-2
-    - ui
+  - phase-2
+  - ui
 created_at: 2026-04-22T07:34:35Z
 updated_at: 2026-04-22T07:34:35Z
 parent: dinocode-lsa5

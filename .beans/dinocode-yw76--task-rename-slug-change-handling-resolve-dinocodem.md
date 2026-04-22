@@ -5,7 +5,7 @@ status: todo
 type: feature
 priority: normal
 tags:
-    - contracts
+  - contracts
 created_at: 2026-04-22T07:41:25Z
 updated_at: 2026-04-22T07:41:25Z
 parent: dinocode-xd5m

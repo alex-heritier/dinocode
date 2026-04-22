@@ -8,7 +8,7 @@ created_at: 2026-04-22T07:12:43Z
 updated_at: 2026-04-22T12:49:04Z
 parent: dinocode-x8dw
 blocked_by:
-    - dinocode-8izj
+  - dinocode-8izj
 ---
 
 Thin server-side FileStore layer that wraps `packages/soil` for orchestration use. Server-specific concerns stay here: Effect layer wiring, startup bootstrap, filesystem watch lifecycle, and error mapping.

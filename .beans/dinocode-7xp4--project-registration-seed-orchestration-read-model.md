@@ -1,18 +1,18 @@
 ---
 # dinocode-7xp4
-title: 'Project registration: seed orchestration read-model from .dinocode/tasks on register'
+title: "Project registration: seed orchestration read-model from .dinocode/tasks on register"
 status: todo
 type: task
 priority: high
 tags:
-    - phase-1
-    - bootstrap
+  - phase-1
+  - bootstrap
 created_at: 2026-04-22T07:32:45Z
 updated_at: 2026-04-22T07:32:45Z
 parent: dinocode-x8dw
 blocked_by:
-    - dinocode-j3do
-    - dinocode-j5i8
+  - dinocode-j3do
+  - dinocode-j5i8
 ---
 
 When a project is registered (existing `project.create` flow) or on server startup for each registered project, the orchestration engine must seed its read-model and `projection_tasks` table from the current on-disk `.dinocode/tasks/*.md` files before it starts emitting task events.

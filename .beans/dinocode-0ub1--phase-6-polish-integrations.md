@@ -1,6 +1,6 @@
 ---
 # dinocode-0ub1
-title: 'Phase 6: Polish & Integrations'
+title: "Phase 6: Polish & Integrations"
 status: todo
 type: epic
 priority: low

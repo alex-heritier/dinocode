@@ -9,7 +9,7 @@ updated_at: 2026-04-22T07:15:23Z
 parent: dinocode-lhp0
 ---
 
-Implement all 8 dinocode task subcommands: list, view, create, update, delete, archive, link, unlink. Read/write .dinocode/tasks/*.md directly. Support --json output flag.
+Implement all 8 dinocode task subcommands: list, view, create, update, delete, archive, link, unlink. Read/write .dinocode/tasks/\*.md directly. Support --json output flag.
 
 ## Subtasks
 

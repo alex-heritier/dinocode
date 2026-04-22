@@ -1,12 +1,12 @@
 ---
 # dinocode-ifd3
-title: 'Board export: NDJSON + PDF snapshot'
+title: "Board export: NDJSON + PDF snapshot"
 status: todo
 type: task
 priority: low
 tags:
-    - phase-6
-    - export
+  - phase-6
+  - export
 created_at: 2026-04-22T07:40:10Z
 updated_at: 2026-04-22T07:40:10Z
 parent: dinocode-0ub1

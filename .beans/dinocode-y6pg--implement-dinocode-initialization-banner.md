@@ -8,7 +8,7 @@ created_at: 2026-04-22T07:14:22Z
 updated_at: 2026-04-22T09:55:21Z
 parent: dinocode-lsa5
 blocked_by:
-    - dinocode-9mrx
+  - dinocode-9mrx
 ---
 
 Full-page banner shown by the board route when the selected project has no `.dinocode/config.yml`. One-click initialization.

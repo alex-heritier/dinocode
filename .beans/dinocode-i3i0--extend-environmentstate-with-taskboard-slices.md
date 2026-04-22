@@ -8,7 +8,7 @@ created_at: 2026-04-22T07:13:37Z
 updated_at: 2026-04-22T09:55:24Z
 parent: dinocode-lsa5
 blocked_by:
-    - dinocode-afya
+  - dinocode-afya
 ---
 
 Add taskSlice (tasks map) and boardSlice (columns array) to EnvironmentState in apps/web/src/store.ts. Add subscribeBoard RPC hook. Apply BoardStreamEvent reducer.

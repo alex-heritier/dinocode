@@ -1,12 +1,12 @@
 ---
 # dinocode-ehj9
-title: 'Home agent: context-aware task recommendations (next-up queue)'
+title: "Home agent: context-aware task recommendations (next-up queue)"
 status: todo
 type: task
 priority: low
 tags:
-    - phase-5
-    - home-agent
+  - phase-5
+  - home-agent
 created_at: 2026-04-22T07:39:09Z
 updated_at: 2026-04-22T07:39:09Z
 parent: dinocode-b6x6

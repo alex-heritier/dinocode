@@ -116,18 +116,18 @@ The product ships as a **packaged Electron app** (`apps/desktop`). The server al
 
 ### 2.3 Layer Responsibilities
 
-| Layer                 | Source          | Role                                                                                        |
-| --------------------- | --------------- | ------------------------------------------------------------------------------------------- |
-| **Desktop Main**      | t3code base     | Electron main process. App lifecycle, menu bar, backend spawning, native IPC, auto-updates. |
-| **Renderer UI**       | t3code base     | React 19 + Vite + Tailwind inside Chromium. Chat, kanban, terminal, diffs. Zustand state.   |
-| **WebSocket RPC**     | t3code base     | Effect RPC over native WebSocket. Typed streaming. Auto-reconnect.                          |
-| **Orchestration**     | t3code base     | Event-sourced command/event processing. Persists canonical events and streams projections.   |
-| **Task Domain**       | **packages/soil** | Shared task-domain package: schemas, parser/writer, ETags, decider, projector, reactor.   |
-| **File Store**        | server + soil   | Thin server adapter around soil. Watches and writes `.dinocode/tasks/*.md`.                 |
-| **Provider Adapters** | t3code base     | Codex, Claude, Cursor, OpenCode adapters. Spawn stdio JSON-RPC or PTY.                      |
-| **Git Manager**       | **t3code base** | Worktree creation, symlinking gitignored dirs, diff computation. General agent session use. |
-| **Terminal**          | **t3code base** | node-pty sessions per thread. Multi-viewer WebSocket bridge with backpressure.              |
-| **Event Store**       | t3code base     | SQLite WAL event log for orchestration events. Projections for read models.                 |
+| Layer                 | Source            | Role                                                                                        |
+| --------------------- | ----------------- | ------------------------------------------------------------------------------------------- |
+| **Desktop Main**      | t3code base       | Electron main process. App lifecycle, menu bar, backend spawning, native IPC, auto-updates. |
+| **Renderer UI**       | t3code base       | React 19 + Vite + Tailwind inside Chromium. Chat, kanban, terminal, diffs. Zustand state.   |
+| **WebSocket RPC**     | t3code base       | Effect RPC over native WebSocket. Typed streaming. Auto-reconnect.                          |
+| **Orchestration**     | t3code base       | Event-sourced command/event processing. Persists canonical events and streams projections.  |
+| **Task Domain**       | **packages/soil** | Shared task-domain package: schemas, parser/writer, ETags, decider, projector, reactor.     |
+| **File Store**        | server + soil     | Thin server adapter around soil. Watches and writes `.dinocode/tasks/*.md`.                 |
+| **Provider Adapters** | t3code base       | Codex, Claude, Cursor, OpenCode adapters. Spawn stdio JSON-RPC or PTY.                      |
+| **Git Manager**       | **t3code base**   | Worktree creation, symlinking gitignored dirs, diff computation. General agent session use. |
+| **Terminal**          | **t3code base**   | node-pty sessions per thread. Multi-viewer WebSocket bridge with backpressure.              |
+| **Event Store**       | t3code base       | SQLite WAL event log for orchestration events. Projections for read models.                 |
 
 ### 2.4 Existing Codebase Realities
 
@@ -650,7 +650,10 @@ interface SoilFileStore {
 }
 
 interface SoilDecider {
-  decide(state: TaskState, command: TaskCommand): Effect.Effect<ReadonlyArray<TaskEvent>, SoilError, never>;
+  decide(
+    state: TaskState,
+    command: TaskCommand,
+  ): Effect.Effect<ReadonlyArray<TaskEvent>, SoilError, never>;
 }
 
 interface SoilProjector {
@@ -658,7 +661,10 @@ interface SoilProjector {
 }
 
 interface SoilReactor {
-  react(events: ReadonlyArray<TaskEvent>, context: ProjectContext): Effect.Effect<void, SoilError, never>;
+  react(
+    events: ReadonlyArray<TaskEvent>,
+    context: ProjectContext,
+  ): Effect.Effect<void, SoilError, never>;
 }
 ```
 

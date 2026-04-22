@@ -1,11 +1,11 @@
 ---
 # dinocode-fj6n
-title: 'Migration: move repo''s own planning from .beans/ to .dinocode/tasks/'
+title: "Migration: move repo's own planning from .beans/ to .dinocode/tasks/"
 status: todo
 type: task
 priority: normal
 tags:
-    - migration
+  - migration
 created_at: 2026-04-22T07:40:38Z
 updated_at: 2026-04-22T07:40:38Z
 parent: dinocode-xd5m

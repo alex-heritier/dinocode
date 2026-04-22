@@ -5,13 +5,13 @@ status: scrapped
 type: feature
 priority: normal
 tags:
-    - phase-4
-    - refactor
+  - phase-4
+  - refactor
 created_at: 2026-04-22T07:37:22Z
 updated_at: 2026-04-22T12:49:22Z
 parent: dinocode-lhp0
 blocked_by:
-    - dinocode-0syf
+  - dinocode-0syf
 ---
 
 The server's FileStore (parser/writer/etag/config) must be reusable from the CLI (which does NOT run the server). Extract the core pure logic into `packages/shared/src/fileStore/` with explicit subpath exports.

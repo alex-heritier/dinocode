@@ -1,12 +1,12 @@
 ---
 # dinocode-7o6v
-title: 'CLI: dinocode doctor — diagnose common setup issues'
+title: "CLI: dinocode doctor — diagnose common setup issues"
 status: todo
 type: task
 priority: low
 tags:
-    - phase-4
-    - cli
+  - phase-4
+  - cli
 created_at: 2026-04-22T07:36:48Z
 updated_at: 2026-04-22T07:36:48Z
 parent: dinocode-lhp0

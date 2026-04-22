@@ -1,6 +1,6 @@
 ---
 # dinocode-lxuy
-title: 'Second-pass cleanup: reparent infra beans and tighten docs scope'
+title: "Second-pass cleanup: reparent infra beans and tighten docs scope"
 status: completed
 type: task
 priority: normal

@@ -1,11 +1,11 @@
 ---
 # dinocode-yzge
-title: 'Telemetry: anonymous usage metrics (opt-in) for Dinocode features'
+title: "Telemetry: anonymous usage metrics (opt-in) for Dinocode features"
 status: todo
 type: task
 priority: low
 tags:
-    - observability
+  - observability
 created_at: 2026-04-22T07:41:46Z
 updated_at: 2026-04-22T07:41:46Z
 parent: dinocode-xd5m

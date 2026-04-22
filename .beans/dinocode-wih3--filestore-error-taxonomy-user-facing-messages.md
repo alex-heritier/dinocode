@@ -5,8 +5,8 @@ status: scrapped
 type: task
 priority: normal
 tags:
-    - phase-1
-    - errors
+  - phase-1
+  - errors
 created_at: 2026-04-22T07:32:33Z
 updated_at: 2026-04-22T12:49:22Z
 parent: dinocode-x8dw
