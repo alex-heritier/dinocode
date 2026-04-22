@@ -1,0 +1,26 @@
+---
+# dinocode-9f1s
+title: Shared FileStore code module (reuse across server + CLI)
+status: todo
+type: feature
+priority: normal
+tags:
+    - phase-4
+    - refactor
+created_at: 2026-04-22T07:37:22Z
+updated_at: 2026-04-22T07:37:22Z
+parent: dinocode-lhp0
+---
+
+The server's FileStore (parser/writer/etag/config) must be reusable from the CLI (which does NOT run the server). Extract the core pure logic into `packages/shared/src/fileStore/` with explicit subpath exports.
+
+## Subtasks
+
+- [ ] Create `packages/shared/src/fileStore/` directory
+- [ ] Add subpath exports: `"./fileStore/parser"`, `"./fileStore/writer"`, `"./fileStore/etag"`, `"./fileStore/config"`, `"./fileStore/ignoredPaths"`
+- [ ] No `index.ts` barrel — each consumer imports the specific subpath
+- [ ] Move pure functions from `apps/server/src/fileStore/` into shared module
+- [ ] Server's `FileStoreLive` layer becomes a thin wrapper (IO + watcher remain server-only because they need Node `fs.watch`)
+- [ ] CLI imports directly from `@t3tools/shared/fileStore/*`
+- [ ] Verify bundle sizes: shared modules tree-shake cleanly in both contexts
+- [ ] Tests: parser + writer tests moved to shared package, re-exported test helpers for integration in both consumers

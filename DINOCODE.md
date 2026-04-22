@@ -1,7 +1,7 @@
 # DINOCODE Specification
 
 > **Status**: Draft v0.2  
-> **Last updated**: 2026-04-22  
+> **Last updated**: 2026-04-22 (revised)  
 > **Scope**: Architecture, data model, and integration spec for combining t3code (agent GUI), cline/kanban (parallel task orchestration), and beans (flat-file in-repo task tracking) into a unified developer experience.
 
 ---
@@ -11,15 +11,15 @@
 **Dinocode** is a minimal, fast, file-first web GUI for coding agents. It unifies three proven patterns:
 
 1. **t3code** — A lightweight WebSocket server + React app for chatting with Codex, Claude, and other agents.
-2. **cline/kanban** — A kanban board where every task card gets its own git worktree and terminal, enabling massive parallel agent execution.
+2. **cline/kanban** — A kanban board for managing tasks with dependency chains and parallel execution visuals.
 3. **beans** — A flat-file issue tracker where tasks are Markdown files with YAML front matter, stored in-repo and version-controlled.
 
-The result: a single interface where you can decompose work into tasks, watch agents execute them in parallel on isolated git worktrees, and have every task permanently tracked as a human-readable file inside your repo.
+The result: a single interface where you can decompose work into tasks, manage them on a kanban board, and use them as context for AI agent sessions — with every task permanently tracked as a human-readable file inside your repo.
 
 ### Core Principles
 
 1. **File-first**: Tasks live as files in the repo. The UI is a view over the filesystem. Agents and humans read/write the same Markdown files.
-2. **Parallel by default**: Every task runs in its own git worktree. Agents never block each other.
+2. **Parallel by default**: Tasks are independent. Multiple agents can reference different tasks simultaneously without blocking each other.
 3. **Minimal chrome**: The UI gets out of the way. Keyboard-driven, low latency, no modal fatigue.
 4. **Agent-native**: The system is designed for agents to read and write tasks, not just humans.
 
@@ -85,7 +85,7 @@ This means:
 
 ### 2.2 Electron Desktop Architecture
 
-The product ships as a **packaged Electron app** (`apps/desktop`). This is not a browser-hosted web app.
+The product ships as a **packaged Electron app** (`apps/desktop`). The server also serves the React app over HTTP for local development and `npx t3` CLI usage, but the Electron desktop build is the primary target.
 
 **Main process** (`main.ts`):
 
@@ -115,17 +115,17 @@ The product ships as a **packaged Electron app** (`apps/desktop`). This is not a
 
 ### 2.3 Layer Responsibilities
 
-| Layer                 | Source      | Role                                                                                        |
-| --------------------- | ----------- | ------------------------------------------------------------------------------------------- |
-| **Desktop Main**      | t3code base | Electron main process. App lifecycle, menu bar, backend spawning, native IPC, auto-updates. |
-| **Renderer UI**       | t3code base | React 19 + Vite + Tailwind inside Chromium. Chat, kanban, terminal, diffs. Zustand state.   |
-| **WebSocket RPC**     | t3code base | Effect RPC over native WebSocket. Typed streaming. Auto-reconnect.                          |
-| **Orchestration**     | t3code base | Event-sourced command/event processing. Pure decider + projector pattern.                   |
-| **File Store**        | **beans**   | Reactor: writes `.dinocode/tasks/*.md` after events. Watcher: detects external edits.       |
-| **Provider Adapters** | t3code base | Codex, Claude, Cursor, OpenCode adapters. Spawn stdio JSON-RPC or PTY.                      |
-| **Git Manager**       | **kanban**  | Worktree creation, symlinking gitignored dirs, patch capture on trash, diff computation.    |
-| **Terminal**          | **kanban**  | node-pty sessions per task. Multi-viewer WebSocket bridge with backpressure.                |
-| **Event Store**       | t3code base | SQLite WAL event log for orchestration events. Projections for read models.                 |
+| Layer                 | Source          | Role                                                                                        |
+| --------------------- | --------------- | ------------------------------------------------------------------------------------------- |
+| **Desktop Main**      | t3code base     | Electron main process. App lifecycle, menu bar, backend spawning, native IPC, auto-updates. |
+| **Renderer UI**       | t3code base     | React 19 + Vite + Tailwind inside Chromium. Chat, kanban, terminal, diffs. Zustand state.   |
+| **WebSocket RPC**     | t3code base     | Effect RPC over native WebSocket. Typed streaming. Auto-reconnect.                          |
+| **Orchestration**     | t3code base     | Event-sourced command/event processing. Pure decider + projector pattern.                   |
+| **File Store**        | **beans**       | Reactor: writes `.dinocode/tasks/*.md` after events. Watcher: detects external edits.       |
+| **Provider Adapters** | t3code base     | Codex, Claude, Cursor, OpenCode adapters. Spawn stdio JSON-RPC or PTY.                      |
+| **Git Manager**       | **t3code base** | Worktree creation, symlinking gitignored dirs, diff computation. General agent session use. |
+| **Terminal**          | **t3code base** | node-pty sessions per thread. Multi-viewer WebSocket bridge with backpressure.              |
+| **Event Store**       | t3code base     | SQLite WAL event log for orchestration events. Projections for read models.                 |
 
 ### 2.4 Existing Codebase Realities
 
@@ -133,7 +133,7 @@ The following t3code infrastructure already exists and should be reused:
 
 - **Effect-TS Layers** — `Layer.provideMerge` composition in `apps/server/src/server.ts`.
 - **Event sourcing** — `decider.ts` (pure), `projector.ts` (SQLite + in-memory read model), `OrchestrationEngineService` (serialized dispatch queue).
-- **Git worktrees** — `git.createWorktree`, `git.removeWorktree`, `Thread.worktreePath` already in contracts and server.
+- **Git worktrees** — `git.createWorktree`, `git.removeWorktree` already exist for general agent session use (not task-bound).
 - **Terminals** — `TerminalManager` with multi-viewer support and backpressure already exists.
 - **WebSocket RPC** — `WsRpcGroup` in `packages/contracts/src/rpc.ts` with streaming subscriptions.
 - **Drag-and-drop** — `@dnd-kit/core` and `@dnd-kit/sortable` already in `apps/web/package.json`.
@@ -152,7 +152,7 @@ Every Dinocode-enabled repo contains a `.dinocode/` directory at its root:
 ```
 <repo-root>/
   .dinocode/
-    config.yml              # Project-level config (statuses, columns, providers)
+    config.yml              # Project-level config (statuses, columns)
     tasks/
       dnc-abc1--setup-auth.md
       dnc-xyz9--add-kanban-view.md
@@ -161,15 +161,15 @@ Every Dinocode-enabled repo contains a `.dinocode/` directory at its root:
     plans/
       plan-001--march-refactor.md
     .gitignore              # Excludes .conversations/, .sessions/
-    .conversations/         # Per-task agent chat logs (gitignored)
+    .conversations/         # Agent chat logs (gitignored)
     .sessions/              # Runtime session state (gitignored)
 ```
 
 ### 3.2 Task File Format
 
-Each task is a Markdown file with YAML front matter.
+Each task is a Markdown file with YAML front matter, stored in `.dinocode/tasks/`. The format aligns with [beans](https://github.com/hmans/beans) so agents already familiar with beans can read and write Dinocode tasks without learning a new schema.
 
-**Filename convention**: `{id}--{slug}.md`
+**Filename convention**: `{prefix}{id}--{slug}.md`
 
 Example: `dnc-0ajg--implement-oauth-flow.md`
 
@@ -188,10 +188,6 @@ order: Aa
 parent: dnc-mmyp
 blocking: []
 blocked_by: [dnc-abc1]
-assignee: agent:codex
-branch: beans/dnc-0ajg
-worktree: /Users/alex/.dinocode/worktrees/dinocode/dnc-0ajg
-checkpoint_turn: 3
 tags: [auth, backend]
 ---
 
@@ -212,52 +208,62 @@ The provider adapter already supports token exchange. We just need the UI flow.
 
 ### 3.3 Task Schema
 
-| Field             | Type       | Description                                                                   |
-| ----------------- | ---------- | ----------------------------------------------------------------------------- |
-| `id`              | `string`   | NanoID with `dnc-` prefix. Immutable.                                         |
-| `slug`            | `string`   | URL-safe human-readable suffix.                                               |
-| `title`           | `string`   | Short task name.                                                              |
-| `status`          | `string`   | One of: `draft`, `backlog`, `in-progress`, `review`, `completed`, `scrapped`. |
-| `type`            | `string`   | One of: `milestone`, `epic`, `bug`, `feature`, `task`, `spike`.               |
-| `priority`        | `string`   | One of: `critical`, `high`, `normal`, `low`, `deferred`.                      |
-| `tags`            | `string[]` | Lowercase, URL-safe.                                                          |
-| `created_at`      | `ISO8601`  | Timestamp.                                                                    |
-| `updated_at`      | `ISO8601`  | Auto-updated on mutation.                                                     |
-| `order`           | `string`   | Fractional index for kanban column ordering.                                  |
-| `parent`          | `string?`  | Parent task ID. Restricted by type (e.g., only `epic` can parent `task`).     |
-| `blocking`        | `string[]` | IDs this task blocks.                                                         |
-| `blocked_by`      | `string[]` | IDs blocking this task.                                                       |
-| `assignee`        | `string?`  | `agent:<provider>` or `user:<name>`.                                          |
-| `branch`          | `string?`  | Git branch name for this task.                                                |
-| `worktree`        | `string?`  | Absolute path to the worktree.                                                |
-| `checkpoint_turn` | `number?`  | Latest captured checkpoint turn.                                              |
-| `body`            | `string`   | Markdown content after front matter.                                          |
+| Field        | Type       | Description                                                                              |
+| ------------ | ---------- | ---------------------------------------------------------------------------------------- |
+| `id`         | `string`   | NanoID with configurable prefix (default: `dnc-`). Derived from filename.                |
+| `slug`       | `string`   | URL-safe human-readable suffix. Derived from filename.                                   |
+| `title`      | `string`   | Short task name.                                                                         |
+| `status`     | `string`   | One of: `in-progress`, `todo`, `draft`, `completed`, `scrapped`.                         |
+| `type`       | `string`   | One of: `milestone`, `epic`, `bug`, `feature`, `task`.                                   |
+| `priority`   | `string`   | One of: `critical`, `high`, `normal`, `low`, `deferred`.                                 |
+| `tags`       | `string[]` | Lowercase, start with letter, letters/numbers/hyphens only.                              |
+| `created_at` | `ISO8601`  | Timestamp.                                                                               |
+| `updated_at` | `ISO8601`  | Auto-updated on mutation.                                                                |
+| `order`      | `string`   | Fractional index for kanban column ordering.                                             |
+| `parent`     | `string?`  | Parent task ID. Restricted by type (e.g., only `epic` can parent `task`).                |
+| `blocking`   | `string[]` | IDs this task blocks.                                                                    |
+| `blocked_by` | `string[]` | IDs blocking this task.                                                                  |
+| `body`       | `string`   | Markdown content after front matter (description, acceptance criteria, notes, subtasks). |
+
+**Schema notes**:
+
+- `id` is written as a YAML comment (`# dnc-0ajg`) inside the front matter, not as a field. This matches beans' convention.
+- Subtasks are represented as separate task files with a `parent` reference. The body of a parent task may also contain a checklist of subtask IDs for quick reference.
+- `claimed` is not a separate status; a claimed task moves to `in-progress`. The kanban UI may display the claimer's name on an `in-progress` card.
 
 ### 3.4 Config Schema (`.dinocode/config.yml`)
 
+Aligns with beans' `.beans.yml`. All fields are optional; defaults are shown below.
+
+Project-level config (repo-local, shared by the team):
+
 ```yaml
-columns:
-  - id: backlog
-    title: Backlog
-  - id: in-progress
-    title: In Progress
-  - id: review
-    title: Review
-  - id: completed
-    title: Completed
-    archive: true
-  - id: scrapped
-    title: Scrapped
-    archive: true
+# Dinocode configuration
+# See: https://github.com/pingdotgg/t3code
+project:
+  # Human-readable project name (displayed in the UI)
+  name: my-project
 
-status_map:
-  draft: backlog
-  backlog: backlog
-  in-progress: in-progress
-  review: review
-  completed: completed
-  scrapped: scrapped
+tasks:
+  # Directory where task files are stored
+  path: .dinocode/tasks
+  # Prefix for task IDs (e.g., "dnc-0ajg")
+  prefix: dnc-
+  # Length of the random ID suffix
+  id_length: 4
+  # Default status for new tasks
+  default_status: todo
+  # Default type for new tasks
+  default_type: task
 
+# Note: statuses and types are hardcoded (same as beans) and not configurable.
+# Statuses: in-progress, todo, draft, completed, scrapped
+# Types: milestone, epic, bug, feature, task
+```
+
+User-level config (`~/.dinocode/config.yml`, not tracked in git):
+
+```yaml
 providers:
   codex:
     binary: codex
@@ -267,15 +273,19 @@ providers:
     autonomous_flag: --dangerously-skip-permissions
   opencode:
     binary: opencode
-
-git:
-  worktree_base: ~/.dinocode/worktrees
-  symlink_gitignored: true
 ```
 
 ### 3.5 Optimistic Concurrency
 
 Every task file has an implicit ETag computed as an FNV-1a hash of its full rendered content. The orchestration engine validates ETags before writing to prevent clobbering concurrent edits from agents or other UI sessions.
+
+**ETag serialization rules** (must be deterministic across platforms):
+
+- Content is encoded as UTF-8.
+- Line endings are normalized to LF (`\n`) before hashing.
+- Front matter fields are written in a fixed alphabetical order.
+- Array values are serialized as YAML flow style (`[a, b]`) with a single space after commas.
+- Empty optional fields are omitted entirely (not written as `null` or `~`).
 
 ---
 
@@ -285,7 +295,7 @@ Every task file has an implicit ETag computed as an FNV-1a hash of its full rend
 
 The kanban board is **not** a separate data store. It is a **read-only projection** over the task files in `.dinocode/tasks/`.
 
-- Columns map to `status` via `config.yml` → `status_map`.
+- Columns map directly to `status` values (hardcoded: `in-progress`, `todo`, `draft`, `completed`, `scrapped`).
 - Card order within a column maps to the `order` fractional index.
 - Dependencies (`blocking`/`blocked_by`) render as directed edges between cards.
 
@@ -299,7 +309,7 @@ This means:
 
 ```typescript
 type BoardColumn = {
-  id: string; // matches status_map value
+  id: string; // matches a status name
   title: string;
   cards: BoardCard[];
 };
@@ -311,17 +321,14 @@ type BoardCard = {
   priority: string;
   type: string;
   tags: string[];
-  assignee?: string;
   order: string;
-  hasWorktree: boolean;
-  sessionState: "idle" | "running" | "awaiting_review" | "failed" | "interrupted";
-  latestHookActivity?: HookActivity;
-  checkpointTurn?: number;
+  // UI-only: who claimed this task (derived from inline comment or body mention)
+  claimedBy?: string;
 };
 
 type BoardDependency = {
   id: string;
-  fromTaskId: string; // dependent (usually backlog)
+  fromTaskId: string; // dependent
   toTaskId: string; // prerequisite
 };
 ```
@@ -331,8 +338,8 @@ type BoardDependency = {
 Dinocode implements kanban-style dependency chains:
 
 1. **Linking**: Cmd/Ctrl + click on a card, then click a target card. Stores `blocking`/`blocked_by` in task files.
-2. **Auto-start**: When a task in `review` is moved to `completed` (or auto-committed + trashed), the orchestration engine scans `blocked_by`. Any tasks whose blockers are all `completed` are automatically started.
-3. **Auto-review**: Per-task `autoReview` flag. When the agent signals `to_review`, the system can auto-commit, auto-PR, or auto-move-to-completed based on configuration.
+2. **Unblock notifications**: When a task's status transitions to `completed` or `scrapped`, the system scans `blocked_by` on all tasks in the same project. Any task whose blockers are now all resolved is surfaced in the UI (e.g., a badge on the card or a toast notification). The system does **not** automatically start agent sessions; the user decides when to act on unblocked work.
+3. **Subtask completion**: When all children of a parent task reach `completed`, the UI may prompt to move the parent to `completed` as well.
 
 ### 4.4 Sidebar Chat (Home Agent)
 
@@ -346,29 +353,86 @@ A dedicated non-board chat session (`__home_agent__:<projectId>`) acts as a task
 
 ## 5. Session & Provider Model (t3code Base)
 
-### 5.1 Thread → Task Mapping
+### 5.1 Tasks and Agents are Separate
 
-In t3code, a **Thread** is a conversation with an agent. In Dinocode, threads are **bound to tasks**:
+**Tasks** and **agent sessions** are independent systems that can optionally interact:
 
 ```
 Project
-├── Task (file on disk)
-│   ├── Thread (chat history in SQLite + .conversations/)
-│   ├── Session (provider runtime state)
-│   ├── Turns (user↔agent work cycles)
-│   ├── Checkpoints (git snapshots per turn)
-│   └── Terminal (PTY session)
+├── Tasks (flat files in .dinocode/tasks/)
+│   ├── Kanban board (UI projection)
+│   └── Dependencies, subtasks, status
+│
+└── Threads (agent conversations in SQLite)
+    ├── Session (provider runtime state)
+    ├── Turns (user↔agent work cycles)
+    └── Terminal (PTY session)
 ```
 
-When a user hits "Play" on a kanban card:
+There is **no 1:1 binding** between tasks and threads. A thread may reference zero, one, or many tasks for context. A task may be referenced by zero or many threads over its lifetime.
 
-1. Orchestration engine creates a git worktree for the task (if not exists).
-2. A provider session is started (e.g., `codex app-server` JSON-RPC over stdio).
-3. The task's `assignee` determines which provider binary to spawn.
-4. Terminal output streams to the card's detail view.
-5. Agent hook events (`to_review`, `activity`) update the task file's `status` and `checkpoint_turn`.
+### 5.2 Using Task Context in an Agent Session
 
-### 5.2 Turn Lifecycle
+When starting an agent session, the user may optionally select one or more tasks to inject as context. The task's title, description, acceptance criteria, and current status are appended to the system prompt or first user message.
+
+Example context injection:
+
+```
+You are working on the following task:
+
+[dnc-0ajg] Implement OAuth flow
+Status: in-progress
+Type: task
+Priority: high
+
+## Goal
+Add GitHub OAuth login to the desktop app.
+
+## Acceptance Criteria
+- [x] OAuth callback endpoint
+- [ ] Session persistence
+- [ ] Logout flow
+
+## Notes
+The provider adapter already supports token exchange. We just need the UI flow.
+```
+
+**Ways to start a session with task context**:
+
+1. Click "Start Session" on a kanban card → opens a new thread with that task's context pre-loaded.
+2. In an existing thread, mention a task ID (e.g., `@dnc-0ajg`) → the UI offers to inject that task's context into the next turn.
+3. The home agent can recommend tasks and start sessions with them.
+
+### 5.3 Agent Tools for Task Interaction
+
+Agents (both in-app and external) interact with tasks through a **hybrid tool model**:
+
+**Primary: CLI (`dinocode task ...`)**
+
+- `dinocode task list [--status <status>] [--type <type>]` — list tasks
+- `dinocode task view <id>` — view task details
+- `dinocode task create --title "..." [--status todo] [--type task]` — create a task
+- `dinocode task update <id> --status in-progress [--title "..."]` — update a task
+- `dinocode task delete <id>` — delete a task
+- `dinocode task archive <id>` — archive a task
+- `dinocode task link <from-id> <to-id>` — add blocker relationship
+- `dinocode task unlink <from-id> <to-id>` — remove blocker relationship
+
+These commands read/write `.dinocode/tasks/*.md` directly. The file watcher detects changes and re-ingests them into the kanban projection.
+
+**Secondary: Built-in Tools (in-app agents only)**
+For agents running inside t3code's provider adapters (Codex, Claude), we also register native function-calling tools:
+
+- `dinocode_list_tasks` — returns JSON task list
+- `dinocode_view_task` — returns task details by ID
+- `dinocode_update_task` — dispatches `task.update` through the orchestration engine
+- `dinocode_create_task` — dispatches `task.create`
+
+Built-in tools are richer (real-time, typed, no shell escaping) but require per-adapter integration. The CLI works everywhere.
+
+### 5.4 Turn Lifecycle
+
+Unchanged from t3code base. Tasks do not affect the turn lifecycle.
 
 ```
 user dispatches thread.turn.start
@@ -378,48 +442,16 @@ user dispatches thread.turn.start
   -> events: thread.session-set, thread.turn-running
   -> agent streams content/tool events
   -> agent signals to_review via hook
-  -> events: thread.turn-awaiting-review, thread.checkpoint-captured
+  -> events: thread.turn-awaiting-review
   -> user approves / rejects / sends follow-up
   -> events: thread.turn-completed or thread.turn-resumed
-  -> checkpoint reactor captures git snapshot
 ```
-
-### 5.3 Hook Integration
-
-Dinocode reuses kanban's hook architecture, adapted for t3code's event sourcing:
-
-- Each task worktree has `KANBAN_HOOK_TASK_ID`, `KANBAN_HOOK_PROJECT_ID`, and `KANBAN_HOOK_PORT` injected into the environment.
-- Provider-specific hook configs are written before session start (same adapters as kanban: Cline bash hooks, Claude settings.json, Codex wrapper, etc.).
-- Hook events are ingested via an internal HTTP endpoint (or CLI subcommand for portability) and translated into orchestration commands.
-
-### 5.4 Checkpointing
-
-Every turn boundary triggers a git checkpoint:
-
-- Captures the task worktree state as a commit under `refs/dinocode/checkpoints/<taskId>/turn/<turn>`.
-- UI can diff: working copy vs HEAD, or last turn vs previous turn.
-- Checkpoints are cheap (tree reuse) and never pollute the main branch history.
 
 ---
 
 ## 6. Git Integration
 
-### 6.1 Worktrees
-
-Each active task gets an ephemeral git worktree:
-
-- **Path**: `~/.dinocode/worktrees/<projectName>/<taskId>/`
-- **Base**: Detached at the task's `baseRef` (default: current branch HEAD).
-- **Symlinks**: Gitignored directories (e.g., `node_modules`) are symlinked from the main repo to avoid reinstalls. Turbopack projects copy instead.
-- **Cleanup**: When a task is archived, the worktree is removed. A binary patch of all changes is saved to `~/.dinocode/trashed-patches/<taskId>.<commit>.patch` so work can be restored.
-
-### 6.2 Branching
-
-- Tasks may specify a `branch` field. If absent, Dinocode auto-creates `dinocode/<taskId>`.
-- The home agent can be asked to "integrate" a task — squash-merge into the base ref, or open a PR.
-- Git status (ahead/behind, dirty files) is displayed on each kanban card.
-
-### 6.3 Repo-Local Task Storage
+### 6.1 Repo-Local Task Storage
 
 Because `.dinocode/tasks/` lives inside the repo:
 
@@ -427,6 +459,17 @@ Because `.dinocode/tasks/` lives inside the repo:
 - CI can read task files to generate changelogs or validate completion.
 - Agents can read the full project backlog without API calls.
 - No external issue tracker is required.
+
+### 6.2 Task Branches (Optional)
+
+Tasks do **not** require dedicated branches or worktrees. However, users may optionally create a branch named after a task (e.g., `dinocode/dnc-0ajg`) for organizational purposes. This is a convention, not enforced by the system.
+
+- The kanban card may show a "Create Branch" button that runs `git checkout -b dinocode/<taskId>`.
+- Git status (dirty files) is never displayed on kanban cards because tasks are not bound to git state.
+
+### 6.3 Agent Worktrees
+
+Agent sessions may use t3code's existing worktree support (if configured) independently of tasks. A user can start an agent session in a worktree and reference tasks for context, but the worktree is not owned by any task.
 
 ---
 
@@ -442,21 +485,19 @@ Because `.dinocode/tasks/` lives inside the repo:
 6. Projector updates in-memory read model and `projection_tasks` SQLite table.
 7. WebSocket stream pushes updated board projection to all clients.
 
-### 7.2 Starting a Task (Agent)
+### 7.2 Starting an Agent Session with Task Context
 
-1. User clicks "Play" on a kanban card.
-2. Web app dispatches `thread.turn.start` with the task's thread ID.
-3. Server ensures worktree exists (`git worktree add`) — reuses existing `GitCore` service.
-4. Provider adapter resolves agent binary + args + hooks.
-5. PTY session starts in the worktree directory — reuses existing `TerminalManager`.
-6. Provider runtime events stream through `ProviderRuntimeIngestion`.
-7. Hook events (`to_review`) trigger status file updates.
-8. Orchestration events are persisted to SQLite event store.
-9. Projector updates read models; WebSocket pushes to clients.
+1. User clicks "Start Session" on a kanban card.
+2. Web app opens a new thread (or reuses an existing one) and dispatches `thread.turn.start` with an optional `taskIds: [TaskId]` context payload.
+3. Server injects the referenced task content (title, body, status) into the session's context window.
+4. Provider adapter starts the session normally — no worktree is created for the task.
+5. Agent streams content/tool events. Built-in tools or CLI commands allow the agent to view/update tasks during the session.
+6. Orchestration events are persisted to SQLite event store.
+7. Projector updates read models; WebSocket pushes to clients.
 
 ### 7.3 Editing a Task (External / Agent)
 
-1. Agent (running in worktree) edits a task file directly, or calls `dinocode task update <id> --status review`.
+1. Agent (running in an agent session) edits a task file directly, or calls `dinocode task update <id> --status in-progress`.
 2. File Store watcher detects the filesystem change.
 3. File is parsed and validated against schema.
 4. ETag is computed and compared to the last known version.
@@ -466,6 +507,8 @@ Because `.dinocode/tasks/` lives inside the repo:
 8. Projector updates; clients refresh.
 
 > **Important**: The file watcher is the _only_ path for external edits. Humans editing files in their editor go through the same flow as agents. This prevents the filesystem and SQLite from diverging.
+>
+> **Watcher Ignore Mechanism**: The File Store reactor maintains an in-memory `Set` of file paths it is about to write. The watcher skips any path in this set (checked before parsing, cleared after the write completes). This prevents the reactor's own writes from re-triggering `task.update` commands. The same mechanism applies to archive/unarchive moves.
 
 ---
 
@@ -475,25 +518,25 @@ Because `.dinocode/tasks/` lives inside the repo:
 
 ```
 ┌────────────────────────────────────────────────────────────┐
-│  [Project]  [Branch ▾]  [New Task +]        [⚙] [👤]       │
+│  [Project]  [New Task +]  [Filter ▾]        [⚙] [👤]       │
 ├──────────┬─────────────────────────────────────────────────┤
-│          │  Backlog  │ In Progress │ Review │ Completed    │
-│ Sidebar  │  ┌─────┐  │  ┌─────┐    │ ┌────┐ │ ┌────┐      │
-│  Chat    │  │TaskA│  │  │TaskB│    │ │TaskC│ │ │TaskD│     │
-│  (Home   │  │ 🔵  │  │  │ 🟡  │    │ │ 🟢  │ │ │ ⚪  │     │
-│   Agent) │  └─────┘  │  └─────┘    │ └────┘ │ └────┘      │
-│          │           │             │        │             │
+│          │  In Prog  │   Todo    │ Draft  │ Completed      │
+│ Sidebar  │  ┌─────┐  │  ┌─────┐  │ ┌────┐ │ ┌────┐        │
+│  Chat    │  │TaskA│  │  │TaskB│  │ │TaskC│ │ │TaskD│       │
+│  (Home   │  │ 🔵  │  │  │ 🟡  │  │ │ 🟢  │ │ │ ⚪  │       │
+│   Agent) │  └─────┘  │  └─────┘  │ └────┘ │ └────┘        │
+│          │           │           │        │               │
 ├──────────┴─────────────────────────────────────────────────┤
-│  [Terminal] [Diff] [Files] [Chat]      [Commit] [Start ▶]  │
+│  [Description] [Subtasks] [Blockers] [Activity]  [Start ▶] │
 └────────────────────────────────────────────────────────────┘
 ```
 
 ### 8.2 Key Interactions
 
 - **Kanban**: Drag-and-drop between columns (updates `status`). Drag to reorder (updates `order` fractional index).
-- **Card click**: Opens detail panel with terminal, diff, file browser, and thread chat.
+- **Card click**: Opens task detail panel with description, subtasks, blockers, and activity history. A "Start Session" button opens a new agent thread with this task's context.
 - **Cmd+click card**: Initiates dependency link draft.
-- **Play button**: Starts agent session in worktree. Disabled if `blocked_by` has non-completed tasks.
+- **Start Session button**: Opens a new agent thread with this task's context pre-loaded. Disabled if `blocked_by` has non-completed tasks.
 - **Home chat**: Always available sidebar. Can create/link/start tasks via natural language.
 
 ### 8.3 Desktop-Native Behaviors
@@ -517,7 +560,7 @@ Because `.dinocode/tasks/` lives inside the repo:
 ### 8.5 Diff & Review
 
 - Working copy diff vs base ref.
-- Turn-by-turn diff using checkpoint refs.
+- Turn-by-turn diff using agent session checkpoint refs (existing t3code feature, independent of tasks).
 - Inline commenting on diff lines → sends comment back to agent as user message.
 
 ---
@@ -532,12 +575,24 @@ Dinocode extends t3code's existing Effect RPC schema with task-oriented methods.
 
 ```typescript
 type TaskCommand =
-  | { type: 'task.create'; projectId: ProjectId; taskId: TaskId; title: string; status: TaskStatus; ... }
-  | { type: 'task.update'; taskId: TaskId; expectedEtag?: string; patch: TaskPatch }
-  | { type: 'task.delete'; taskId: TaskId }
-  | { type: 'task.archive'; taskId: TaskId }
-  | { type: 'task.unarchive'; taskId: TaskId }
-  | { type: 'task.bind-thread'; taskId: TaskId; threadId: ThreadId };
+  | {
+      type: "task.create";
+      projectId: ProjectId;
+      title: string;
+      status: TaskStatus;
+      slug?: string;
+      type?: TaskType;
+      priority?: TaskPriority;
+      tags?: string[];
+      body?: string;
+      parent?: TaskId;
+      blocking?: TaskId[];
+      blockedBy?: TaskId[];
+    }
+  | { type: "task.update"; taskId: TaskId; expectedEtag?: string; patch: TaskPatch }
+  | { type: "task.delete"; taskId: TaskId }
+  | { type: "task.archive"; taskId: TaskId }
+  | { type: "task.unarchive"; taskId: TaskId };
 ```
 
 **New subscription streams**:
@@ -550,29 +605,25 @@ orchestration.subscribeBoard({ projectId }): Stream<BoardStreamItem>;
 orchestration.subscribeTask({ taskId }): Stream<TaskStreamItem>;
 ```
 
-**Thread / session** (existing t3code, no changes):
+**Thread / session** (task context added to turn start):
 
 ```typescript
 orchestration.subscribeThread({ threadId }): Stream<ThreadDetail>;
-orchestration.dispatchCommand({ type: 'thread.turn.start', ... });
+
+// taskIds is optional; when provided, the server injects task context into the session
+orchestration.dispatchCommand({ type: 'thread.turn.start', threadId: ThreadId, taskIds?: TaskId[] });
 ```
 
-**Git** (existing t3code, reuse for tasks):
+**Git** (existing t3code, unchanged):
 
 ```typescript
-// Already exists — just pass task's worktree path as `cwd`
 git.createWorktree({ cwd, branch, newBranch });
 git.removeWorktree({ cwd });
-
-// New convenience methods
-git.getTaskDiff({ taskId, mode: "working" | "turn" });
-git.integrateTask({ taskId, mode: "squash" | "pr" });
 ```
 
-**Terminal** (existing t3code, reuse for tasks):
+**Terminal** (existing t3code, unchanged):
 
 ```typescript
-// Already exists — terminal is keyed by threadId, which is bound 1:1 to task
 terminal.open({ threadId });
 terminal.subscribe({ threadId }): Stream<TerminalEvent>;
 ```
@@ -580,33 +631,39 @@ terminal.subscribe({ threadId }): Stream<TerminalEvent>;
 ### 9.2 File Store API (Server-Internal)
 
 ```typescript
+import { Effect, Stream } from "effect";
+
 interface FileStore {
   // Reads all tasks from .dinocode/tasks/ and builds index
-  loadProject(workspaceRoot: string): Promise<TaskIndex>;
+  loadProject(workspaceRoot: string): Effect.Effect<TaskIndex, FileStoreError, never>;
 
   // Writes a task file atomically with ETag check
-  writeTask(task: Task, expectedEtag?: string): Promise<void>;
+  writeTask(task: Task, expectedEtag?: string): Effect.Effect<void, FileStoreError, never>;
 
   // Watches .dinocode/tasks/ for external changes
-  watchProject(workspaceRoot: string): Stream<FileChangeEvent>;
+  watchProject(workspaceRoot: string): Stream.Stream<FileChangeEvent, FileStoreError, never>;
 }
+
+type TaskIndex = {
+  tasks: Task[];
+  config: ProjectConfig;
+  etags: Map<TaskId, string>; // taskId -> ETag
+};
 ```
 
 ---
 
 ## 10. Storage & Persistence
 
-| Data                     | Store                                      | Rationale                                      |
-| ------------------------ | ------------------------------------------ | ---------------------------------------------- |
-| **Task definitions**     | `.dinocode/tasks/*.md` (repo-local)        | Human-readable, git-tracked, agent-accessible. |
-| **Task config**          | `.dinocode/config.yml` (repo-local)        | Per-project column/status/provider config.     |
-| **Chat history**         | SQLite (`projection_thread_messages`)      | Fast querying, streaming, already in t3code.   |
-| **Orchestration events** | SQLite (`orchestration_events`)            | Event sourcing backbone.                       |
-| **Read models**          | SQLite projections                         | Fast board/card lookups.                       |
-| **Agent conversations**  | `.dinocode/.conversations/*.jsonl`         | Optional long-term chat logs, gitignored.      |
-| **Session runtime**      | `.dinocode/.sessions/*.json`               | Ephemeral provider resume state, gitignored.   |
-| **Checkpoints**          | Git refs (`refs/dinocode/checkpoints/...`) | Durable, zero-cost diffs.                      |
-| **Trashed patches**      | `~/.dinocode/trashed-patches/*.patch`      | Restore work from archived tasks.              |
+| Data                     | Store                                 | Rationale                                      |
+| ------------------------ | ------------------------------------- | ---------------------------------------------- |
+| **Task definitions**     | `.dinocode/tasks/*.md` (repo-local)   | Human-readable, git-tracked, agent-accessible. |
+| **Task config**          | `.dinocode/config.yml` (repo-local)   | Per-project task settings.                     |
+| **Chat history**         | SQLite (`projection_thread_messages`) | Fast querying, streaming, already in t3code.   |
+| **Orchestration events** | SQLite (`orchestration_events`)       | Event sourcing backbone (tasks + threads).     |
+| **Read models**          | SQLite projections                    | Fast board/card lookups.                       |
+| **Agent conversations**  | `.dinocode/.conversations/*.jsonl`    | Optional long-term chat logs, gitignored.      |
+| **Session runtime**      | `.dinocode/.sessions/*.json`          | Ephemeral provider resume state, gitignored.   |
 
 ---
 
@@ -615,14 +672,14 @@ interface FileStore {
 ### Phase 1: File Store Foundation
 
 - [ ] Implement `FileStore` service in `apps/server/src/fileStore/` (follow Effect Layer pattern).
-- [ ] Task parser: Markdown + YAML front matter → `Task` schema.
+- [ ] Task parser: Markdown + YAML front matter → `Task` schema (align with beans).
 - [ ] Task writer: `Task` schema → Markdown file with ETag (FNV-1a of full rendered content).
 - [ ] File watcher: `node:fs` watch on `.dinocode/tasks/` → auto-dispatch `task.update` commands.
 - [ ] Add `task.*` commands/events to `packages/contracts/src/orchestration.ts`.
 - [ ] Extend decider (`apps/server/src/orchestration/decider.ts`) with task command handling.
 - [ ] Extend projector (`apps/server/src/orchestration/projector.ts`) with task event projection.
 - [ ] Add invariants to `commandInvariants.ts` (requireTask, requireTaskAbsent, etc.).
-- [ ] Add `projection_tasks` SQLite table (new migration `026_ProjectionTasks.ts`).
+- [ ] Add `projection_tasks` SQLite table (new migration; use next available number).
 - [ ] Add `FileStoreReactor` (`apps/server/src/orchestration/Layers/FileStoreReactor.ts`) — writes files after events commit.
 
 ### Phase 2: Kanban Projection
@@ -636,38 +693,36 @@ interface FileStore {
   - `KanbanBoard.tsx`, `KanbanColumn.tsx`, `KanbanCard.tsx`, `TaskDetailPanel.tsx`.
 - [ ] Drag-and-drop via existing `@dnd-kit/core` + `@dnd-kit/sortable`.
 - [ ] Extend `EnvironmentState` in `apps/web/src/store.ts` with task slices (follow dual-stream pattern).
-- [ ] Card detail panel shell (terminal, diff, files, chat tabs).
+- [ ] Task detail panel (read-only task view with edit mode).
 
-### Phase 3: Worktree & Terminal Binding
+### Phase 3: Task Context Injection
 
-- [ ] Reuse existing `git.createWorktree` for task worktrees (`~/.dinocode/worktrees/<project>/<taskId>/`).
-- [ ] Add `task_id` nullable column to `projection_threads`.
-- [ ] Bind threads to tasks (1:1) via `thread.meta.update` or new `task.bind-thread` command.
-- [ ] Auto-ensure worktree exists when `thread.turn.start` is dispatched for a task-bound thread.
-- [ ] Terminal in detail panel — reuse existing `terminal.open` with task-derived `threadId`.
-- [ ] Symlink gitignored dirs (`node_modules`) from main repo to worktree.
+- [ ] Extend `thread.turn.start` command to accept optional `taskIds` payload.
+- [ ] Server-side context injector: fetch task files → format → prepend to session context.
+- [ ] Kanban card "Start Session" action: opens new thread with task context pre-loaded.
+- [ ] Thread UI: display referenced tasks as chips; allow adding/removing task context mid-session.
+- [ ] Home agent prompt injection: include open tasks in the home agent's system prompt.
 
-### Phase 4: Provider Integration
+### Phase 4: Agent Tools
 
-- [ ] Auto-spawn provider in task worktree on `thread.turn.start`.
-- [ ] Inject hook environment: `KANBAN_HOOK_TASK_ID`, `KANBAN_HOOK_PROJECT_ID`, `KANBAN_HOOK_PORT`.
-- [ ] Provider-specific hook configs (Cline bash hooks, Claude settings.json, Codex wrapper).
-- [ ] Hook ingest endpoint/CLI → `task.update` orchestration commands.
-- [ ] Checkpointing on turn boundaries — reuse existing `CheckpointReactor`.
+- [ ] CLI: implement `dinocode task` subcommands (`list`, `view`, `create`, `update`, `delete`, `archive`, `link`, `unlink`).
+- [ ] CLI installs into `apps/server` package so `npx dinocode task ...` works.
+- [ ] Built-in tools: register `dinocode_list_tasks`, `dinocode_view_task`, `dinocode_update_task`, `dinocode_create_task` in provider adapters.
+- [ ] File watcher handles CLI-initiated changes (same flow as human edits).
+- [ ] Document tools in `AGENTS.md` / `DINOCODE.md` so agents know they exist.
 
 ### Phase 5: Automation
 
 - [ ] Dependency linking UI (`blocking`/`blocked_by`) — Cmd+click card → target card.
-- [ ] Auto-start logic: when blockers all `completed`, auto-dispatch `thread.turn.start`.
-- [ ] Auto-review modes (commit / PR / complete) per `autoReview` flag.
+- [ ] Unblock notifications: when blockers resolve, surface in UI.
+- [ ] Subtask completion prompts: when all children are `completed`, offer to complete parent.
 - [ ] Sidebar home agent (`__home_agent__:<projectId>`) with injected task management prompts.
 
 ### Phase 6: Polish
 
-- [ ] Diff viewer with inline commenting.
-- [ ] Git integration panel (history, branches, push/pull).
 - [ ] Import/export from external trackers (GitHub Issues, Linear).
 - [ ] Mobile-responsive kanban.
+- [ ] Task search and filtering.
 
 ---
 
@@ -685,10 +740,10 @@ interface FileStore {
    **Resolved**: Yes. The web UI detects missing `.dinocode/config.yml` and shows a one-click "Initialize Dinocode for this project" banner. Initialization creates the directory structure, default config, and an initial `.gitignore`.
 
 4. **How do we support non-git repos?**
-   **Resolved**: Task files work everywhere. Worktrees and checkpointing are silently disabled when `git` is unavailable. Agents run in the main repo directory. The UI shows a "Git not available" indicator instead of worktree-related actions.
+   **Resolved**: Task files work everywhere. The kanban and task tools function regardless of git availability. Optional git features (branch creation) are hidden when git is unavailable.
 
-5. **What is the migration path from t3code's existing thread-centric model to task-centric?**
-   **Resolved**: Threads without tasks become "ad-hoc tasks" with auto-generated `.dinocode/tasks/*.md` files (using a derived slug from the thread title). Existing SQLite data is preserved via projection migration. The `projection_threads` table gains a nullable `task_id` column. Over time, users can promote ad-hoc tasks to fully-specified tasks.
+5. **Should tasks be bound 1:1 to agent threads?**
+   **Resolved**: No. Tasks and threads are independent systems. A thread may reference zero or more tasks for context, and a task may be referenced by zero or more threads. This decoupling keeps the task model simple and avoids worktree-per-task complexity. Task context is injected at `thread.turn.start` time via an optional `taskIds` payload.
 
 ### Open
 
