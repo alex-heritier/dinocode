@@ -1,7 +1,8 @@
-import type {
-  OrchestrationCommand,
-  OrchestrationEvent,
-  OrchestrationReadModel,
+import {
+  TaskId,
+  type OrchestrationCommand,
+  type OrchestrationEvent,
+  type OrchestrationReadModel,
 } from "@t3tools/contracts";
 import { Effect } from "effect";
 
@@ -10,6 +11,8 @@ import {
   listThreadsByProjectId,
   requireProject,
   requireProjectAbsent,
+  requireTask,
+  requireTaskNotArchived,
   requireThread,
   requireThreadArchived,
   requireThreadAbsent,
@@ -737,6 +740,118 @@ export const decideOrchestrationCommand = Effect.fn("decideOrchestrationCommand"
         payload: {
           threadId: command.threadId,
           activity: command.activity,
+        },
+      };
+    }
+
+    case "task.create": {
+      yield* requireProject({
+        readModel,
+        command,
+        projectId: command.projectId,
+      });
+      const taskId = TaskId.make(`dnc-${crypto.randomUUID().slice(0, 8)}`);
+      const now = new Date().toISOString();
+      const slug =
+        command.slug ??
+        (command.title
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-|-$/g, "")
+          .slice(0, 64) ||
+          "task");
+      return {
+        ...withEventBase({
+          aggregateKind: "task",
+          aggregateId: taskId,
+          occurredAt: now,
+          commandId: command.commandId,
+        }),
+        type: "task.created",
+        payload: {
+          taskId,
+          projectId: command.projectId,
+          document: {
+            id: taskId,
+            slug,
+            title: command.title,
+            status: command.status,
+            type: command.taskType ?? "task",
+            priority: command.priority ?? "normal",
+            tags: command.tags ?? [],
+            createdAt: now,
+            updatedAt: now,
+            order: "a",
+            parent: command.parent ?? null,
+            blocking: command.blocking ?? [],
+            blockedBy: command.blockedBy ?? [],
+            body: command.body ?? "",
+          },
+        },
+      };
+    }
+
+    case "task.update": {
+      yield* requireTask({ readModel, command, taskId: command.taskId });
+      return {
+        ...withEventBase({
+          aggregateKind: "task",
+          aggregateId: command.taskId,
+          occurredAt: new Date().toISOString(),
+          commandId: command.commandId,
+        }),
+        type: "task.updated",
+        payload: {
+          taskId: command.taskId,
+          patch: command.patch,
+        },
+      };
+    }
+
+    case "task.delete": {
+      yield* requireTask({ readModel, command, taskId: command.taskId });
+      return {
+        ...withEventBase({
+          aggregateKind: "task",
+          aggregateId: command.taskId,
+          occurredAt: new Date().toISOString(),
+          commandId: command.commandId,
+        }),
+        type: "task.deleted",
+        payload: {
+          taskId: command.taskId,
+        },
+      };
+    }
+
+    case "task.archive": {
+      yield* requireTaskNotArchived({ readModel, command, taskId: command.taskId });
+      return {
+        ...withEventBase({
+          aggregateKind: "task",
+          aggregateId: command.taskId,
+          occurredAt: new Date().toISOString(),
+          commandId: command.commandId,
+        }),
+        type: "task.archived",
+        payload: {
+          taskId: command.taskId,
+        },
+      };
+    }
+
+    case "task.unarchive": {
+      yield* requireTask({ readModel, command, taskId: command.taskId });
+      return {
+        ...withEventBase({
+          aggregateKind: "task",
+          aggregateId: command.taskId,
+          occurredAt: new Date().toISOString(),
+          commandId: command.commandId,
+        }),
+        type: "task.unarchived",
+        payload: {
+          taskId: command.taskId,
         },
       };
     }

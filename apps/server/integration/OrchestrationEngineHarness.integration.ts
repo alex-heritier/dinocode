@@ -50,6 +50,7 @@ import { RepositoryIdentityResolverLive } from "../src/project/Layers/Repository
 import { OrchestrationEngineLive } from "../src/orchestration/Layers/OrchestrationEngine.ts";
 import { OrchestrationProjectionPipelineLive } from "../src/orchestration/Layers/ProjectionPipeline.ts";
 import { OrchestrationProjectionSnapshotQueryLive } from "../src/orchestration/Layers/ProjectionSnapshotQuery.ts";
+import { ProjectionTaskRepositoryLive } from "../src/persistence/Layers/ProjectionTasks.ts";
 import { RuntimeReceiptBusTest } from "../src/orchestration/Layers/RuntimeReceiptBus.ts";
 import { OrchestrationReactorLive } from "../src/orchestration/Layers/OrchestrationReactor.ts";
 import { ProviderCommandReactorLive } from "../src/orchestration/Layers/ProviderCommandReactor.ts";
@@ -292,7 +293,9 @@ export const makeOrchestrationIntegrationHarness = (
         );
 
     const checkpointStoreLayer = CheckpointStoreLive.pipe(Layer.provide(GitCoreLive));
-    const projectionSnapshotQueryLayer = OrchestrationProjectionSnapshotQueryLive;
+    const projectionSnapshotQueryLayer = OrchestrationProjectionSnapshotQueryLive.pipe(
+      Layer.provide(ProjectionTaskRepositoryLive),
+    );
     const runtimeServicesLayer = Layer.mergeAll(
       projectionSnapshotQueryLayer,
       orchestrationLayer.pipe(Layer.provide(projectionSnapshotQueryLayer)),

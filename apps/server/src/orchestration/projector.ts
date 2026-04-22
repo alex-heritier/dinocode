@@ -160,6 +160,7 @@ export function createEmptyReadModel(nowIso: string): OrchestrationReadModel {
     snapshotSequence: 0,
     projects: [],
     threads: [],
+    tasks: [],
     updatedAt: nowIso,
   };
 }
@@ -647,6 +648,46 @@ export function projectEvent(
           };
         }),
       );
+
+    case "task.created": {
+      const payload = event.payload;
+      const task = {
+        ...payload.document,
+        projectId: payload.projectId,
+      };
+      return Effect.succeed({
+        ...nextBase,
+        tasks: [...nextBase.tasks, task],
+      });
+    }
+
+    case "task.updated": {
+      const payload = event.payload;
+      const definedPatch = Object.fromEntries(
+        Object.entries(payload.patch).filter(([, v]) => v !== undefined),
+      );
+      return Effect.succeed({
+        ...nextBase,
+        tasks: nextBase.tasks.map((task) =>
+          task.id === payload.taskId
+            ? { ...task, ...definedPatch, updatedAt: event.occurredAt }
+            : task,
+        ),
+      });
+    }
+
+    case "task.deleted": {
+      const payload = event.payload;
+      return Effect.succeed({
+        ...nextBase,
+        tasks: nextBase.tasks.filter((task) => task.id !== payload.taskId),
+      });
+    }
+
+    case "task.archived":
+    case "task.unarchived": {
+      return Effect.succeed(nextBase);
+    }
 
     default:
       return Effect.succeed(nextBase);

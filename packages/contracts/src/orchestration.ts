@@ -16,6 +16,7 @@ import {
   NonNegativeInt,
   ProjectId,
   ProviderItemId,
+  TaskId,
   ThreadId,
   TrimmedNonEmptyString,
   TurnId,
@@ -28,6 +29,8 @@ export const ORCHESTRATION_WS_METHODS = {
   replayEvents: "orchestration.replayEvents",
   subscribeShell: "orchestration.subscribeShell",
   subscribeThread: "orchestration.subscribeThread",
+  subscribeBoard: "orchestration.subscribeBoard",
+  subscribeTask: "orchestration.subscribeTask",
 } as const;
 
 export const ProviderKind = Schema.Literals(["codex", "claudeAgent", "cursor", "opencode"]);
@@ -104,6 +107,205 @@ export const ProviderApprovalDecision = Schema.Literals([
   "cancel",
 ]);
 export type ProviderApprovalDecision = typeof ProviderApprovalDecision.Type;
+
+export const TaskStatus = Schema.Literals([
+  "in-progress",
+  "todo",
+  "draft",
+  "completed",
+  "scrapped",
+]);
+export type TaskStatus = typeof TaskStatus.Type;
+export const TaskType = Schema.Literals(["milestone", "epic", "bug", "feature", "task"]);
+export type TaskType = typeof TaskType.Type;
+export const TaskPriority = Schema.Literals(["critical", "high", "normal", "low", "deferred"]);
+export type TaskPriority = typeof TaskPriority.Type;
+
+export const TaskDocument = Schema.Struct({
+  id: TaskId,
+  slug: TrimmedNonEmptyString,
+  title: TrimmedNonEmptyString,
+  status: TaskStatus,
+  type: TaskType,
+  priority: TaskPriority,
+  tags: Schema.Array(TrimmedNonEmptyString),
+  createdAt: IsoDateTime,
+  updatedAt: IsoDateTime,
+  order: TrimmedNonEmptyString,
+  parent: Schema.NullOr(TaskId),
+  blocking: Schema.Array(TaskId),
+  blockedBy: Schema.Array(TaskId),
+  body: Schema.String,
+});
+export type TaskDocument = typeof TaskDocument.Type;
+
+export const TaskPatch = Schema.Struct({
+  id: Schema.optional(TaskId),
+  slug: Schema.optional(TrimmedNonEmptyString),
+  title: Schema.optional(TrimmedNonEmptyString),
+  status: Schema.optional(TaskStatus),
+  type: Schema.optional(TaskType),
+  priority: Schema.optional(TaskPriority),
+  tags: Schema.optional(Schema.Array(TrimmedNonEmptyString)),
+  createdAt: Schema.optional(IsoDateTime),
+  updatedAt: Schema.optional(IsoDateTime),
+  order: Schema.optional(TrimmedNonEmptyString),
+  parent: Schema.optional(Schema.NullOr(TaskId)),
+  blocking: Schema.optional(Schema.Array(TaskId)),
+  blockedBy: Schema.optional(Schema.Array(TaskId)),
+  body: Schema.optional(Schema.String),
+});
+export type TaskPatch = typeof TaskPatch.Type;
+
+export const BoardCard = Schema.Struct({
+  id: TaskId,
+  title: TrimmedNonEmptyString,
+  status: TaskStatus,
+  priority: TaskPriority,
+  type: TaskType,
+  tags: Schema.Array(TrimmedNonEmptyString),
+  order: TrimmedNonEmptyString,
+});
+export type BoardCard = typeof BoardCard.Type;
+
+export const BoardColumn = Schema.Struct({
+  id: TaskStatus,
+  title: TrimmedNonEmptyString,
+  cards: Schema.Array(BoardCard),
+});
+export type BoardColumn = typeof BoardColumn.Type;
+
+export const BoardSnapshot = Schema.Struct({
+  snapshotSequence: NonNegativeInt,
+  projectId: ProjectId,
+  columns: Schema.Array(BoardColumn),
+  updatedAt: IsoDateTime,
+});
+export type BoardSnapshot = typeof BoardSnapshot.Type;
+
+export const BoardStreamEvent = Schema.Union([
+  Schema.Struct({
+    kind: Schema.Literal("card-upserted"),
+    sequence: NonNegativeInt,
+    card: BoardCard,
+  }),
+  Schema.Struct({
+    kind: Schema.Literal("card-removed"),
+    sequence: NonNegativeInt,
+    cardId: TaskId,
+  }),
+]);
+export type BoardStreamEvent = typeof BoardStreamEvent.Type;
+
+export const BoardStreamItem = Schema.Union([
+  Schema.Struct({
+    kind: Schema.Literal("snapshot"),
+    snapshot: BoardSnapshot,
+  }),
+  BoardStreamEvent,
+]);
+export type BoardStreamItem = typeof BoardStreamItem.Type;
+
+export const TaskCreateCommand = Schema.Struct({
+  type: Schema.Literal("task.create"),
+  commandId: CommandId,
+  projectId: ProjectId,
+  title: TrimmedNonEmptyString,
+  status: TaskStatus,
+  slug: Schema.optional(TrimmedNonEmptyString),
+  taskType: Schema.optional(TaskType),
+  priority: Schema.optional(TaskPriority),
+  tags: Schema.optional(Schema.Array(TrimmedNonEmptyString)),
+  body: Schema.optional(Schema.String),
+  parent: Schema.optional(Schema.NullOr(TaskId)),
+  blocking: Schema.optional(Schema.Array(TaskId)),
+  blockedBy: Schema.optional(Schema.Array(TaskId)),
+});
+
+export const TaskUpdateCommand = Schema.Struct({
+  type: Schema.Literal("task.update"),
+  commandId: CommandId,
+  taskId: TaskId,
+  expectedEtag: Schema.optional(TrimmedNonEmptyString),
+  patch: TaskPatch,
+});
+
+export const TaskDeleteCommand = Schema.Struct({
+  type: Schema.Literal("task.delete"),
+  commandId: CommandId,
+  taskId: TaskId,
+});
+
+export const TaskArchiveCommand = Schema.Struct({
+  type: Schema.Literal("task.archive"),
+  commandId: CommandId,
+  taskId: TaskId,
+});
+
+export const TaskUnarchiveCommand = Schema.Struct({
+  type: Schema.Literal("task.unarchive"),
+  commandId: CommandId,
+  taskId: TaskId,
+});
+
+export const DispatchableClientTaskCommand = Schema.Union([
+  TaskCreateCommand,
+  TaskUpdateCommand,
+  TaskDeleteCommand,
+  TaskArchiveCommand,
+  TaskUnarchiveCommand,
+]);
+export type DispatchableClientTaskCommand = typeof DispatchableClientTaskCommand.Type;
+
+export const TaskCreatedPayload = Schema.Struct({
+  taskId: TaskId,
+  projectId: ProjectId,
+  document: TaskDocument,
+});
+
+export const TaskUpdatedPayload = Schema.Struct({
+  taskId: TaskId,
+  patch: TaskPatch,
+});
+
+export const TaskDeletedPayload = Schema.Struct({
+  taskId: TaskId,
+});
+
+export const TaskArchivedPayload = Schema.Struct({
+  taskId: TaskId,
+});
+
+export const TaskUnarchivedPayload = Schema.Struct({
+  taskId: TaskId,
+});
+
+export const OrchestrationSubscribeBoardInput = Schema.Struct({
+  projectId: ProjectId,
+});
+export type OrchestrationSubscribeBoardInput = typeof OrchestrationSubscribeBoardInput.Type;
+
+export class OrchestrationSubscribeBoardError extends Schema.TaggedErrorClass<OrchestrationSubscribeBoardError>()(
+  "OrchestrationSubscribeBoardError",
+  {
+    message: TrimmedNonEmptyString,
+    cause: Schema.optional(Schema.Defect),
+  },
+) {}
+
+export const OrchestrationSubscribeTaskInput = Schema.Struct({
+  taskId: TaskId,
+});
+export type OrchestrationSubscribeTaskInput = typeof OrchestrationSubscribeTaskInput.Type;
+
+export class OrchestrationSubscribeTaskError extends Schema.TaggedErrorClass<OrchestrationSubscribeTaskError>()(
+  "OrchestrationSubscribeTaskError",
+  {
+    message: TrimmedNonEmptyString,
+    cause: Schema.optional(Schema.Defect),
+  },
+) {}
+
 export const ProviderUserInputAnswers = Schema.Record(Schema.String, Schema.Unknown);
 export type ProviderUserInputAnswers = typeof ProviderUserInputAnswers.Type;
 
@@ -324,10 +526,47 @@ export const OrchestrationThread = Schema.Struct({
 });
 export type OrchestrationThread = typeof OrchestrationThread.Type;
 
+export const OrchestrationTask = Schema.Struct({
+  id: TaskId,
+  projectId: ProjectId,
+  slug: TrimmedNonEmptyString,
+  title: TrimmedNonEmptyString,
+  status: TaskStatus,
+  type: TaskType,
+  priority: TaskPriority,
+  tags: Schema.Array(TrimmedNonEmptyString),
+  createdAt: IsoDateTime,
+  updatedAt: IsoDateTime,
+  order: TrimmedNonEmptyString,
+  parent: Schema.NullOr(TaskId),
+  blocking: Schema.Array(TaskId),
+  blockedBy: Schema.Array(TaskId),
+  body: Schema.String,
+});
+export type OrchestrationTask = typeof OrchestrationTask.Type;
+
+export const TaskStreamItem = Schema.Union([
+  Schema.Struct({
+    kind: Schema.Literal("snapshot"),
+    task: OrchestrationTask,
+  }),
+  Schema.Struct({
+    kind: Schema.Literal("updated"),
+    taskId: TaskId,
+    patch: TaskPatch,
+  }),
+  Schema.Struct({
+    kind: Schema.Literal("deleted"),
+    taskId: TaskId,
+  }),
+]);
+export type TaskStreamItem = typeof TaskStreamItem.Type;
+
 export const OrchestrationReadModel = Schema.Struct({
   snapshotSequence: NonNegativeInt,
   projects: Schema.Array(OrchestrationProject),
   threads: Schema.Array(OrchestrationThread),
+  tasks: Schema.Array(OrchestrationTask),
   updatedAt: IsoDateTime,
 });
 export type OrchestrationReadModel = typeof OrchestrationReadModel.Type;
@@ -630,6 +869,11 @@ const DispatchableClientOrchestrationCommand = Schema.Union([
   ThreadUserInputRespondCommand,
   ThreadCheckpointRevertCommand,
   ThreadSessionStopCommand,
+  TaskCreateCommand,
+  TaskUpdateCommand,
+  TaskDeleteCommand,
+  TaskArchiveCommand,
+  TaskUnarchiveCommand,
 ]);
 export type DispatchableClientOrchestrationCommand =
   typeof DispatchableClientOrchestrationCommand.Type;
@@ -651,6 +895,11 @@ export const ClientOrchestrationCommand = Schema.Union([
   ThreadUserInputRespondCommand,
   ThreadCheckpointRevertCommand,
   ThreadSessionStopCommand,
+  TaskCreateCommand,
+  TaskUpdateCommand,
+  TaskDeleteCommand,
+  TaskArchiveCommand,
+  TaskUnarchiveCommand,
 ]);
 export type ClientOrchestrationCommand = typeof ClientOrchestrationCommand.Type;
 
@@ -759,10 +1008,15 @@ export const OrchestrationEventType = Schema.Literals([
   "thread.proposed-plan-upserted",
   "thread.turn-diff-completed",
   "thread.activity-appended",
+  "task.created",
+  "task.updated",
+  "task.deleted",
+  "task.archived",
+  "task.unarchived",
 ]);
 export type OrchestrationEventType = typeof OrchestrationEventType.Type;
 
-export const OrchestrationAggregateKind = Schema.Literals(["project", "thread"]);
+export const OrchestrationAggregateKind = Schema.Literals(["project", "thread", "task"]);
 export type OrchestrationAggregateKind = typeof OrchestrationAggregateKind.Type;
 export const OrchestrationActorKind = Schema.Literals(["client", "server", "provider"]);
 
@@ -946,13 +1200,42 @@ const EventBaseFields = {
   sequence: NonNegativeInt,
   eventId: EventId,
   aggregateKind: OrchestrationAggregateKind,
-  aggregateId: Schema.Union([ProjectId, ThreadId]),
+  aggregateId: Schema.Union([ProjectId, ThreadId, TaskId]),
   occurredAt: IsoDateTime,
   commandId: Schema.NullOr(CommandId),
   causationEventId: Schema.NullOr(EventId),
   correlationId: Schema.NullOr(CommandId),
   metadata: OrchestrationEventMetadata,
 } as const;
+
+export const TaskEvent = Schema.Union([
+  Schema.Struct({
+    ...EventBaseFields,
+    type: Schema.Literal("task.created"),
+    payload: TaskCreatedPayload,
+  }),
+  Schema.Struct({
+    ...EventBaseFields,
+    type: Schema.Literal("task.updated"),
+    payload: TaskUpdatedPayload,
+  }),
+  Schema.Struct({
+    ...EventBaseFields,
+    type: Schema.Literal("task.deleted"),
+    payload: TaskDeletedPayload,
+  }),
+  Schema.Struct({
+    ...EventBaseFields,
+    type: Schema.Literal("task.archived"),
+    payload: TaskArchivedPayload,
+  }),
+  Schema.Struct({
+    ...EventBaseFields,
+    type: Schema.Literal("task.unarchived"),
+    payload: TaskUnarchivedPayload,
+  }),
+]);
+export type TaskEvent = typeof TaskEvent.Type;
 
 export const OrchestrationEvent = Schema.Union([
   Schema.Struct({
@@ -1064,6 +1347,31 @@ export const OrchestrationEvent = Schema.Union([
     ...EventBaseFields,
     type: Schema.Literal("thread.activity-appended"),
     payload: ThreadActivityAppendedPayload,
+  }),
+  Schema.Struct({
+    ...EventBaseFields,
+    type: Schema.Literal("task.created"),
+    payload: TaskCreatedPayload,
+  }),
+  Schema.Struct({
+    ...EventBaseFields,
+    type: Schema.Literal("task.updated"),
+    payload: TaskUpdatedPayload,
+  }),
+  Schema.Struct({
+    ...EventBaseFields,
+    type: Schema.Literal("task.deleted"),
+    payload: TaskDeletedPayload,
+  }),
+  Schema.Struct({
+    ...EventBaseFields,
+    type: Schema.Literal("task.archived"),
+    payload: TaskArchivedPayload,
+  }),
+  Schema.Struct({
+    ...EventBaseFields,
+    type: Schema.Literal("task.unarchived"),
+    payload: TaskUnarchivedPayload,
   }),
 ]);
 export type OrchestrationEvent = typeof OrchestrationEvent.Type;
@@ -1194,6 +1502,14 @@ export const OrchestrationRpcSchemas = {
   subscribeShell: {
     input: Schema.Struct({}),
     output: OrchestrationShellStreamItem,
+  },
+  subscribeBoard: {
+    input: OrchestrationSubscribeBoardInput,
+    output: BoardStreamItem,
+  },
+  subscribeTask: {
+    input: OrchestrationSubscribeTaskInput,
+    output: TaskStreamItem,
   },
 } as const;
 

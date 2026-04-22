@@ -22,6 +22,9 @@ import {
   type TerminalEvent,
   WS_METHODS,
   WsRpcGroup,
+  OrchestrationSubscribeBoardError,
+  OrchestrationSubscribeTaskError,
+  TaskId,
 } from "@t3tools/contracts";
 import { clamp } from "effect/Number";
 import { HttpRouter, HttpServerRequest } from "effect/unstable/http";
@@ -247,6 +250,65 @@ const makeWsRpcLayer = (currentSessionId: AuthSessionId) =>
 
       const enrichOrchestrationEvents = (events: ReadonlyArray<OrchestrationEvent>) =>
         Effect.forEach(events, enrichProjectEvent, { concurrency: 4 });
+
+      const toBoardStreamEvent = (
+        event: OrchestrationEvent,
+      ): Effect.Effect<
+        Option.Option<import("@t3tools/contracts").BoardStreamEvent>,
+        never,
+        never
+      > => {
+        if (event.type === "task.created") {
+          return projectionSnapshotQuery.getTaskById(TaskId.make(event.payload.taskId)).pipe(
+            Effect.map((task) =>
+              Option.map(task, (card) => ({
+                kind: "card-upserted" as const,
+                sequence: event.sequence,
+                card: {
+                  id: card.id,
+                  title: card.title,
+                  status: card.status,
+                  priority: card.priority,
+                  type: card.type,
+                  tags: card.tags,
+                  order: card.order,
+                },
+              })),
+            ),
+            Effect.catch(() => Effect.succeed(Option.none())),
+          );
+        }
+        if (event.type === "task.updated") {
+          return projectionSnapshotQuery.getTaskById(TaskId.make(event.payload.taskId)).pipe(
+            Effect.map((task) =>
+              Option.map(task, (card) => ({
+                kind: "card-upserted" as const,
+                sequence: event.sequence,
+                card: {
+                  id: card.id,
+                  title: card.title,
+                  status: card.status,
+                  priority: card.priority,
+                  type: card.type,
+                  tags: card.tags,
+                  order: card.order,
+                },
+              })),
+            ),
+            Effect.catch(() => Effect.succeed(Option.none())),
+          );
+        }
+        if (event.type === "task.deleted") {
+          return Effect.succeed(
+            Option.some({
+              kind: "card-removed" as const,
+              sequence: event.sequence,
+              cardId: event.payload.taskId,
+            }),
+          );
+        }
+        return Effect.succeed(Option.none());
+      };
 
       const toShellStreamEvent = (
         event: OrchestrationEvent,
@@ -739,6 +801,107 @@ const makeWsRpcLayer = (currentSessionId: AuthSessionId) =>
                     snapshotSequence,
                     thread: threadDetail.value,
                   },
+                }),
+                liveStream,
+              );
+            }),
+            { "rpc.aggregate": "orchestration" },
+          ),
+        [ORCHESTRATION_WS_METHODS.subscribeBoard]: (input) =>
+          observeRpcStreamEffect(
+            ORCHESTRATION_WS_METHODS.subscribeBoard,
+            Effect.gen(function* () {
+              const boardSnapshot = yield* projectionSnapshotQuery
+                .getBoardSnapshotByProjectId(input.projectId)
+                .pipe(
+                  Effect.mapError(
+                    (cause) =>
+                      new OrchestrationSubscribeBoardError({
+                        message: `Failed to load board for project ${input.projectId}`,
+                        cause,
+                      }),
+                  ),
+                );
+
+              if (Option.isNone(boardSnapshot)) {
+                return yield* new OrchestrationSubscribeBoardError({
+                  message: `Board for project ${input.projectId} was not found`,
+                  cause: input.projectId,
+                });
+              }
+
+              const liveStream = orchestrationEngine.streamDomainEvents.pipe(
+                Stream.mapEffect(toBoardStreamEvent),
+                Stream.flatMap((event) =>
+                  Option.isSome(event) ? Stream.succeed(event.value) : Stream.empty,
+                ),
+              );
+
+              return Stream.concat(
+                Stream.make({
+                  kind: "snapshot" as const,
+                  snapshot: boardSnapshot.value,
+                }),
+                liveStream,
+              );
+            }),
+            { "rpc.aggregate": "orchestration" },
+          ),
+        [ORCHESTRATION_WS_METHODS.subscribeTask]: (input) =>
+          observeRpcStreamEffect(
+            ORCHESTRATION_WS_METHODS.subscribeTask,
+            Effect.gen(function* () {
+              const task = yield* projectionSnapshotQuery
+                .getTaskById(TaskId.make(input.taskId))
+                .pipe(
+                  Effect.mapError(
+                    (cause) =>
+                      new OrchestrationSubscribeTaskError({
+                        message: `Failed to load task ${input.taskId}`,
+                        cause,
+                      }),
+                  ),
+                );
+
+              if (Option.isNone(task)) {
+                return yield* new OrchestrationSubscribeTaskError({
+                  message: `Task ${input.taskId} was not found`,
+                  cause: input.taskId,
+                });
+              }
+
+              const liveStream = orchestrationEngine.streamDomainEvents.pipe(
+                Stream.filter(
+                  (event) =>
+                    (event.type === "task.updated" ||
+                      event.type === "task.deleted" ||
+                      event.type === "task.archived" ||
+                      event.type === "task.unarchived") &&
+                    event.payload.taskId === input.taskId,
+                ),
+                Stream.map((event) => {
+                  if (event.type === "task.deleted") {
+                    return { kind: "deleted" as const, taskId: input.taskId };
+                  }
+                  if (event.type === "task.updated") {
+                    return {
+                      kind: "updated" as const,
+                      taskId: input.taskId,
+                      patch: event.payload.patch,
+                    };
+                  }
+                  return {
+                    kind: "updated" as const,
+                    taskId: input.taskId,
+                    patch: { status: event.type === "task.archived" ? "scrapped" : "todo" } as any,
+                  };
+                }),
+              );
+
+              return Stream.concat(
+                Stream.make({
+                  kind: "snapshot" as const,
+                  task: task.value,
                 }),
                 liveStream,
               );

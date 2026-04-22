@@ -23,6 +23,7 @@ const now = new Date().toISOString();
 const readModel: OrchestrationReadModel = {
   snapshotSequence: 2,
   updatedAt: now,
+  tasks: [],
   projects: [
     {
       id: ProjectId.make("project-a"),

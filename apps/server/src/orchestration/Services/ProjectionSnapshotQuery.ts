@@ -7,6 +7,7 @@
  * @module ProjectionSnapshotQuery
  */
 import type {
+  BoardSnapshot,
   OrchestrationCheckpointSummary,
   OrchestrationProject,
   OrchestrationProjectShell,
@@ -15,6 +16,7 @@ import type {
   OrchestrationThread,
   OrchestrationThreadShell,
   ProjectId,
+  TaskId,
   ThreadId,
 } from "@t3tools/contracts";
 import { Context } from "effect";
@@ -105,6 +107,23 @@ export interface ProjectionSnapshotQueryShape {
   readonly getThreadDetailById: (
     threadId: ThreadId,
   ) => Effect.Effect<Option.Option<OrchestrationThread>, ProjectionRepositoryError>;
+
+  /**
+   * Read the kanban board snapshot for a project.
+   */
+  readonly getBoardSnapshotByProjectId: (
+    projectId: ProjectId,
+  ) => Effect.Effect<Option.Option<BoardSnapshot>, ProjectionRepositoryError>;
+
+  /**
+   * Read a single task document by id.
+   */
+  readonly getTaskById: (
+    taskId: TaskId,
+  ) => Effect.Effect<
+    Option.Option<import("@t3tools/contracts").OrchestrationTask>,
+    ProjectionRepositoryError
+  >;
 }
 
 /**

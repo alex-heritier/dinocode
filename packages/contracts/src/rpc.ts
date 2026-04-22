@@ -47,6 +47,10 @@ import {
   OrchestrationReplayEventsError,
   OrchestrationReplayEventsInput,
   OrchestrationRpcSchemas,
+  OrchestrationSubscribeBoardError,
+  OrchestrationSubscribeBoardInput,
+  OrchestrationSubscribeTaskError,
+  OrchestrationSubscribeTaskInput,
 } from "./orchestration.ts";
 import {
   ProjectSearchEntriesError,
@@ -330,6 +334,20 @@ export const WsOrchestrationSubscribeThreadRpc = Rpc.make(
   },
 );
 
+export const WsOrchestrationSubscribeBoardRpc = Rpc.make(ORCHESTRATION_WS_METHODS.subscribeBoard, {
+  payload: OrchestrationSubscribeBoardInput,
+  success: OrchestrationRpcSchemas.subscribeBoard.output,
+  error: OrchestrationSubscribeBoardError,
+  stream: true,
+});
+
+export const WsOrchestrationSubscribeTaskRpc = Rpc.make(ORCHESTRATION_WS_METHODS.subscribeTask, {
+  payload: OrchestrationSubscribeTaskInput,
+  success: OrchestrationRpcSchemas.subscribeTask.output,
+  error: OrchestrationSubscribeTaskError,
+  stream: true,
+});
+
 export const WsSubscribeTerminalEventsRpc = Rpc.make(WS_METHODS.subscribeTerminalEvents, {
   payload: Schema.Struct({}),
   success: TerminalEvent,
@@ -393,4 +411,6 @@ export const WsRpcGroup = RpcGroup.make(
   WsOrchestrationReplayEventsRpc,
   WsOrchestrationSubscribeShellRpc,
   WsOrchestrationSubscribeThreadRpc,
+  WsOrchestrationSubscribeBoardRpc,
+  WsOrchestrationSubscribeTaskRpc,
 );

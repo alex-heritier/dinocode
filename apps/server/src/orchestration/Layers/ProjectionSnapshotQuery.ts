@@ -1,4 +1,5 @@
 import {
+  BoardSnapshot,
   ChatAttachment,
   IsoDateTime,
   MessageId,
@@ -7,8 +8,10 @@ import {
   OrchestrationProposedPlanId,
   OrchestrationReadModel,
   OrchestrationShellSnapshot,
+  OrchestrationTask,
   OrchestrationThread,
   ProjectScript,
+  TaskId,
   TurnId,
   type OrchestrationCheckpointSummary,
   type OrchestrationLatestTurn,
@@ -41,6 +44,7 @@ import { ProjectionThreadMessage } from "../../persistence/Services/ProjectionTh
 import { ProjectionThreadProposedPlan } from "../../persistence/Services/ProjectionThreadProposedPlans.ts";
 import { ProjectionThreadSession } from "../../persistence/Services/ProjectionThreadSessions.ts";
 import { ProjectionThread } from "../../persistence/Services/ProjectionThreads.ts";
+import { ProjectionTaskRepository } from "../../persistence/Services/ProjectionTasks.ts";
 import { RepositoryIdentityResolver } from "../../project/Services/RepositoryIdentityResolver.ts";
 import { ORCHESTRATION_PROJECTOR_NAMES } from "./ProjectionPipeline.ts";
 import {
@@ -934,6 +938,7 @@ const makeProjectionSnapshotQuery = Effect.gen(function* () {
                 snapshotSequence: computeSnapshotSequence(stateRows),
                 projects,
                 threads,
+                tasks: [],
                 updatedAt: updatedAt ?? new Date(0).toISOString(),
               };
 
@@ -1415,6 +1420,91 @@ const makeProjectionSnapshotQuery = Effect.gen(function* () {
       );
     });
 
+  const taskRepository = yield* ProjectionTaskRepository;
+
+  const getBoardSnapshotByProjectId: ProjectionSnapshotQueryShape["getBoardSnapshotByProjectId"] = (
+    projectId,
+  ) =>
+    Effect.gen(function* () {
+      const taskRows = yield* taskRepository
+        .listByProjectId(projectId)
+        .pipe(
+          Effect.mapError(
+            toPersistenceSqlError("ProjectionSnapshotQuery.getBoardSnapshotByProjectId:listTasks"),
+          ),
+        );
+      if (taskRows.length === 0) {
+        return Option.none();
+      }
+      type MutableColumn = {
+        id: BoardSnapshot["columns"][number]["id"];
+        title: string;
+        cards: Array<BoardSnapshot["columns"][number]["cards"][number]>;
+      };
+      const columns: MutableColumn[] = [
+        { id: "in-progress", title: "In Progress", cards: [] },
+        { id: "todo", title: "Todo", cards: [] },
+        { id: "draft", title: "Draft", cards: [] },
+        { id: "completed", title: "Completed", cards: [] },
+        { id: "scrapped", title: "Scrapped", cards: [] },
+      ];
+      for (const row of taskRows) {
+        const tags = row.tags ? (JSON.parse(row.tags) as string[]) : [];
+        const card = {
+          id: row.taskId,
+          title: row.title,
+          status: row.status,
+          priority: row.priority,
+          type: row.type,
+          tags,
+          order: row.orderKey,
+        };
+        const col = columns.find((c) => c.id === row.status);
+        if (col) col.cards.push(card);
+      }
+      for (const col of columns) {
+        col.cards.sort((a, b) => a.order.localeCompare(b.order));
+      }
+      const snapshot: BoardSnapshot = {
+        snapshotSequence: 0,
+        projectId,
+        columns: columns.filter((c) => c.cards.length > 0),
+        updatedAt: new Date().toISOString(),
+      };
+      return Option.some(snapshot);
+    });
+
+  const getTaskById: ProjectionSnapshotQueryShape["getTaskById"] = (taskId) =>
+    Effect.gen(function* () {
+      const row = yield* taskRepository
+        .getById(taskId)
+        .pipe(Effect.mapError(toPersistenceSqlError("ProjectionSnapshotQuery.getTaskById:query")));
+      if (Option.isNone(row)) return Option.none();
+      const r = row.value;
+      const task: OrchestrationTask = {
+        id: r.taskId,
+        projectId: r.projectId,
+        slug: r.slug,
+        title: r.title,
+        status: r.status,
+        type: r.type,
+        priority: r.priority,
+        tags: r.tags ? (JSON.parse(r.tags) as string[]) : [],
+        createdAt: r.createdAt,
+        updatedAt: r.updatedAt,
+        order: r.orderKey,
+        parent: r.parent,
+        blocking: r.blocking
+          ? (JSON.parse(r.blocking) as string[]).map((id) => TaskId.make(id))
+          : [],
+        blockedBy: r.blockedBy
+          ? (JSON.parse(r.blockedBy) as string[]).map((id) => TaskId.make(id))
+          : [],
+        body: r.body,
+      };
+      return Option.some(task);
+    });
+
   return {
     getSnapshot,
     getShellSnapshot,
@@ -1425,6 +1515,8 @@ const makeProjectionSnapshotQuery = Effect.gen(function* () {
     getThreadCheckpointContext,
     getThreadShellById,
     getThreadDetailById,
+    getBoardSnapshotByProjectId,
+    getTaskById,
   } satisfies ProjectionSnapshotQueryShape;
 });
 

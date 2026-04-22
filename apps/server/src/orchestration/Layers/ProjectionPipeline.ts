@@ -28,6 +28,7 @@ import {
   ProjectionTurnRepository,
 } from "../../persistence/Services/ProjectionTurns.ts";
 import { ProjectionThreadRepository } from "../../persistence/Services/ProjectionThreads.ts";
+import { ProjectionTaskRepository } from "../../persistence/Services/ProjectionTasks.ts";
 import { ProjectionPendingApprovalRepositoryLive } from "../../persistence/Layers/ProjectionPendingApprovals.ts";
 import { ProjectionProjectRepositoryLive } from "../../persistence/Layers/ProjectionProjects.ts";
 import { ProjectionStateRepositoryLive } from "../../persistence/Layers/ProjectionState.ts";
@@ -37,6 +38,7 @@ import { ProjectionThreadProposedPlanRepositoryLive } from "../../persistence/La
 import { ProjectionThreadSessionRepositoryLive } from "../../persistence/Layers/ProjectionThreadSessions.ts";
 import { ProjectionTurnRepositoryLive } from "../../persistence/Layers/ProjectionTurns.ts";
 import { ProjectionThreadRepositoryLive } from "../../persistence/Layers/ProjectionThreads.ts";
+import { ProjectionTaskRepositoryLive } from "../../persistence/Layers/ProjectionTasks.ts";
 import { ServerConfig } from "../../config.ts";
 import {
   OrchestrationProjectionPipeline,
@@ -59,6 +61,7 @@ export const ORCHESTRATION_PROJECTOR_NAMES = {
   threadTurns: "projection.thread-turns",
   checkpoints: "projection.checkpoints",
   pendingApprovals: "projection.pending-approvals",
+  tasks: "projection.tasks",
 } as const;
 
 type ProjectorName =
@@ -451,6 +454,7 @@ const makeOrchestrationProjectionPipeline = Effect.fn("makeOrchestrationProjecti
     const projectionThreadSessionRepository = yield* ProjectionThreadSessionRepository;
     const projectionTurnRepository = yield* ProjectionTurnRepository;
     const projectionPendingApprovalRepository = yield* ProjectionPendingApprovalRepository;
+    const projectionTaskRepository = yield* ProjectionTaskRepository;
 
     const fileSystem = yield* FileSystem.FileSystem;
     const path = yield* Path.Path;
@@ -514,6 +518,96 @@ const makeOrchestrationProjectionPipeline = Effect.fn("makeOrchestrationProjecti
           return;
       }
     });
+
+    const applyTasksProjection: ProjectorDefinition["apply"] = Effect.fn("applyTasksProjection")(
+      function* (event, _attachmentSideEffects) {
+        switch (event.type) {
+          case "task.created": {
+            const doc = event.payload.document;
+            yield* projectionTaskRepository.upsert({
+              taskId: doc.id,
+              projectId: event.payload.projectId,
+              slug: doc.slug,
+              title: doc.title,
+              status: doc.status,
+              type: doc.type,
+              priority: doc.priority,
+              tags: JSON.stringify(doc.tags),
+              createdAt: doc.createdAt,
+              updatedAt: doc.updatedAt,
+              orderKey: doc.order,
+              parent: doc.parent,
+              blocking: JSON.stringify(doc.blocking),
+              blockedBy: JSON.stringify(doc.blockedBy),
+              body: doc.body,
+              etag: "",
+              archivedAt: null,
+            });
+            return;
+          }
+
+          case "task.updated": {
+            const existingRow = yield* projectionTaskRepository.getById(event.payload.taskId);
+            if (Option.isNone(existingRow)) {
+              return;
+            }
+            const existing = existingRow.value;
+            const patch = event.payload.patch;
+            yield* projectionTaskRepository.upsert({
+              ...existing,
+              ...(patch.title !== undefined ? { title: patch.title } : {}),
+              ...(patch.status !== undefined ? { status: patch.status } : {}),
+              ...(patch.type !== undefined ? { type: patch.type } : {}),
+              ...(patch.priority !== undefined ? { priority: patch.priority } : {}),
+              ...(patch.tags !== undefined ? { tags: JSON.stringify(patch.tags) } : {}),
+              ...(patch.order !== undefined ? { orderKey: patch.order } : {}),
+              ...(patch.parent !== undefined ? { parent: patch.parent } : {}),
+              ...(patch.blocking !== undefined ? { blocking: JSON.stringify(patch.blocking) } : {}),
+              ...(patch.blockedBy !== undefined
+                ? { blockedBy: JSON.stringify(patch.blockedBy) }
+                : {}),
+              ...(patch.body !== undefined ? { body: patch.body } : {}),
+              updatedAt: new Date().toISOString(),
+            });
+            return;
+          }
+
+          case "task.deleted": {
+            yield* projectionTaskRepository.deleteById(event.payload.taskId);
+            return;
+          }
+
+          case "task.archived": {
+            const existingRow = yield* projectionTaskRepository.getById(event.payload.taskId);
+            if (Option.isNone(existingRow)) {
+              return;
+            }
+            yield* projectionTaskRepository.upsert({
+              ...existingRow.value,
+              archivedAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            });
+            return;
+          }
+
+          case "task.unarchived": {
+            const existingRow = yield* projectionTaskRepository.getById(event.payload.taskId);
+            if (Option.isNone(existingRow)) {
+              return;
+            }
+            yield* projectionTaskRepository.upsert({
+              ...existingRow.value,
+              archivedAt: null,
+              updatedAt: new Date().toISOString(),
+            });
+            return;
+          }
+
+          default:
+            return;
+        }
+      },
+    );
 
     const refreshThreadShellSummary = Effect.fn("refreshThreadShellSummary")(function* (
       threadId: ThreadId,
@@ -1371,6 +1465,10 @@ const makeOrchestrationProjectionPipeline = Effect.fn("makeOrchestrationProjecti
         name: ORCHESTRATION_PROJECTOR_NAMES.threads,
         apply: applyThreadsProjection,
       },
+      {
+        name: ORCHESTRATION_PROJECTOR_NAMES.tasks,
+        apply: applyTasksProjection,
+      },
     ];
 
     const runProjectorForEvent = Effect.fn("runProjectorForEvent")(function* (
@@ -1467,6 +1565,7 @@ export const OrchestrationProjectionPipelineLive = Layer.effect(
 ).pipe(
   Layer.provideMerge(ProjectionProjectRepositoryLive),
   Layer.provideMerge(ProjectionThreadRepositoryLive),
+  Layer.provideMerge(ProjectionTaskRepositoryLive),
   Layer.provideMerge(ProjectionThreadMessageRepositoryLive),
   Layer.provideMerge(ProjectionThreadProposedPlanRepositoryLive),
   Layer.provideMerge(ProjectionThreadActivityRepositoryLive),

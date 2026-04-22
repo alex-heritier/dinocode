@@ -91,6 +91,8 @@ describe("CheckpointDiffQueryLive", () => {
           getThreadCheckpointContext: () => Effect.succeed(Option.some(threadCheckpointContext)),
           getThreadShellById: () => Effect.succeed(Option.none()),
           getThreadDetailById: () => Effect.succeed(Option.none()),
+          getBoardSnapshotByProjectId: () => Effect.succeed(Option.none()),
+          getTaskById: () => Effect.succeed(Option.none()),
         }),
       ),
     );
@@ -150,6 +152,8 @@ describe("CheckpointDiffQueryLive", () => {
           getThreadCheckpointContext: () => Effect.succeed(Option.none()),
           getThreadShellById: () => Effect.succeed(Option.none()),
           getThreadDetailById: () => Effect.succeed(Option.none()),
+          getBoardSnapshotByProjectId: () => Effect.succeed(Option.none()),
+          getTaskById: () => Effect.succeed(Option.none()),
         }),
       ),
     );

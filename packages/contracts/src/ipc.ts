@@ -42,14 +42,18 @@ import type {
 } from "./terminal.ts";
 import type { ServerUpsertKeybindingInput } from "./server.ts";
 import type {
+  BoardStreamItem,
   ClientOrchestrationCommand,
   OrchestrationGetFullThreadDiffInput,
   OrchestrationGetFullThreadDiffResult,
   OrchestrationGetTurnDiffInput,
   OrchestrationGetTurnDiffResult,
   OrchestrationShellStreamItem,
+  OrchestrationSubscribeBoardInput,
+  OrchestrationSubscribeTaskInput,
   OrchestrationSubscribeThreadInput,
   OrchestrationThreadStreamItem,
+  TaskStreamItem,
 } from "./orchestration.ts";
 import type { EnvironmentId } from "./baseSchemas.ts";
 import { EditorId } from "./editor.ts";
@@ -284,6 +288,20 @@ export interface EnvironmentApi {
     subscribeThread: (
       input: OrchestrationSubscribeThreadInput,
       callback: (event: OrchestrationThreadStreamItem) => void,
+      options?: {
+        onResubscribe?: () => void;
+      },
+    ) => () => void;
+    subscribeBoard: (
+      input: OrchestrationSubscribeBoardInput,
+      callback: (event: BoardStreamItem) => void,
+      options?: {
+        onResubscribe?: () => void;
+      },
+    ) => () => void;
+    subscribeTask: (
+      input: OrchestrationSubscribeTaskInput,
+      callback: (event: TaskStreamItem) => void,
       options?: {
         onResubscribe?: () => void;
       },
