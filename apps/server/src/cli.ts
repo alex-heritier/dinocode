@@ -57,7 +57,7 @@ import { OrchestrationEngineService } from "./orchestration/Services/Orchestrati
 import { ProjectionSnapshotQuery } from "./orchestration/Services/ProjectionSnapshotQuery.ts";
 import { OrchestrationLayerLive } from "./orchestration/runtimeLayer.ts";
 import { layerConfig as SqlitePersistenceLayerLive } from "./persistence/Layers/Sqlite.ts";
-import { RepositoryIdentityResolverLive } from "./project/Layers/RepositoryIdentityResolver.ts";
+import { RepositoryIdentityResolverConfiguredLive } from "./project/Layers/RepositoryIdentityResolver.ts";
 import { getAutoBootstrapDefaultModelSelection } from "./serverRuntimeStartup.ts";
 import {
   clearPersistedServerRuntimeState,
@@ -492,7 +492,7 @@ type ProjectCliDispatchCommand = Extract<
 const ProjectCliRuntimeLive = Layer.mergeAll(
   WorkspacePathsLive,
   OrchestrationLayerLive.pipe(
-    Layer.provideMerge(RepositoryIdentityResolverLive),
+    Layer.provideMerge(RepositoryIdentityResolverConfiguredLive),
     Layer.provideMerge(SqlitePersistenceLayerLive),
   ),
 );

@@ -1,8 +1,13 @@
 import type { RepositoryIdentity } from "@t3tools/contracts";
+import {
+  DEFAULT_REPOSITORY_IDENTITY_PREFERRED_REMOTE_NAME,
+  type RepositoryIdentityPreferredRemoteName,
+} from "@t3tools/contracts/settings";
 import { Cache, Duration, Effect, Exit, Layer } from "effect";
 import { detectGitHostingProviderFromRemoteUrl, normalizeGitRemoteUrl } from "@t3tools/shared/git";
 
 import { runProcess } from "../../processRunner.ts";
+import { ServerSettingsLive, ServerSettingsService } from "../../serverSettings.ts";
 import {
   RepositoryIdentityResolver,
   type RepositoryIdentityResolverShape,
@@ -26,8 +31,12 @@ function parseRemoteFetchUrls(stdout: string): Map<string, string> {
 
 function pickPrimaryRemote(
   remotes: ReadonlyMap<string, string>,
+  preferredRemoteName: RepositoryIdentityPreferredRemoteName,
 ): { readonly remoteName: string; readonly remoteUrl: string } | null {
-  for (const preferredRemoteName of ["upstream", "origin"] as const) {
+  const remoteNamePreferenceOrder: ReadonlyArray<RepositoryIdentityPreferredRemoteName> =
+    preferredRemoteName === "upstream" ? ["upstream", "origin"] : ["origin", "upstream"];
+
+  for (const preferredRemoteName of remoteNamePreferenceOrder) {
     const remoteUrl = remotes.get(preferredRemoteName);
     if (remoteUrl) {
       return { remoteName: preferredRemoteName, remoteUrl };
@@ -66,6 +75,37 @@ function buildRepositoryIdentity(input: {
   };
 }
 
+function makeRepositoryIdentityCacheKey(
+  rootPath: string,
+  preferredRemoteName: RepositoryIdentityPreferredRemoteName,
+): string {
+  return JSON.stringify([rootPath, preferredRemoteName]);
+}
+
+function parseRepositoryIdentityCacheKey(cacheKey: string): {
+  readonly rootPath: string;
+  readonly preferredRemoteName: RepositoryIdentityPreferredRemoteName;
+} {
+  try {
+    const parsed = JSON.parse(cacheKey) as unknown;
+    if (Array.isArray(parsed) && typeof parsed[0] === "string") {
+      const preferredRemoteName =
+        parsed[1] === "upstream" ? "upstream" : DEFAULT_REPOSITORY_IDENTITY_PREFERRED_REMOTE_NAME;
+      return {
+        rootPath: parsed[0],
+        preferredRemoteName,
+      };
+    }
+  } catch {
+    // Fall through to the raw cache key for older in-memory entries.
+  }
+
+  return {
+    rootPath: cacheKey,
+    preferredRemoteName: DEFAULT_REPOSITORY_IDENTITY_PREFERRED_REMOTE_NAME,
+  };
+}
+
 const DEFAULT_REPOSITORY_IDENTITY_CACHE_CAPACITY = 512;
 const DEFAULT_POSITIVE_CACHE_TTL = Duration.minutes(1);
 const DEFAULT_NEGATIVE_CACHE_TTL = Duration.minutes(1);
@@ -74,9 +114,13 @@ interface RepositoryIdentityResolverOptions {
   readonly cacheCapacity?: number;
   readonly positiveCacheTtl?: Duration.Input;
   readonly negativeCacheTtl?: Duration.Input;
+  readonly getPreferredRemoteName?: () => Effect.Effect<RepositoryIdentityPreferredRemoteName>;
 }
 
-async function resolveRepositoryIdentityCacheKey(cwd: string): Promise<string> {
+async function resolveRepositoryIdentityCacheKey(
+  cwd: string,
+  preferredRemoteName: RepositoryIdentityPreferredRemoteName,
+): Promise<string> {
   let cacheKey = cwd;
 
   try {
@@ -95,22 +139,26 @@ async function resolveRepositoryIdentityCacheKey(cwd: string): Promise<string> {
     return cacheKey;
   }
 
-  return cacheKey;
+  return makeRepositoryIdentityCacheKey(cacheKey, preferredRemoteName);
 }
 
 async function resolveRepositoryIdentityFromCacheKey(
   cacheKey: string,
 ): Promise<RepositoryIdentity | null> {
   try {
-    const remoteResult = await runProcess("git", ["-C", cacheKey, "remote", "-v"], {
+    const { rootPath, preferredRemoteName } = parseRepositoryIdentityCacheKey(cacheKey);
+    const remoteResult = await runProcess("git", ["-C", rootPath, "remote", "-v"], {
       allowNonZeroExit: true,
     });
     if (remoteResult.code !== 0) {
       return null;
     }
 
-    const remote = pickPrimaryRemote(parseRemoteFetchUrls(remoteResult.stdout));
-    return remote ? buildRepositoryIdentity({ ...remote, rootPath: cacheKey }) : null;
+    const remote = pickPrimaryRemote(
+      parseRemoteFetchUrls(remoteResult.stdout),
+      preferredRemoteName,
+    );
+    return remote ? buildRepositoryIdentity({ ...remote, rootPath }) : null;
   } catch {
     return null;
   }
@@ -135,7 +183,13 @@ export const makeRepositoryIdentityResolver = Effect.fn("makeRepositoryIdentityR
     const resolve: RepositoryIdentityResolverShape["resolve"] = Effect.fn(
       "RepositoryIdentityResolver.resolve",
     )(function* (cwd) {
-      const cacheKey = yield* Effect.promise(() => resolveRepositoryIdentityCacheKey(cwd));
+      const preferredRemoteName = yield* (
+        options.getPreferredRemoteName?.() ??
+          Effect.succeed(DEFAULT_REPOSITORY_IDENTITY_PREFERRED_REMOTE_NAME)
+      );
+      const cacheKey = yield* Effect.promise(() =>
+        resolveRepositoryIdentityCacheKey(cwd, preferredRemoteName),
+      );
       return yield* Cache.get(repositoryIdentityCache, cacheKey);
     });
 
@@ -149,3 +203,20 @@ export const RepositoryIdentityResolverLive = Layer.effect(
   RepositoryIdentityResolver,
   makeRepositoryIdentityResolver(),
 );
+
+const RepositoryIdentityResolverConfiguredLayer = Layer.effect(
+  RepositoryIdentityResolver,
+  Effect.gen(function* () {
+    const serverSettings = yield* ServerSettingsService;
+    return yield* makeRepositoryIdentityResolver({
+      getPreferredRemoteName: () =>
+        serverSettings.getSettings.pipe(
+          Effect.map((settings) => settings.repositoryIdentityPreferredRemoteName),
+          Effect.orElseSucceed(() => DEFAULT_REPOSITORY_IDENTITY_PREFERRED_REMOTE_NAME),
+        ),
+    });
+  }),
+);
+
+export const RepositoryIdentityResolverConfiguredLive =
+  RepositoryIdentityResolverConfiguredLayer.pipe(Layer.provideMerge(ServerSettingsLive));

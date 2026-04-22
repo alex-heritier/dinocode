@@ -22,6 +22,7 @@ const git = (cwd: string, args: ReadonlyArray<string>) =>
 const makeRepositoryIdentityResolverTestLayer = (options: {
   readonly positiveCacheTtl?: Duration.Input;
   readonly negativeCacheTtl?: Duration.Input;
+  readonly getPreferredRemoteName?: () => Effect.Effect<"origin" | "upstream">;
 }) =>
   Layer.effect(
     RepositoryIdentityResolver,
@@ -97,7 +98,28 @@ it.layer(NodeServices.layer)("RepositoryIdentityResolverLive", (it) => {
     }).pipe(Effect.provide(RepositoryIdentityResolverLive)),
   );
 
-  it.effect("prefers upstream over origin when both remotes are configured", () =>
+  it.effect("prefers origin over upstream by default", () =>
+    Effect.gen(function* () {
+      const fileSystem = yield* FileSystem.FileSystem;
+      const cwd = yield* fileSystem.makeTempDirectoryScoped({
+        prefix: "t3-repository-identity-origin-test-",
+      });
+
+      yield* git(cwd, ["init"]);
+      yield* git(cwd, ["remote", "add", "origin", "git@github.com:julius/t3code.git"]);
+      yield* git(cwd, ["remote", "add", "upstream", "git@github.com:T3Tools/t3code.git"]);
+
+      const resolver = yield* RepositoryIdentityResolver;
+      const identity = yield* resolver.resolve(cwd);
+
+      expect(identity).not.toBeNull();
+      expect(identity?.locator.remoteName).toBe("origin");
+      expect(identity?.canonicalKey).toBe("github.com/julius/t3code");
+      expect(identity?.displayName).toBe("julius/t3code");
+    }).pipe(Effect.provide(RepositoryIdentityResolverLive)),
+  );
+
+  it.effect("prefers upstream when configured", () =>
     Effect.gen(function* () {
       const fileSystem = yield* FileSystem.FileSystem;
       const cwd = yield* fileSystem.makeTempDirectoryScoped({
@@ -115,7 +137,13 @@ it.layer(NodeServices.layer)("RepositoryIdentityResolverLive", (it) => {
       expect(identity?.locator.remoteName).toBe("upstream");
       expect(identity?.canonicalKey).toBe("github.com/t3tools/t3code");
       expect(identity?.displayName).toBe("t3tools/t3code");
-    }).pipe(Effect.provide(RepositoryIdentityResolverLive)),
+    }).pipe(
+      Effect.provide(
+        makeRepositoryIdentityResolverTestLayer({
+          getPreferredRemoteName: () => Effect.succeed("upstream"),
+        }),
+      ),
+    ),
   );
 
   it.effect("uses the last remote path segment as the repository name for nested groups", () =>
