@@ -1,6 +1,6 @@
 # DINOCODE Specification
 
-> **Status**: Draft v0.1  
+> **Status**: Draft v0.2  
 > **Last updated**: 2026-04-22  
 > **Scope**: Architecture, data model, and integration spec for combining t3code (agent GUI), cline/kanban (parallel task orchestration), and beans (flat-file in-repo task tracking) into a unified developer experience.
 
@@ -18,10 +18,25 @@ The result: a single interface where you can decompose work into tasks, watch ag
 
 ### Core Principles
 
-1. **File-first**: Tasks live as files in the repo. The UI is a view over the filesystem. No opaque database is the source of truth.
+1. **File-first**: Tasks live as files in the repo. The UI is a view over the filesystem. Agents and humans read/write the same Markdown files.
 2. **Parallel by default**: Every task runs in its own git worktree. Agents never block each other.
 3. **Minimal chrome**: The UI gets out of the way. Keyboard-driven, low latency, no modal fatigue.
 4. **Agent-native**: The system is designed for agents to read and write tasks, not just humans.
+
+### Canonical Data Model
+
+The existing t3code architecture is **event-sourced** (SQLite `orchestration_events` table) with a **pure decider + projector** pattern. Dinocode does not replace this — it extends it:
+
+- **Orchestration commands** (`task.create`, `task.update`, etc.) remain the entry point for all mutations.
+- **SQLite event store** remains the canonical transaction log (fast, serialized, deduplicated via command receipts).
+- **File Store reactor** writes task files to `.dinocode/tasks/*.md` after events are persisted.
+- **File watcher** detects external edits (from agents or other processes) and dispatches them back into the orchestration engine as commands with ETag validation.
+
+This means:
+
+- The filesystem is the **agent-visible source of truth**.
+- The SQLite event log is the **server-internal source of truth**.
+- Both are kept in sync via reactors and watchers.
 
 ---
 
@@ -106,11 +121,25 @@ The product ships as a **packaged Electron app** (`apps/desktop`). This is not a
 | **Renderer UI**       | t3code base | React 19 + Vite + Tailwind inside Chromium. Chat, kanban, terminal, diffs. Zustand state.   |
 | **WebSocket RPC**     | t3code base | Effect RPC over native WebSocket. Typed streaming. Auto-reconnect.                          |
 | **Orchestration**     | t3code base | Event-sourced command/event processing. Pure decider + projector pattern.                   |
-| **File Store**        | **beans**   | Reads/writes `.dinocode/tasks/` Markdown files. Watches filesystem. Builds in-memory index. |
+| **File Store**        | **beans**   | Reactor: writes `.dinocode/tasks/*.md` after events. Watcher: detects external edits.       |
 | **Provider Adapters** | t3code base | Codex, Claude, Cursor, OpenCode adapters. Spawn stdio JSON-RPC or PTY.                      |
 | **Git Manager**       | **kanban**  | Worktree creation, symlinking gitignored dirs, patch capture on trash, diff computation.    |
 | **Terminal**          | **kanban**  | node-pty sessions per task. Multi-viewer WebSocket bridge with backpressure.                |
 | **Event Store**       | t3code base | SQLite WAL event log for orchestration events. Projections for read models.                 |
+
+### 2.4 Existing Codebase Realities
+
+The following t3code infrastructure already exists and should be reused:
+
+- **Effect-TS Layers** — `Layer.provideMerge` composition in `apps/server/src/server.ts`.
+- **Event sourcing** — `decider.ts` (pure), `projector.ts` (SQLite + in-memory read model), `OrchestrationEngineService` (serialized dispatch queue).
+- **Git worktrees** — `git.createWorktree`, `git.removeWorktree`, `Thread.worktreePath` already in contracts and server.
+- **Terminals** — `TerminalManager` with multi-viewer support and backpressure already exists.
+- **WebSocket RPC** — `WsRpcGroup` in `packages/contracts/src/rpc.ts` with streaming subscriptions.
+- **Drag-and-drop** — `@dnd-kit/core` and `@dnd-kit/sortable` already in `apps/web/package.json`.
+- **Dual-stream state** — `apps/web/src/store.ts` uses shell stream (sidebar) + detail stream (messages/activities). Board data follows the same pattern.
+- **No barrel exports** — `packages/shared` uses explicit subpath exports (e.g. `@t3tools/shared/git`). Follow this for all new shared code.
+- **Schema-only contracts** — `packages/contracts` must remain schema-only with no runtime logic.
 
 ---
 
@@ -408,29 +437,35 @@ Because `.dinocode/tasks/` lives inside the repo:
 1. User clicks "New Task" in kanban UI or types in sidebar chat.
 2. Web app dispatches `task.create` orchestration command.
 3. Server decider validates and emits `task.created` event.
-4. File store reactor writes a new `.dinocode/tasks/<id>--<slug>.md` file.
-5. Projector updates SQLite read model.
-6. WebSocket stream pushes updated board projection to all clients.
+4. Event is persisted to SQLite `orchestration_events`.
+5. File Store reactor writes a new `.dinocode/tasks/<id>--<slug>.md` file.
+6. Projector updates in-memory read model and `projection_tasks` SQLite table.
+7. WebSocket stream pushes updated board projection to all clients.
 
 ### 7.2 Starting a Task (Agent)
 
 1. User clicks "Play" on a kanban card.
 2. Web app dispatches `thread.turn.start` with the task's thread ID.
-3. Server ensures worktree exists (`git worktree add`).
+3. Server ensures worktree exists (`git worktree add`) — reuses existing `GitCore` service.
 4. Provider adapter resolves agent binary + args + hooks.
-5. PTY session starts in the worktree directory.
+5. PTY session starts in the worktree directory — reuses existing `TerminalManager`.
 6. Provider runtime events stream through `ProviderRuntimeIngestion`.
 7. Hook events (`to_review`) trigger status file updates.
 8. Orchestration events are persisted to SQLite event store.
 9. Projector updates read models; WebSocket pushes to clients.
 
-### 7.3 Editing a Task (Agent)
+### 7.3 Editing a Task (External / Agent)
 
 1. Agent (running in worktree) edits a task file directly, or calls `dinocode task update <id> --status review`.
-2. File store watcher detects the change.
+2. File Store watcher detects the filesystem change.
 3. File is parsed and validated against schema.
-4. Orchestration command `task.update` is auto-dispatched with ETag validation.
-5. Events emitted; projector updates; clients refresh.
+4. ETag is computed and compared to the last known version.
+5. Orchestration command `task.update` is auto-dispatched with ETag validation.
+6. Decider validates; events persisted to SQLite.
+7. File Store reactor re-writes the file (idempotent if no changes).
+8. Projector updates; clients refresh.
+
+> **Important**: The file watcher is the _only_ path for external edits. Humans editing files in their editor go through the same flow as agents. This prevents the filesystem and SQLite from diverging.
 
 ---
 
@@ -491,32 +526,55 @@ Because `.dinocode/tasks/` lives inside the repo:
 
 ### 9.1 WebSocket RPC Methods
 
-Dinocode extends t3code's existing Effect RPC schema with task-oriented methods:
+Dinocode extends t3code's existing Effect RPC schema with task-oriented methods. All new methods follow the existing `WsRpcGroup` pattern in `packages/contracts/src/rpc.ts`.
+
+**Task commands** (dispatched via existing `orchestration.dispatchCommand`):
 
 ```typescript
-// Task commands
-orchestration.dispatchCommand({
-  type: 'task.create' | 'task.update' | 'task.delete' | 'task.archive'
-});
+type TaskCommand =
+  | { type: 'task.create'; projectId: ProjectId; taskId: TaskId; title: string; status: TaskStatus; ... }
+  | { type: 'task.update'; taskId: TaskId; expectedEtag?: string; patch: TaskPatch }
+  | { type: 'task.delete'; taskId: TaskId }
+  | { type: 'task.archive'; taskId: TaskId }
+  | { type: 'task.unarchive'; taskId: TaskId }
+  | { type: 'task.bind-thread'; taskId: TaskId; threadId: ThreadId };
+```
 
-// Board subscription
-orchestration.subscribeBoard({ projectId }): Stream<BoardSnapshot>;
+**New subscription streams**:
 
-// Task detail subscription
-orchestration.subscribeTask({ taskId }): Stream<TaskDetail>;
+```typescript
+// Board subscription — pushes BoardSnapshot + BoardStreamEvent
+orchestration.subscribeBoard({ projectId }): Stream<BoardStreamItem>;
 
-// Thread / session (existing t3code)
+// Task detail subscription — pushes TaskDetail + TaskEvent
+orchestration.subscribeTask({ taskId }): Stream<TaskStreamItem>;
+```
+
+**Thread / session** (existing t3code, no changes):
+
+```typescript
 orchestration.subscribeThread({ threadId }): Stream<ThreadDetail>;
 orchestration.dispatchCommand({ type: 'thread.turn.start', ... });
+```
 
-// Git (existing t3code + kanban)
-git.createWorktree({ taskId, baseRef });
-git.getTaskDiff({ taskId, mode: 'working' | 'turn' });
-git.integrateTask({ taskId, mode: 'squash' | 'pr' });
+**Git** (existing t3code, reuse for tasks):
 
-// Terminal (kanban)
-terminal.open({ taskId });
-terminal.subscribe({ taskId }): Stream<TerminalEvent>;
+```typescript
+// Already exists — just pass task's worktree path as `cwd`
+git.createWorktree({ cwd, branch, newBranch });
+git.removeWorktree({ cwd });
+
+// New convenience methods
+git.getTaskDiff({ taskId, mode: "working" | "turn" });
+git.integrateTask({ taskId, mode: "squash" | "pr" });
+```
+
+**Terminal** (existing t3code, reuse for tasks):
+
+```typescript
+// Already exists — terminal is keyed by threadId, which is bound 1:1 to task
+terminal.open({ threadId });
+terminal.subscribe({ threadId }): Stream<TerminalEvent>;
 ```
 
 ### 9.2 File Store API (Server-Internal)
@@ -556,42 +614,53 @@ interface FileStore {
 
 ### Phase 1: File Store Foundation
 
-- [ ] Implement `FileStore` service in `apps/server/src/fileStore/`.
+- [ ] Implement `FileStore` service in `apps/server/src/fileStore/` (follow Effect Layer pattern).
 - [ ] Task parser: Markdown + YAML front matter → `Task` schema.
-- [ ] Task writer: `Task` schema → Markdown file with ETag.
-- [ ] File watcher: `node:fs` watch → orchestration commands.
-- [ ] Add `task.*` commands/events to orchestration decider.
-- [ ] Add `projection_tasks` SQLite table.
+- [ ] Task writer: `Task` schema → Markdown file with ETag (FNV-1a of full rendered content).
+- [ ] File watcher: `node:fs` watch on `.dinocode/tasks/` → auto-dispatch `task.update` commands.
+- [ ] Add `task.*` commands/events to `packages/contracts/src/orchestration.ts`.
+- [ ] Extend decider (`apps/server/src/orchestration/decider.ts`) with task command handling.
+- [ ] Extend projector (`apps/server/src/orchestration/projector.ts`) with task event projection.
+- [ ] Add invariants to `commandInvariants.ts` (requireTask, requireTaskAbsent, etc.).
+- [ ] Add `projection_tasks` SQLite table (new migration `026_ProjectionTasks.ts`).
+- [ ] Add `FileStoreReactor` (`apps/server/src/orchestration/Layers/FileStoreReactor.ts`) — writes files after events commit.
 
 ### Phase 2: Kanban Projection
 
+- [ ] Extend `OrchestrationReadModel` with `tasks` array.
 - [ ] Build board projector: read `projection_tasks` + `config.yml` → `BoardSnapshot`.
-- [ ] Add `subscribeBoard` RPC stream.
-- [ ] React kanban board component (reuse `@hello-pangea/dnd` or similar).
-- [ ] Drag-and-drop mutations: update `status` and `order` fields.
-- [ ] Card detail panel shell.
+- [ ] Add `subscribeBoard` and `subscribeTask` RPC streams to `packages/contracts/src/rpc.ts`.
+- [ ] Implement handlers in `apps/server/src/ws.ts`.
+- [ ] React kanban board route: `apps/web/src/routes/_chat.board.$environmentId.$projectId.tsx`.
+- [ ] React kanban board components (`apps/web/src/components/board/`):
+  - `KanbanBoard.tsx`, `KanbanColumn.tsx`, `KanbanCard.tsx`, `TaskDetailPanel.tsx`.
+- [ ] Drag-and-drop via existing `@dnd-kit/core` + `@dnd-kit/sortable`.
+- [ ] Extend `EnvironmentState` in `apps/web/src/store.ts` with task slices (follow dual-stream pattern).
+- [ ] Card detail panel shell (terminal, diff, files, chat tabs).
 
-### Phase 3: Worktree & Terminal
+### Phase 3: Worktree & Terminal Binding
 
-- [ ] Port kanban's `task-worktree.ts` to t3code's git layer.
-- [ ] Per-task PTY session management.
-- [ ] Terminal WebSocket bridge with multi-viewer support.
-- [ ] Symlink gitignored paths optimization.
+- [ ] Reuse existing `git.createWorktree` for task worktrees (`~/.dinocode/worktrees/<project>/<taskId>/`).
+- [ ] Add `task_id` nullable column to `projection_threads`.
+- [ ] Bind threads to tasks (1:1) via `thread.meta.update` or new `task.bind-thread` command.
+- [ ] Auto-ensure worktree exists when `thread.turn.start` is dispatched for a task-bound thread.
+- [ ] Terminal in detail panel — reuse existing `terminal.open` with task-derived `threadId`.
+- [ ] Symlink gitignored dirs (`node_modules`) from main repo to worktree.
 
 ### Phase 4: Provider Integration
 
-- [ ] Bind threads to tasks (1:1 relationship).
-- [ ] Auto-spawn provider in worktree on `thread.turn.start`.
-- [ ] Inject hook environment variables and configs.
-- [ ] Hook ingest endpoint → orchestration commands.
-- [ ] Checkpointing on turn boundaries.
+- [ ] Auto-spawn provider in task worktree on `thread.turn.start`.
+- [ ] Inject hook environment: `KANBAN_HOOK_TASK_ID`, `KANBAN_HOOK_PROJECT_ID`, `KANBAN_HOOK_PORT`.
+- [ ] Provider-specific hook configs (Cline bash hooks, Claude settings.json, Codex wrapper).
+- [ ] Hook ingest endpoint/CLI → `task.update` orchestration commands.
+- [ ] Checkpointing on turn boundaries — reuse existing `CheckpointReactor`.
 
 ### Phase 5: Automation
 
-- [ ] Dependency linking UI + storage.
-- [ ] Auto-start logic: unblocker completion triggers next task.
-- [ ] Auto-review modes (commit / PR / complete).
-- [ ] Sidebar home agent with injected task management prompts.
+- [ ] Dependency linking UI (`blocking`/`blocked_by`) — Cmd+click card → target card.
+- [ ] Auto-start logic: when blockers all `completed`, auto-dispatch `thread.turn.start`.
+- [ ] Auto-review modes (commit / PR / complete) per `autoReview` flag.
+- [ ] Sidebar home agent (`__home_agent__:<projectId>`) with injected task management prompts.
 
 ### Phase 6: Polish
 
@@ -602,26 +671,107 @@ interface FileStore {
 
 ---
 
-## 12. Open Questions
+## 12. Decisions & Open Questions
 
-1. **Should we keep t3code's SQLite as the canonical event store, or move some events to the filesystem?**  
-   _Tentative_: Keep SQLite for orchestration events (fast, transactional), but task CRUD events should always round-trip through the filesystem so agents can observe changes.
+### Resolved
 
-2. **How do we handle merge conflicts when both an agent and a human edit the same task file?**  
-   _Tentative_: ETag optimistic concurrency. If conflict detected, server emits a `task.conflict` event; UI shows a three-way merge view.
+1. **SQLite vs filesystem canonical?**
+   **Resolved**: Keep SQLite `orchestration_events` as the canonical transaction log (fast, serialized, deduplicated). The File Store reactor writes to `.dinocode/tasks/*.md` after every task event. A file watcher detects external edits and re-ingests them as `task.update` commands with ETag validation. This satisfies the "file-first" principle (agents see human-readable files) without replacing the proven event-sourcing backbone.
 
-3. **Should `.dinocode/` be auto-initialized when a user opens a repo without it?**  
-   _Tentative_: Yes. Prompt the user with a one-click "Initialize Dinocode for this project" banner.
+2. **How do we handle merge conflicts when both an agent and a human edit the same task file?**
+   **Resolved**: ETag optimistic concurrency. The ETag is an FNV-1a hash of the full rendered Markdown content. If the file on disk has changed since the last read, the auto-dispatched `task.update` command fails validation and the server emits a `task.conflict` event. The UI shows a three-way merge view (base / local / remote).
 
-4. **How do we support non-git repos?**  
-   _Tentative_: Task files still work, but worktrees and checkpointing are disabled. Agents run in the main repo directory.
+3. **Should `.dinocode/` be auto-initialized when a user opens a repo without it?**
+   **Resolved**: Yes. The web UI detects missing `.dinocode/config.yml` and shows a one-click "Initialize Dinocode for this project" banner. Initialization creates the directory structure, default config, and an initial `.gitignore`.
 
-5. **What is the migration path from t3code's existing thread-centric model to task-centric?**  
-   _Tentative_: Threads without tasks become "ad-hoc tasks" with auto-generated files. Existing SQLite data is preserved via projection migration.
+4. **How do we support non-git repos?**
+   **Resolved**: Task files work everywhere. Worktrees and checkpointing are silently disabled when `git` is unavailable. Agents run in the main repo directory. The UI shows a "Git not available" indicator instead of worktree-related actions.
+
+5. **What is the migration path from t3code's existing thread-centric model to task-centric?**
+   **Resolved**: Threads without tasks become "ad-hoc tasks" with auto-generated `.dinocode/tasks/*.md` files (using a derived slug from the thread title). Existing SQLite data is preserved via projection migration. The `projection_threads` table gains a nullable `task_id` column. Over time, users can promote ad-hoc tasks to fully-specified tasks.
+
+### Open
+
+6. **Should the board projection live in the shell stream or a separate stream?**
+   _Tentative_: Separate `subscribeBoard` stream, but the shell stream should include minimal task metadata (counts per status) so the sidebar can show badges without subscribing to the full board.
+
+7. **How do we handle task file renames (slug changes) while preserving event history?**
+   _Tentative_: The task `id` (e.g. `dnc-0ajg`) is immutable and used for the event stream. The filename slug is purely cosmetic; renames are handled by deleting the old file and writing a new one in the File Store reactor, without emitting a task event.
+
+8. **Should archived tasks be moved to `.dinocode/tasks/archive/` or stay in place with an `archived` status?**
+   _Tentative_: Move to `archive/` subfolder. The file watcher treats moves as implicit status changes (orchestration dispatches `task.archive` on move-in, `task.unarchive` on move-out).
 
 ---
 
-## 13. Appendix: Reference Repos
+## 13. Integration Patterns (How to Add New Features)
+
+The codebase follows strict conventions. New features must adhere to these patterns:
+
+### Server Pattern (Effect-TS)
+
+1. **Define contracts first** in `packages/contracts/src/`:
+   - Schema types using `effect/Schema`
+   - RPC definitions using `effect/unstable/rpc`
+   - Add to `ORCHESTRATION_WS_METHODS` and `WS_METHODS`
+   - Register in `WsRpcGroup`
+
+2. **Add migration** in `apps/server/src/persistence/Migrations/`:
+   - Statically import in `Migrations.ts`
+   - Create projection tables for read models
+   - Use `effect/unstable/sql/SqlClient`
+
+3. **Add decider logic** in `apps/server/src/orchestration/decider.ts`:
+   - Handle new command types in `decideOrchestrationCommand`
+   - Validate invariants in `commandInvariants.ts` (never skip this)
+
+4. **Add projector logic** in `apps/server/src/orchestration/projector.ts`:
+   - Update `OrchestrationReadModel`
+   - Update SQLite projection tables
+   - Handle both insert and update paths (idempotent)
+
+5. **Add reactor** (if side effects needed):
+   - Define interface in `Services/MyReactor.ts`
+   - Implement in `Layers/MyReactor.ts`
+   - Register in `OrchestrationReactor.ts` startup sequence
+
+6. **Add RPC handlers** in `apps/server/src/ws.ts`:
+   - Inside `makeWsRpcLayer`, add methods to `WsRpcGroup.of({})`
+   - Use `observeRpcEffect` for one-shot, `observeRpcStreamEffect` for streams
+
+7. **Wire layers** in `apps/server/src/server.ts`:
+   - Add `Layer.provideMerge(MyLayerLive)` to `RuntimeDependenciesLive`
+
+### Web Pattern
+
+1. **Add route** in `apps/web/src/routes/`:
+   - Use `createFileRoute` from TanStack Router
+   - Follow `_chat.` prefix for authenticated routes
+   - Register in route tree (auto-generated via `routeTree.gen`)
+
+2. **Add components** in `apps/web/src/components/`:
+   - Use existing UI primitives from `components/ui/`
+   - Use Tailwind for styling
+   - Keep files <500 LOC; split aggressively
+
+3. **Extend store** in `apps/web/src/store.ts`:
+   - Add new state slices to `EnvironmentState`
+   - Add sync/apply reducer functions (follow dual-stream pattern)
+   - Use structural equality checks to prevent unnecessary re-renders
+
+4. **Add RPC hooks** in `apps/web/src/rpc/`:
+   - Use TanStack Query or Effect atoms for subscription management
+   - Follow existing patterns in `serverState.ts` or `orchestrationEventEffects.ts`
+
+### Testing
+
+- Decider logic: add tests in `apps/server/src/orchestration/decider.test.ts` (or adjacent to the feature)
+- File Store: add tests in `apps/server/src/fileStore/fileStore.test.ts`
+- Web components: use Vitest with `@testing-library/react`
+- Integration: use existing `OrchestrationEngineHarness.integration.ts`
+
+---
+
+## 14. Appendix: Reference Repos
 
 | Repo         | URL                                         | Role                                                              |
 | ------------ | ------------------------------------------- | ----------------------------------------------------------------- |
