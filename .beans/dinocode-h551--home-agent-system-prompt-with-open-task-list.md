@@ -5,8 +5,10 @@ status: todo
 type: task
 priority: normal
 created_at: 2026-04-22T07:14:50Z
-updated_at: 2026-04-22T07:35:02Z
+updated_at: 2026-04-22T09:55:18Z
 parent: dinocode-0apu
+blocked_by:
+    - dinocode-56yo
 ---
 
 When the `__home_agent__:<projectId>` thread starts a turn, inject a compact list of open tasks (todo + in-progress) into the system prompt so the agent always has backlog awareness without needing to call a tool.
@@ -23,7 +25,7 @@ When the `__home_agent__:<projectId>` thread starts a turn, inject a compact lis
 ### Server injection
 - [ ] `HomeAgentPromptComposer` service in `apps/server/src/homeAgent/`
 - [ ] Called by turn-start pipeline when threadId matches `__home_agent__:*` pattern
-- [ ] Combines: base home-agent system prompt + open-tasks block + CLI usage reference (from dinocode-w94z task)
+- [ ] Combines: base home-agent system prompt + open-tasks block + CLI usage reference
 
 ### CLI hint block
 - [ ] Include a short "You can manipulate these tasks via:" block listing `dinocode_list_tasks`, `dinocode_view_task`, `dinocode_create_task`, `dinocode_update_task`

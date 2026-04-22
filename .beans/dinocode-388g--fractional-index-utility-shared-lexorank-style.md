@@ -1,14 +1,14 @@
 ---
 # dinocode-388g
 title: Fractional index utility (shared, LexoRank-style)
-status: todo
+status: scrapped
 type: feature
 priority: high
 tags:
     - phase-1
     - utilities
 created_at: 2026-04-22T07:32:55Z
-updated_at: 2026-04-22T07:32:55Z
+updated_at: 2026-04-22T12:49:22Z
 parent: dinocode-x8dw
 ---
 
@@ -35,3 +35,7 @@ Used by the kanban board to order cards within a column without renumbering sibl
 - [ ] 10k random inserts: strictly ordered, no duplicates
 - [ ] Worst-case nested inserts: order length stays under 32 chars
 - [ ] Cross-platform stability: orders produced on Node match those produced in browser
+
+## Reasons for Scrapping
+
+Superseded by `dinocode-8u6r` (`Soil fractional index utility`). Fractional ordering now belongs in `packages/soil` as shared task-domain logic rather than a separate shared utility track.

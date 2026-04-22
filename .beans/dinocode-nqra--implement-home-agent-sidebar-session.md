@@ -5,8 +5,10 @@ status: todo
 type: feature
 priority: normal
 created_at: 2026-04-22T07:15:35Z
-updated_at: 2026-04-22T07:38:07Z
+updated_at: 2026-04-22T09:55:20Z
 parent: dinocode-b6x6
+blocked_by:
+    - dinocode-h551
 ---
 
 Always-visible sidebar chat panel scoped to the `__home_agent__:<projectId>` thread. Acts as the project's task manager; cannot edit code directly.

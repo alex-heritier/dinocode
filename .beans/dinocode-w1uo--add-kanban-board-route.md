@@ -5,8 +5,10 @@ status: todo
 type: task
 priority: high
 created_at: 2026-04-22T07:14:00Z
-updated_at: 2026-04-22T07:33:21Z
+updated_at: 2026-04-22T09:55:22Z
 parent: dinocode-lsa5
+blocked_by:
+    - dinocode-sizc
 ---
 
 Add the kanban board route at `apps/web/src/routes/_chat.board.$environmentId.$projectId.tsx`. Wires the board subscription, mounts `KanbanBoard`, handles loading / empty / error states.

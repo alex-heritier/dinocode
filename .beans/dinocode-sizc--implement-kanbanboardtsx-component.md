@@ -5,8 +5,12 @@ status: todo
 type: feature
 priority: high
 created_at: 2026-04-22T07:14:00Z
-updated_at: 2026-04-22T07:14:14Z
+updated_at: 2026-04-22T12:49:22Z
 parent: dinocode-lsa5
+blocked_by:
+    - dinocode-0qbh
+    - dinocode-ifhu
+    - dinocode-8u6r
 ---
 
 Top-level board container. Owns DndContext. Renders columns. Handles drag-end: dispatches task.update with new status or fractional order. Board header with New Task button and filter bar.

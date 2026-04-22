@@ -5,8 +5,10 @@ status: todo
 type: task
 priority: high
 created_at: 2026-04-22T07:14:50Z
-updated_at: 2026-04-22T07:35:02Z
+updated_at: 2026-04-22T09:55:23Z
 parent: dinocode-0apu
+blocked_by:
+    - dinocode-o0oh
 ---
 
 The "Start Session" button on a kanban card (and in the TaskDetailPanel) creates a new thread with this task's context pre-loaded.

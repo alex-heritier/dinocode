@@ -5,8 +5,10 @@ status: todo
 type: task
 priority: normal
 created_at: 2026-04-22T07:15:35Z
-updated_at: 2026-04-22T07:38:27Z
+updated_at: 2026-04-22T09:55:20Z
 parent: dinocode-b6x6
+blocked_by:
+    - dinocode-5kre
 ---
 
 When all children of a parent task reach `completed`, surface a prompt offering to complete the parent as well. Opt-in: one click to accept, dismissible.

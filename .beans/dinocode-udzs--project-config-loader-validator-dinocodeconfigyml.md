@@ -1,14 +1,14 @@
 ---
 # dinocode-udzs
 title: Project config loader + validator (.dinocode/config.yml)
-status: todo
+status: scrapped
 type: feature
 priority: high
 tags:
     - phase-1
     - config
 created_at: 2026-04-22T07:32:30Z
-updated_at: 2026-04-22T07:32:30Z
+updated_at: 2026-04-22T12:49:22Z
 parent: dinocode-x8dw
 blocked_by:
     - dinocode-8izj
@@ -48,3 +48,7 @@ Dedicated, well-tested config loader for `.dinocode/config.yml`. Produces a full
 - [ ] Every invalid prefix variant → `ConfigValidationError` with clear message
 - [ ] Round-trip: write then re-load → deep-equal
 - [ ] Custom prefix `team-` and `id_length: 6` work end-to-end
+
+## Reasons for Scrapping
+
+Superseded by `dinocode-e0e8` (`Soil config and project loader`). Project config parsing is now part of the Soil package, and server/CLI consumers should reuse that implementation instead of maintaining a separate server-local loader plan.

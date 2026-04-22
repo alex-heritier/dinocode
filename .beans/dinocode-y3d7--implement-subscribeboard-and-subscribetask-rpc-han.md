@@ -5,8 +5,10 @@ status: todo
 type: feature
 priority: high
 created_at: 2026-04-22T07:13:37Z
-updated_at: 2026-04-22T07:13:51Z
+updated_at: 2026-04-22T09:55:25Z
 parent: dinocode-lsa5
+blocked_by:
+    - dinocode-afya
 ---
 
 Server-side: build BoardSnapshot from projection_tasks + config, implement subscribeBoard/subscribeTask handlers in ws.ts, push incremental stream events.

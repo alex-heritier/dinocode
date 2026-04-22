@@ -8,8 +8,10 @@ tags:
     - phase-2
     - archive
 created_at: 2026-04-22T07:34:31Z
-updated_at: 2026-04-22T07:34:31Z
+updated_at: 2026-04-22T09:56:16Z
 parent: dinocode-lsa5
+blocked_by:
+    - dinocode-y7dm
 ---
 
 Completed/scrapped tasks live in the regular board columns; archived tasks (physically moved to `.dinocode/tasks/archive/`) get their own view so the main board stays lean.

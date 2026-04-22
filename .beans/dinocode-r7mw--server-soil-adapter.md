@@ -5,8 +5,8 @@ status: todo
 type: task
 priority: normal
 created_at: 2026-04-22T08:30:24Z
-updated_at: 2026-04-22T08:31:17Z
-parent: dinocode-x8dw
+updated_at: 2026-04-22T12:40:56Z
+parent: dinocode-lhp0
 blocked_by:
     - dinocode-0syf
     - dinocode-mswb

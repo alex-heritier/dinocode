@@ -1,14 +1,14 @@
 ---
 # dinocode-9f1s
 title: Shared FileStore code module (reuse across server + CLI)
-status: todo
+status: scrapped
 type: feature
 priority: normal
 tags:
     - phase-4
     - refactor
 created_at: 2026-04-22T07:37:22Z
-updated_at: 2026-04-22T08:31:19Z
+updated_at: 2026-04-22T12:49:22Z
 parent: dinocode-lhp0
 blocked_by:
     - dinocode-0syf
@@ -26,3 +26,7 @@ The server's FileStore (parser/writer/etag/config) must be reusable from the CLI
 - [ ] CLI imports directly from `@t3tools/shared/fileStore/*`
 - [ ] Verify bundle sizes: shared modules tree-shake cleanly in both contexts
 - [ ] Tests: parser + writer tests moved to shared package, re-exported test helpers for integration in both consumers
+
+## Reasons for Scrapping
+
+Superseded by the Soil package plan (`dinocode-0syf`). The old extraction target of `packages/shared/src/fileStore/` no longer matches the architecture; reusable parser/writer/ETag logic now belongs in `packages/soil`.

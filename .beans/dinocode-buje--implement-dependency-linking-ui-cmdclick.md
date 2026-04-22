@@ -5,8 +5,11 @@ status: todo
 type: feature
 priority: normal
 created_at: 2026-04-22T07:15:35Z
-updated_at: 2026-04-22T07:38:07Z
+updated_at: 2026-04-22T09:55:35Z
 parent: dinocode-b6x6
+blocked_by:
+    - dinocode-hlqn
+    - dinocode-b3nv
 ---
 
 Cmd/Ctrl+click a source card enters link-draft mode; subsequent click on a target card dispatches `task.link`. Visual affordance (highlighted targets, SVG edge preview) guides the user.

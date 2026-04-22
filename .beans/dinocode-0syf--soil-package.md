@@ -3,9 +3,10 @@
 title: Soil Package
 status: todo
 type: epic
-priority: normal
+priority: high
 created_at: 2026-04-22T08:28:26Z
-updated_at: 2026-04-22T08:31:38Z
+updated_at: 2026-04-22T12:48:40Z
+parent: dinocode-nvvq
 ---
 
 Standalone file-first task domain package (packages/soil). Owns YAML front-matter parsing, fractional indexing, conflict resolution, decider/projector/reactor, and project config loading. Consumed by apps/server and apps/cli. No WebSocket/RPC/HTTP awareness.

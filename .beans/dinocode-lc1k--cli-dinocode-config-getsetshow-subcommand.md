@@ -3,16 +3,16 @@
 title: 'CLI: dinocode config get/set/show subcommand'
 status: todo
 type: task
-priority: low
+priority: normal
 tags:
     - phase-4
     - cli
 created_at: 2026-04-22T07:36:48Z
-updated_at: 2026-04-22T07:36:48Z
+updated_at: 2026-04-22T12:49:22Z
 parent: dinocode-lhp0
 blocked_by:
     - dinocode-vaac
-    - dinocode-udzs
+    - dinocode-e0e8
 ---
 
 Inspect and modify `.dinocode/config.yml` from the CLI without hand-editing YAML.

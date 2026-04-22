@@ -8,8 +8,10 @@ tags:
     - phase-3
     - composer
 created_at: 2026-04-22T07:35:30Z
-updated_at: 2026-04-22T07:35:30Z
+updated_at: 2026-04-22T09:55:27Z
 parent: dinocode-0apu
+blocked_by:
+    - dinocode-vdno
 ---
 
 Extend the existing `@mention` infrastructure (`apps/web/src/composer-editor-mentions.ts`) to recognize task IDs and titles, providing inline autocomplete when typing `@`.

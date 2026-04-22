@@ -5,8 +5,10 @@ status: todo
 type: task
 priority: normal
 created_at: 2026-04-22T07:14:50Z
-updated_at: 2026-04-22T07:35:10Z
+updated_at: 2026-04-22T09:55:27Z
 parent: dinocode-0apu
+blocked_by:
+    - dinocode-56yo
 ---
 
 Display referenced task IDs as chips in the thread composer header. Allow adding tasks via `@mention` autocomplete, removing via chip close button, and persisting chips as the thread's current context set.

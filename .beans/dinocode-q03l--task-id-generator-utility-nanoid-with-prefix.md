@@ -1,14 +1,14 @@
 ---
 # dinocode-q03l
 title: Task ID generator utility (NanoID with prefix)
-status: todo
+status: scrapped
 type: feature
 priority: high
 tags:
     - utilities
     - phase-1
 created_at: 2026-04-22T07:31:58Z
-updated_at: 2026-04-22T07:31:58Z
+updated_at: 2026-04-22T12:49:22Z
 parent: dinocode-x8dw
 blocked_by:
     - dinocode-8izj
@@ -39,3 +39,7 @@ Implement a shared, deterministic-looking Task ID generator that produces IDs ma
 - [ ] 1000-iteration collision test: no duplicates with `id_length: 4`
 - [ ] Round-trip: `generate → format → parse → deep-equal`
 - [ ] Regression: matches exact format beans uses (check against a sample `.beans/*.md` from this repo)
+
+## Reasons for Scrapping
+
+Superseded by `dinocode-3p5v` (`Soil task ID generator`). After the Soil architecture decision, task ID generation belongs in `packages/soil`, not a separate `packages/shared/taskId` module.

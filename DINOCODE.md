@@ -1,7 +1,7 @@
 # DINOCODE Specification
 
 > **Status**: Draft v0.2  
-> **Last updated**: 2026-04-22 (revised)  
+> **Last updated**: 2026-04-22 (revised for Soil architecture)  
 > **Scope**: Architecture, data model, and integration spec for combining t3code (agent GUI), cline/kanban (parallel task orchestration), and beans (flat-file in-repo task tracking) into a unified developer experience.
 
 ---
@@ -25,12 +25,13 @@ The result: a single interface where you can decompose work into tasks, manage t
 
 ### Canonical Data Model
 
-The existing t3code architecture is **event-sourced** (SQLite `orchestration_events` table) with a **pure decider + projector** pattern. Dinocode does not replace this — it extends it:
+The existing t3code architecture is **event-sourced** (SQLite `orchestration_events` table) with a **pure decider + projector** pattern. Dinocode does not replace this — it extends it with a reusable task-domain package:
 
 - **Orchestration commands** (`task.create`, `task.update`, etc.) remain the entry point for all mutations.
 - **SQLite event store** remains the canonical transaction log (fast, serialized, deduplicated via command receipts).
-- **File Store reactor** writes task files to `.dinocode/tasks/*.md` after events are persisted.
-- **File watcher** detects external edits (from agents or other processes) and dispatches them back into the orchestration engine as commands with ETag validation.
+- **`packages/soil`** owns the task domain: schemas, parsing, rendering, ETag handling, fractional ordering, pure decider/projector logic, and filesystem reactor utilities.
+- **Server adapter + File Store reactor** use `packages/soil` to write task files to `.dinocode/tasks/*.md` after events are persisted.
+- **File watcher** uses `packages/soil` parsing and validation, then dispatches external edits back into the orchestration engine as commands with ETag validation.
 
 This means:
 
@@ -59,8 +60,8 @@ This means:
 ┌─────────────────────────┴───────────────────────────────────────────────┐
 │                        apps/server (Node.js/Bun)                        │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌─────────────┐ │
-│  │ Orchestration│  │   Provider   │  │   FileStore  │  │  GitManager │ │
-│  │   Engine     │  │   Adapters   │  │   (Beans)    │  │  (Kanban)   │ │
+│  │ Orchestration│  │   Provider   │  │ Soil Adapter │  │  GitManager │ │
+│  │   Engine     │  │   Adapters   │  │ + FileStore  │  │  (Kanban)   │ │
 │  └──────────────┘  └──────────────┘  └──────────────┘  └─────────────┘ │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐                   │
 │  │  Event Store │  │  PTY / Term  │  │   SQLite     │                   │
@@ -85,7 +86,7 @@ This means:
 
 ### 2.2 Electron Desktop Architecture
 
-The product ships as a **packaged Electron app** (`apps/desktop`). The server also serves the React app over HTTP for local development and `npx t3` CLI usage, but the Electron desktop build is the primary target.
+The product ships as a **packaged Electron app** (`apps/desktop`). The server also serves the React app over HTTP for local development and local CLI-driven workflows, but the Electron desktop build is the primary target.
 
 **Main process** (`main.ts`):
 
@@ -120,8 +121,9 @@ The product ships as a **packaged Electron app** (`apps/desktop`). The server al
 | **Desktop Main**      | t3code base     | Electron main process. App lifecycle, menu bar, backend spawning, native IPC, auto-updates. |
 | **Renderer UI**       | t3code base     | React 19 + Vite + Tailwind inside Chromium. Chat, kanban, terminal, diffs. Zustand state.   |
 | **WebSocket RPC**     | t3code base     | Effect RPC over native WebSocket. Typed streaming. Auto-reconnect.                          |
-| **Orchestration**     | t3code base     | Event-sourced command/event processing. Pure decider + projector pattern.                   |
-| **File Store**        | **beans**       | Reactor: writes `.dinocode/tasks/*.md` after events. Watcher: detects external edits.       |
+| **Orchestration**     | t3code base     | Event-sourced command/event processing. Persists canonical events and streams projections.   |
+| **Task Domain**       | **packages/soil** | Shared task-domain package: schemas, parser/writer, ETags, decider, projector, reactor.   |
+| **File Store**        | server + soil   | Thin server adapter around soil. Watches and writes `.dinocode/tasks/*.md`.                 |
 | **Provider Adapters** | t3code base     | Codex, Claude, Cursor, OpenCode adapters. Spawn stdio JSON-RPC or PTY.                      |
 | **Git Manager**       | **t3code base** | Worktree creation, symlinking gitignored dirs, diff computation. General agent session use. |
 | **Terminal**          | **t3code base** | node-pty sessions per thread. Multi-viewer WebSocket bridge with backpressure.              |
@@ -140,6 +142,8 @@ The following t3code infrastructure already exists and should be reused:
 - **Dual-stream state** — `apps/web/src/store.ts` uses shell stream (sidebar) + detail stream (messages/activities). Board data follows the same pattern.
 - **No barrel exports** — `packages/shared` uses explicit subpath exports (e.g. `@t3tools/shared/git`). Follow this for all new shared code.
 - **Schema-only contracts** — `packages/contracts` must remain schema-only with no runtime logic.
+
+New Dinocode-specific shared task logic should live in `packages/soil` and expose explicit subpath exports as well. The server and CLI consume soil; they should not reimplement task parsing, projection, or ETag logic independently.
 
 ---
 
@@ -167,7 +171,7 @@ Every Dinocode-enabled repo contains a `.dinocode/` directory at its root:
 
 ### 3.2 Task File Format
 
-Each task is a Markdown file with YAML front matter, stored in `.dinocode/tasks/`. The format aligns with [beans](https://github.com/hmans/beans) so agents already familiar with beans can read and write Dinocode tasks without learning a new schema.
+Each task is a Markdown file with YAML front matter, stored in `.dinocode/tasks/`. The format aligns with [beans](https://github.com/hmans/beans) so agents already familiar with beans can read and write Dinocode tasks without learning a new schema. Parsing, rendering, validation, and migrations for this format are implemented in `packages/soil`.
 
 **Filename convention**: `{prefix}{id}--{slug}.md`
 
@@ -418,7 +422,7 @@ Agents (both in-app and external) interact with tasks through a **hybrid tool mo
 - `dinocode task link <from-id> <to-id>` — add blocker relationship
 - `dinocode task unlink <from-id> <to-id>` — remove blocker relationship
 
-These commands read/write `.dinocode/tasks/*.md` directly. The file watcher detects changes and re-ingests them into the kanban projection.
+These commands use `packages/soil` directly to read/write `.dinocode/tasks/*.md`. The file watcher detects changes and re-ingests them into the kanban projection.
 
 **Secondary: Built-in Tools (in-app agents only)**
 For agents running inside t3code's provider adapters (Codex, Claude), we also register native function-calling tools:
@@ -628,28 +632,41 @@ terminal.open({ threadId });
 terminal.subscribe({ threadId }): Stream<TerminalEvent>;
 ```
 
-### 9.2 File Store API (Server-Internal)
+### 9.2 Soil Package API (Shared Task Domain)
 
 ```typescript
 import { Effect, Stream } from "effect";
 
-interface FileStore {
-  // Reads all tasks from .dinocode/tasks/ and builds index
-  loadProject(workspaceRoot: string): Effect.Effect<TaskIndex, FileStoreError, never>;
-
-  // Writes a task file atomically with ETag check
-  writeTask(task: Task, expectedEtag?: string): Effect.Effect<void, FileStoreError, never>;
-
-  // Watches .dinocode/tasks/ for external changes
-  watchProject(workspaceRoot: string): Stream.Stream<FileChangeEvent, FileStoreError, never>;
+interface SoilProjectLoader {
+  // Finds the project root and loads .dinocode/config.yml
+  loadProject(path: string): Effect.Effect<ProjectContext, SoilError, never>;
 }
 
-type TaskIndex = {
-  tasks: Task[];
-  config: ProjectConfig;
-  etags: Map<TaskId, string>; // taskId -> ETag
-};
+interface SoilFileStore {
+  parseTask(markdown: string, path: string): Effect.Effect<TaskDocument, SoilError, never>;
+  renderTask(task: TaskDocument): string;
+  writeTask(task: TaskDocument, expectedEtag?: string): Effect.Effect<void, SoilError, never>;
+  watchProject(workspaceRoot: string): Stream.Stream<FileChangeEvent, SoilError, never>;
+}
+
+interface SoilDecider {
+  decide(state: TaskState, command: TaskCommand): Effect.Effect<ReadonlyArray<TaskEvent>, SoilError, never>;
+}
+
+interface SoilProjector {
+  apply(state: TaskState, event: TaskEvent): TaskState;
+}
+
+interface SoilReactor {
+  react(events: ReadonlyArray<TaskEvent>, context: ProjectContext): Effect.Effect<void, SoilError, never>;
+}
 ```
+
+The server wraps these primitives in a thin adapter layer:
+
+- The orchestration engine persists canonical events in SQLite.
+- The server adapter feeds task commands and task events into soil decider/projector/reactor logic.
+- The CLI imports soil directly so it can operate on `.dinocode/tasks/` without going through WebSocket or HTTP.
 
 ---
 
@@ -669,18 +686,27 @@ type TaskIndex = {
 
 ## 11. Implementation Phases
 
-### Phase 1: File Store Foundation
+### Phase 1: Soil Package Foundation
 
-- [ ] Implement `FileStore` service in `apps/server/src/fileStore/` (follow Effect Layer pattern).
-- [ ] Task parser: Markdown + YAML front matter → `Task` schema (align with beans).
-- [ ] Task writer: `Task` schema → Markdown file with ETag (FNV-1a of full rendered content).
-- [ ] File watcher: `node:fs` watch on `.dinocode/tasks/` → auto-dispatch `task.update` commands.
+- [ ] Scaffold `packages/soil` with explicit subpath exports.
+- [ ] Define task schema types and validation in soil.
+- [ ] Add task ID generator and fractional index utilities in soil.
+- [ ] Implement soil FileStore core: Markdown + YAML parser, writer, ETag calculation, path utilities.
+- [ ] Implement soil config loader and project discovery for `.dinocode/config.yml`.
+- [ ] Implement soil decider and projector as pure task-domain logic.
+- [ ] Implement soil reactor for ordered, atomic task-file writes.
+- [ ] Implement soil conflict resolution and error taxonomy.
+- [ ] Add soil migration utilities for schema evolution and slug/path changes.
+- [ ] Add soil test suite and API documentation.
+
+### Phase 1.5: Server Orchestration Integration
+
 - [ ] Add `task.*` commands/events to `packages/contracts/src/orchestration.ts`.
-- [ ] Extend decider (`apps/server/src/orchestration/decider.ts`) with task command handling.
-- [ ] Extend projector (`apps/server/src/orchestration/projector.ts`) with task event projection.
-- [ ] Add invariants to `commandInvariants.ts` (requireTask, requireTaskAbsent, etc.).
 - [ ] Add `projection_tasks` SQLite table (new migration; use next available number).
-- [ ] Add `FileStoreReactor` (`apps/server/src/orchestration/Layers/FileStoreReactor.ts`) — writes files after events commit.
+- [ ] Extend server command invariants with task-specific checks.
+- [ ] Wire a thin server FileStore adapter that consumes soil.
+- [ ] Feed task commands into the orchestration engine, then into soil-backed filesystem projection.
+- [ ] Connect file watching so external edits round-trip back into orchestration with ETag validation.
 
 ### Phase 2: Kanban Projection
 
@@ -705,8 +731,11 @@ type TaskIndex = {
 
 ### Phase 4: Agent Tools
 
+- [ ] Set up a dedicated dinocode CLI package and command framework.
+- [ ] Implement workspace discovery and config inspection commands.
 - [ ] CLI: implement `dinocode task` subcommands (`list`, `view`, `create`, `update`, `delete`, `archive`, `link`, `unlink`).
-- [ ] CLI installs into `apps/server` package so `npx dinocode task ...` works.
+- [ ] CLI imports soil directly so `dinocode task ...` works without server-only codepaths.
+- [ ] Add thin server adapter usage where the web app needs orchestration-backed task mutation.
 - [ ] Built-in tools: register `dinocode_list_tasks`, `dinocode_view_task`, `dinocode_update_task`, `dinocode_create_task` in provider adapters.
 - [ ] File watcher handles CLI-initiated changes (same flow as human edits).
 - [ ] Document tools in `AGENTS.md` / `DINOCODE.md` so agents know they exist.
@@ -731,7 +760,7 @@ type TaskIndex = {
 ### Resolved
 
 1. **SQLite vs filesystem canonical?**
-   **Resolved**: Keep SQLite `orchestration_events` as the canonical transaction log (fast, serialized, deduplicated). The File Store reactor writes to `.dinocode/tasks/*.md` after every task event. A file watcher detects external edits and re-ingests them as `task.update` commands with ETag validation. This satisfies the "file-first" principle (agents see human-readable files) without replacing the proven event-sourcing backbone.
+   **Resolved**: Keep SQLite `orchestration_events` as the canonical transaction log inside the server. `packages/soil` owns the reusable task-domain logic and filesystem format, while the server persists canonical events and uses a soil-backed reactor to project task files into `.dinocode/tasks/*.md`. A file watcher re-ingests external edits as `task.update` commands with ETag validation. This satisfies the "file-first" principle without duplicating task logic across server and CLI.
 
 2. **How do we handle merge conflicts when both an agent and a human edit the same task file?**
    **Resolved**: ETag optimistic concurrency. The ETag is an FNV-1a hash of the full rendered Markdown content. If the file on disk has changed since the last read, the auto-dispatched `task.update` command fails validation and the server emits a `task.conflict` event. The UI shows a three-way merge view (base / local / remote).
@@ -751,7 +780,7 @@ type TaskIndex = {
    _Tentative_: Separate `subscribeBoard` stream, but the shell stream should include minimal task metadata (counts per status) so the sidebar can show badges without subscribing to the full board.
 
 7. **How do we handle task file renames (slug changes) while preserving event history?**
-   _Tentative_: The task `id` (e.g. `dnc-0ajg`) is immutable and used for the event stream. The filename slug is purely cosmetic; renames are handled by deleting the old file and writing a new one in the File Store reactor, without emitting a task event.
+   _Tentative_: The task `id` (e.g. `dnc-0ajg`) is immutable and used for the event stream. The filename slug is purely cosmetic; renames are handled by soil migration/path utilities plus a reactor rewrite, without requiring a distinct task event unless user-visible metadata changes.
 
 8. **Should archived tasks be moved to `.dinocode/tasks/archive/` or stay in place with an `archived` status?**
    _Tentative_: Move to `archive/` subfolder. The file watcher treats moves as implicit status changes (orchestration dispatches `task.archive` on move-in, `task.unarchive` on move-out).
@@ -770,30 +799,38 @@ The codebase follows strict conventions. New features must adhere to these patte
    - Add to `ORCHESTRATION_WS_METHODS` and `WS_METHODS`
    - Register in `WsRpcGroup`
 
-2. **Add migration** in `apps/server/src/persistence/Migrations/`:
+2. **Put reusable task-domain logic in `packages/soil` first**:
+   - Schema types and parsing logic live in soil, not in the server layer
+   - Use explicit subpath exports (`@dinocode/soil/fileStore`, etc.)
+   - Keep soil pure where possible; isolate IO behind small interfaces
+
+3. **Add migration** in `apps/server/src/persistence/Migrations/`:
    - Statically import in `Migrations.ts`
    - Create projection tables for read models
    - Use `effect/unstable/sql/SqlClient`
 
-3. **Add decider logic** in `apps/server/src/orchestration/decider.ts`:
+4. **Add decider integration** in `apps/server/src/orchestration/decider.ts`:
    - Handle new command types in `decideOrchestrationCommand`
    - Validate invariants in `commandInvariants.ts` (never skip this)
+   - Delegate task-domain logic to soil where appropriate
 
-4. **Add projector logic** in `apps/server/src/orchestration/projector.ts`:
+5. **Add projector integration** in `apps/server/src/orchestration/projector.ts`:
    - Update `OrchestrationReadModel`
    - Update SQLite projection tables
    - Handle both insert and update paths (idempotent)
+   - Reuse soil projector semantics rather than duplicating business rules
 
-5. **Add reactor** (if side effects needed):
+6. **Add reactor** (if side effects needed):
    - Define interface in `Services/MyReactor.ts`
    - Implement in `Layers/MyReactor.ts`
    - Register in `OrchestrationReactor.ts` startup sequence
+   - Prefer thin adapters around soil reactors for task-file side effects
 
-6. **Add RPC handlers** in `apps/server/src/ws.ts`:
+7. **Add RPC handlers** in `apps/server/src/ws.ts`:
    - Inside `makeWsRpcLayer`, add methods to `WsRpcGroup.of({})`
    - Use `observeRpcEffect` for one-shot, `observeRpcStreamEffect` for streams
 
-7. **Wire layers** in `apps/server/src/server.ts`:
+8. **Wire layers** in `apps/server/src/server.ts`:
    - Add `Layer.provideMerge(MyLayerLive)` to `RuntimeDependenciesLive`
 
 ### Web Pattern
@@ -820,7 +857,8 @@ The codebase follows strict conventions. New features must adhere to these patte
 ### Testing
 
 - Decider logic: add tests in `apps/server/src/orchestration/decider.test.ts` (or adjacent to the feature)
-- File Store: add tests in `apps/server/src/fileStore/fileStore.test.ts`
+- Soil package: add tests in `packages/soil` for parser/writer, decider, projector, reactor, conflict handling
+- Server adapter: add tests in `apps/server/src/fileStore/fileStore.test.ts` or adjacent adapter tests
 - Web components: use Vitest with `@testing-library/react`
 - Integration: use existing `OrchestrationEngineHarness.integration.ts`
 

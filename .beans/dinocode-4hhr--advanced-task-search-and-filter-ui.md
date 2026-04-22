@@ -5,8 +5,10 @@ status: todo
 type: feature
 priority: low
 created_at: 2026-04-22T07:15:45Z
-updated_at: 2026-04-22T07:39:37Z
+updated_at: 2026-04-22T09:56:16Z
 parent: dinocode-0ub1
+blocked_by:
+    - dinocode-3230
 ---
 
 Board-wide search and advanced filtering, beyond the basic filter bar. Delivers a fast search-first UX with fuzzy matching, scoped queries (e.g. `status:todo tag:auth`), and saved searches.
