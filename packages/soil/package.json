@@ -1,0 +1,83 @@
+{
+  "name": "@dinocode/soil",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./schema": {
+      "types": "./src/schema.ts",
+      "import": "./src/schema.ts"
+    },
+    "./id": {
+      "types": "./src/id.ts",
+      "import": "./src/id.ts"
+    },
+    "./fractionalIndex": {
+      "types": "./src/fractionalIndex.ts",
+      "import": "./src/fractionalIndex.ts"
+    },
+    "./parser": {
+      "types": "./src/parser.ts",
+      "import": "./src/parser.ts"
+    },
+    "./renderer": {
+      "types": "./src/renderer.ts",
+      "import": "./src/renderer.ts"
+    },
+    "./etag": {
+      "types": "./src/etag.ts",
+      "import": "./src/etag.ts"
+    },
+    "./decider": {
+      "types": "./src/decider.ts",
+      "import": "./src/decider.ts"
+    },
+    "./projector": {
+      "types": "./src/projector.ts",
+      "import": "./src/projector.ts"
+    },
+    "./config": {
+      "types": "./src/config.ts",
+      "import": "./src/config.ts"
+    },
+    "./errors": {
+      "types": "./src/errors.ts",
+      "import": "./src/errors.ts"
+    },
+    "./reactor": {
+      "types": "./src/reactor.ts",
+      "import": "./src/reactor.ts"
+    },
+    "./search": {
+      "types": "./src/search.ts",
+      "import": "./src/search.ts"
+    },
+    "./conflict": {
+      "types": "./src/conflict.ts",
+      "import": "./src/conflict.ts"
+    },
+    "./migration": {
+      "types": "./src/migration.ts",
+      "import": "./src/migration.ts"
+    },
+    "./watcher": {
+      "types": "./src/watcher.ts",
+      "import": "./src/watcher.ts"
+    }
+  },
+  "scripts": {
+    "prepare": "effect-language-service patch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "effect": "catalog:",
+    "yaml": "^2.7.0"
+  },
+  "devDependencies": {
+    "@effect/language-service": "catalog:",
+    "@effect/vitest": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}
