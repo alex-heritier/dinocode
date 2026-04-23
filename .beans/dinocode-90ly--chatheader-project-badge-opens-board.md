@@ -1,11 +1,11 @@
 ---
 # dinocode-90ly
 title: 'ChatHeader: project badge opens board'
-status: todo
+status: completed
 type: task
 priority: high
 created_at: 2026-04-23T04:38:40Z
-updated_at: 2026-04-23T04:38:40Z
+updated_at: 2026-04-23T04:52:47Z
 parent: dinocode-qsqf
 ---
 

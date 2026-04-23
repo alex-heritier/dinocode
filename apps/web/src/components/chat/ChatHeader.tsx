@@ -1,6 +1,7 @@
 import {
   type EnvironmentId,
   type EditorId,
+  type ProjectId,
   type ProjectScript,
   type ResolvedKeybindingsConfig,
   type ThreadId,
@@ -9,7 +10,8 @@ import { scopeThreadRef } from "@t3tools/client-runtime";
 import { memo } from "react";
 import GitActionsControl from "../GitActionsControl";
 import { type DraftId } from "~/composerDraftStore";
-import { DiffIcon, TerminalSquareIcon } from "lucide-react";
+import { DiffIcon, KanbanSquareIcon, TerminalSquareIcon } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { Badge } from "../ui/badge";
 import { Tooltip, TooltipPopup, TooltipTrigger } from "../ui/tooltip";
 import ProjectScriptsControl, { type NewProjectScriptInput } from "../ProjectScriptsControl";
@@ -23,6 +25,10 @@ interface ChatHeaderProps {
   draftId?: DraftId;
   activeThreadTitle: string;
   activeProjectName: string | undefined;
+  /** Present when the active thread is bound to a project; enables the board link on the badge. */
+  activeProjectId?: ProjectId | undefined;
+  /** Shortcut label for project.toggleFace, shown in the board link's tooltip. */
+  toggleFaceShortcutLabel?: string | null;
   isGitRepo: boolean;
   openInCwd: string | null;
   activeProjectScripts: ProjectScript[] | undefined;
@@ -49,6 +55,8 @@ export const ChatHeader = memo(function ChatHeader({
   draftId,
   activeThreadTitle,
   activeProjectName,
+  activeProjectId,
+  toggleFaceShortcutLabel,
   isGitRepo,
   openInCwd,
   activeProjectScripts,
@@ -78,11 +86,46 @@ export const ChatHeader = memo(function ChatHeader({
         >
           {activeThreadTitle}
         </h2>
-        {activeProjectName && (
-          <Badge variant="outline" className="min-w-0 shrink overflow-hidden">
-            <span className="min-w-0 truncate">{activeProjectName}</span>
-          </Badge>
-        )}
+        {activeProjectName &&
+          (activeProjectId ? (
+            // dinocode-integration: project badge doubles as a board switcher.
+            <div className="flex min-w-0 shrink items-stretch overflow-hidden">
+              <Badge
+                variant="outline"
+                className="min-w-0 shrink overflow-hidden rounded-r-none border-r-0"
+                title={activeProjectName}
+              >
+                <span className="min-w-0 truncate">{activeProjectName}</span>
+              </Badge>
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Link
+                      to="/board/$environmentId/$projectId"
+                      params={{
+                        environmentId: activeThreadEnvironmentId as string,
+                        projectId: activeProjectId as string,
+                      }}
+                      data-testid="chat-header-open-board"
+                      aria-label={`Open board for ${activeProjectName}`}
+                      className="inline-flex shrink-0 items-center justify-center rounded-r-md border border-input bg-transparent px-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring"
+                    >
+                      <KanbanSquareIcon className="size-3" aria-hidden="true" />
+                    </Link>
+                  }
+                />
+                <TooltipPopup side="bottom">
+                  {toggleFaceShortcutLabel
+                    ? `Open kanban board (${toggleFaceShortcutLabel})`
+                    : "Open kanban board"}
+                </TooltipPopup>
+              </Tooltip>
+            </div>
+          ) : (
+            <Badge variant="outline" className="min-w-0 shrink overflow-hidden">
+              <span className="min-w-0 truncate">{activeProjectName}</span>
+            </Badge>
+          ))}
         {activeProjectName && !isGitRepo && (
           <Badge variant="outline" className="shrink-0 text-[10px] text-amber-700">
             No Git

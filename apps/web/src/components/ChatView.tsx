@@ -1474,6 +1474,12 @@ export default function ChatView(props: ChatViewProps) {
     () => shortcutLabelForCommand(keybindings, "diff.toggle", nonTerminalShortcutLabelOptions),
     [keybindings, nonTerminalShortcutLabelOptions],
   );
+  // dinocode-integration: passed to the ChatHeader project badge's board link.
+  const toggleFaceShortcutLabel = useMemo(
+    () =>
+      shortcutLabelForCommand(keybindings, "project.toggleFace", nonTerminalShortcutLabelOptions),
+    [keybindings, nonTerminalShortcutLabelOptions],
+  );
   const onToggleDiff = useCallback(() => {
     if (!isServerThread) {
       return;
@@ -3241,6 +3247,8 @@ export default function ChatView(props: ChatViewProps) {
           {...(routeKind === "draft" && draftId ? { draftId } : {})}
           activeThreadTitle={activeThread.title}
           activeProjectName={activeProject?.name}
+          {...(activeProject?.id !== undefined ? { activeProjectId: activeProject.id } : {})}
+          toggleFaceShortcutLabel={toggleFaceShortcutLabel}
           isGitRepo={isGitRepo}
           openInCwd={gitCwd}
           activeProjectScripts={activeProject?.scripts}
