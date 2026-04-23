@@ -806,16 +806,16 @@ The following explicit subpath exports are published by `@dinocode/soil`:
 5. **Should tasks be bound 1:1 to agent threads?**
    **Resolved**: No. Tasks and threads are independent systems. A thread may reference zero or more tasks for context, and a task may be referenced by zero or more threads. This decoupling keeps the task model simple and avoids worktree-per-task complexity. Task context is injected at `thread.turn.start` time via an optional `taskIds` payload.
 
+6. **How do we handle task file renames (slug changes) while preserving event history?**
+   **Resolved**: The task `id` (e.g. `dnc-0ajg`) is immutable and used for the event stream; the filename slug is purely cosmetic. `@dinocode/soil/migration` exposes `planSlugRename(document, newSlug)` which produces `{ oldFilename, newFilename }` pairs; `migrateTaskContent(content, filename)` canonicalises the slug when a task file is read. The reactor handles the filesystem rename by re-writing the task file under the new path (`findTaskFile` already matches by `id` prefix, so old paths are located regardless of slug). No distinct task event is required for a slug change; updating `title` re-derives the canonical slug through migration.
+
+7. **Should archived tasks be moved to `.dinocode/tasks/archive/` or stay in place with an `archived` status?**
+   **Resolved**: Move to `archive/` subfolder. `makeSoilReactor` implements `task.archived` as an atomic rename into `<tasksPath>/archive/` and `task.unarchived` as a rename back out. The watcher tags each `FileChangeEvent` with an `archived` boolean derived from the on-disk path, so manual editor drags into/out of `archive/` round-trip through the same event shape as server-initiated archive commands (see `packages/soil/src/reactor.ts` and `packages/soil/src/watcher.ts`).
+
 ### Open
 
-6. **Should the board projection live in the shell stream or a separate stream?**
+8. **Should the board projection live in the shell stream or a separate stream?**
    _Tentative_: Separate `subscribeBoard` stream, but the shell stream should include minimal task metadata (counts per status) so the sidebar can show badges without subscribing to the full board.
-
-7. **How do we handle task file renames (slug changes) while preserving event history?**
-   _Tentative_: The task `id` (e.g. `dnc-0ajg`) is immutable and used for the event stream. The filename slug is purely cosmetic; renames are handled by soil migration/path utilities plus a reactor rewrite, without requiring a distinct task event unless user-visible metadata changes.
-
-8. **Should archived tasks be moved to `.dinocode/tasks/archive/` or stay in place with an `archived` status?**
-   _Tentative_: Move to `archive/` subfolder. The file watcher treats moves as implicit status changes (orchestration dispatches `task.archive` on move-in, `task.unarchive` on move-out).
 
 ---
 

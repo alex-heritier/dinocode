@@ -1,13 +1,13 @@
 ---
 # dinocode-yw76
 title: Task rename / slug change handling (resolve DINOCODE.md §12.7)
-status: todo
+status: completed
 type: feature
 priority: normal
 tags:
-  - contracts
+    - contracts
 created_at: 2026-04-22T07:41:25Z
-updated_at: 2026-04-22T07:41:25Z
+updated_at: 2026-04-23T03:09:43Z
 parent: dinocode-xd5m
 ---
 
@@ -24,3 +24,13 @@ Close the open question: task IDs are immutable but the filename slug can change
 - [ ] Thread references to the task remain valid (ID is stable)
 - [ ] UI: "Rename file" button in detail panel → prompts for new slug, previews new filename, confirms
 - [ ] Tests: rename mid-turn shouldn't break active thread's context chips
+
+
+
+## Resolution
+
+Implemented by `packages/soil/src/migration.ts` (`planSlugRename`, `migrateTaskContent`) and `packages/soil/src/reactor.ts` (path-by-id lookup via `findTaskFile`). DINOCODE.md §12.7 promoted from Open to Resolved in this commit.
+
+- Task `id` is immutable and used as the event-stream key.
+- Slug changes are cosmetic and derived from `title` via `generateSlug`. `migrateTaskContent` canonicalises on read; `planSlugRename` emits `{ oldFilename, newFilename }` for the reactor to execute.
+- `findTaskFile` matches by `<id>--*` prefix in both `tasksDir` and `archiveDir`, so existing callers keep working across renames without needing a dedicated `task.renamed` event.
