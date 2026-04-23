@@ -28,22 +28,26 @@ Full proposal logged in chat transcript `add4bf7d-0ff6-4ab2-8e84-996abca1b22b`. 
 ## Child beans (incremental build order)
 
 Phase A — unlock the chat↔board loop:
+
 - Sidebar Chat/Board pill
 - `⌘⇧B` toggle face
 - `ChatHeader` project badge → board switcher
 - Task Detail slide-over + Start Session + Open File
 
 Phase B — make the bridge bidirectional:
+
 - `/task` composer slash command
 - `@TASK-` mention chip
 - Thread ↔ task binding + chat-header chip
 
 Phase C — polish + power-user:
+
 - Fast-create (`c`, column `+`)
 - Command palette Tasks/Faces groups
 - Opinionated empty state + drop preview + auto-scroll + hover peek
 
 Later:
+
 - URL restructure to `/p/$projectId/...`
 - Dependency-graph filter mode
 

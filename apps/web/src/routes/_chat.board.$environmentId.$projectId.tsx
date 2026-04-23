@@ -1,13 +1,21 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
+import { scopeProjectRef } from "@t3tools/client-runtime";
 
 import { KanbanBoard, type KanbanDropResult } from "../components/board/KanbanBoard.tsx";
 import { TaskCreateForm } from "../components/board/TaskCreateForm.tsx";
+import { TaskDetailSheet } from "../components/board/TaskDetailSheet.tsx";
 import { SidebarInset } from "../components/ui/sidebar.tsx";
 import type { BoardSnapshot, EnvironmentId, ProjectId, TaskId } from "@t3tools/contracts";
 import { readEnvironmentApi } from "../environmentApi.ts";
+import { readLocalApi } from "../localApi.ts";
 import { useBoardSubscription } from "../rpc/boardState.ts";
 import { newCommandId } from "../lib/utils.ts";
+import { useNewThreadHandler } from "../hooks/useHandleNewThread.ts";
+import { usePreferredEditor } from "../editorPreferences.ts";
+import { useServerAvailableEditors } from "../rpc/serverState.ts";
+import { selectProjectByRef, useStore } from "../store.ts";
+import { toastManager } from "../components/ui/toast";
 
 type BoardCard = BoardSnapshot["columns"][number]["cards"][number];
 
@@ -19,9 +27,18 @@ function BoardRouteComponent() {
     }),
   });
   const { snapshot, error } = useBoardSubscription(environmentId, projectId);
+  const activeProject = useStore((state) =>
+    selectProjectByRef(state, scopeProjectRef(environmentId, projectId)),
+  );
+  const projectCwd = activeProject?.cwd ?? null;
+
   const [selectedCard, setSelectedCard] = useState<BoardCard | null>(null);
   const [detailError, setDetailError] = useState<string | null>(null);
   const [boardError, setBoardError] = useState<string | null>(null);
+
+  const availableEditors = useServerAvailableEditors();
+  const [preferredEditor] = usePreferredEditor(availableEditors);
+  const { handleNewThread } = useNewThreadHandler();
 
   const handleCardDrop = useCallback(
     async (drop: KanbanDropResult) => {
@@ -69,11 +86,63 @@ function BoardRouteComponent() {
     [environmentId],
   );
 
+  const handleStartSession = useCallback(
+    (_taskId: TaskId) => {
+      // Pre-filling the draft with task context is tracked by dinocode-lo2j.
+      // For now, just open a fresh thread for the task's project.
+      void handleNewThread(scopeProjectRef(environmentId, projectId));
+      setSelectedCard(null);
+      setDetailError(null);
+    },
+    [environmentId, handleNewThread, projectId],
+  );
+
+  const handleOpenFolder = useCallback(() => {
+    const api = readLocalApi();
+    if (!api) {
+      setDetailError("Local API unavailable — cannot open folder.");
+      return;
+    }
+    if (projectCwd === null) {
+      setDetailError("Project path is unknown.");
+      return;
+    }
+    setDetailError(null);
+    void api.shell.openInEditor(projectCwd, preferredEditor ?? "file-manager");
+  }, [preferredEditor, projectCwd]);
+
+  const handleCopyPath = useCallback(() => {
+    if (projectCwd === null) {
+      setDetailError("Project path is unknown.");
+      return;
+    }
+    setDetailError(null);
+    void navigator.clipboard.writeText(projectCwd).then(
+      () => {
+        toastManager.add({
+          type: "success",
+          title: "Path copied",
+          description: projectCwd,
+        });
+      },
+      () => {
+        setDetailError("Clipboard write failed.");
+      },
+    );
+  }, [projectCwd]);
+
+  const handleSheetOpenChange = useCallback((open: boolean) => {
+    if (!open) {
+      setSelectedCard(null);
+      setDetailError(null);
+    }
+  }, []);
+
   return (
     <SidebarInset className="h-dvh min-h-0 overflow-hidden bg-background text-foreground">
       <div className="flex h-full min-h-0 flex-col gap-4 p-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-semibold">Kanban Board</h1>
+          <h1 className="text-xl font-semibold">{activeProject?.name ?? "Kanban Board"}</h1>
           <Link
             to="/board"
             className="text-sm text-muted-foreground underline-offset-2 hover:underline"
@@ -108,61 +177,18 @@ function BoardRouteComponent() {
           </div>
         )}
 
-        {selectedCard !== null && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-            onClick={() => {
-              setSelectedCard(null);
-              setDetailError(null);
-            }}
-          >
-            <div
-              className="w-full max-w-md rounded-lg border bg-card p-6 shadow-lg"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <h3 className="text-lg font-semibold">{selectedCard.title}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">ID: {selectedCard.id}</p>
-              <p className="mt-1 text-sm text-muted-foreground">Status: {selectedCard.status}</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Priority: {selectedCard.priority}
-              </p>
-              <p className="mt-1 text-sm text-muted-foreground">Type: {selectedCard.type}</p>
-              {selectedCard.tags.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-1">
-                  {selectedCard.tags.map((tag) => (
-                    <span key={tag} className="rounded bg-muted px-2 py-0.5 text-xs">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              )}
-              {detailError !== null && (
-                <div className="mt-3 rounded-md border border-destructive/50 bg-destructive/10 p-2 text-xs text-destructive">
-                  {detailError}
-                </div>
-              )}
-              <div className="mt-4 flex items-center justify-between gap-2">
-                <button
-                  type="button"
-                  onClick={() => void handleDeleteTask(selectedCard.id)}
-                  className="rounded border border-destructive/40 px-3 py-1.5 text-sm text-destructive hover:bg-destructive/10"
-                >
-                  Delete
-                </button>
-                <button
-                  type="button"
-                  className="rounded bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
-                  onClick={() => {
-                    setSelectedCard(null);
-                    setDetailError(null);
-                  }}
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        <TaskDetailSheet
+          environmentId={environmentId}
+          projectId={projectId}
+          projectCwd={projectCwd}
+          card={selectedCard}
+          errorMessage={detailError}
+          onOpenChange={handleSheetOpenChange}
+          onDelete={handleDeleteTask}
+          onStartSession={handleStartSession}
+          onOpenFolder={handleOpenFolder}
+          onCopyPath={handleCopyPath}
+        />
       </div>
     </SidebarInset>
   );

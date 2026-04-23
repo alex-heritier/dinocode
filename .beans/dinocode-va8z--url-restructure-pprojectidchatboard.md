@@ -1,6 +1,6 @@
 ---
 # dinocode-va8z
-title: 'URL restructure: /p/$projectId/{chat,board}/...'
+title: "URL restructure: /p/$projectId/{chat,board}/..."
 status: todo
 type: task
 priority: low
@@ -11,8 +11,8 @@ parent: dinocode-qsqf
 
 Move the project to the URL root so the "two faces" idea is structural:
 
-- `/p/$projectId/chat/$threadId`  (was `/_chat/$env/$thread`)
-- `/p/$projectId/board`           (was `/_chat/board/$env/$project`)
+- `/p/$projectId/chat/$threadId` (was `/_chat/$env/$thread`)
+- `/p/$projectId/board` (was `/_chat/board/$env/$project`)
 - `/p/$projectId/board/t/$taskId` (new \u2014 deep link to a card)
 
 ## Why defer

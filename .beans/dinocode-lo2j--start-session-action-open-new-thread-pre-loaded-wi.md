@@ -1,6 +1,6 @@
 ---
 # dinocode-lo2j
-title: 'Start Session action: open new thread pre-loaded with task context'
+title: "Start Session action: open new thread pre-loaded with task context"
 status: todo
 type: task
 priority: high
@@ -16,6 +16,7 @@ Primary bridge from board \u2192 chat. A card's Start Session action opens a new
 - New client helper `apps/web/src/components/board/startTaskSession.ts`:
   - Input: `{ environmentId, projectId, task: BoardCard-or-TaskDocument }`.
   - Side effects: create a draft thread via existing `startNewThreadFromContext` path (see `lib/chatThreadActions.ts`), with a pre-filled draft containing:
+
     ```
     ## Task: <title>  (@TASK-<id>)
     Status: <status>  |  Priority: <priority>
@@ -23,8 +24,10 @@ Primary bridge from board \u2192 chat. A card's Start Session action opens a new
 
     <body>
     ```
+
   - Navigate to the new thread.
   - Store the `taskId` binding on the thread (see dinocode-h41x). Until that lands, pass the ID through the draft metadata so it round-trips.
+
 - Hooked up from:
   - Task Detail slide-over primary button (dinocode-xjal).
   - `\u2318\u23ce` keyboard shortcut on the board when a card is focused / selected.

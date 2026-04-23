@@ -1,6 +1,6 @@
 ---
 # dinocode-cbfl
-title: 'Sidebar: per-project Chat/Board segmented pill'
+title: "Sidebar: per-project Chat/Board segmented pill"
 status: completed
 type: task
 priority: high
@@ -25,7 +25,7 @@ Inside `SidebarProjectItem`, just below the project header row (name + chevron),
 
 ## Integration
 
-- The board count is available via the existing `useBoardSubscription` *or* a lightweight variant that only counts (no card details). For now, piggyback on `environmentStateById` if it already tracks task counts, otherwise lazy-subscribe on sidebar render.
+- The board count is available via the existing `useBoardSubscription` _or_ a lightweight variant that only counts (no card details). For now, piggyback on `environmentStateById` if it already tracks task counts, otherwise lazy-subscribe on sidebar render.
 - Keep it in `apps/web/src/components/Sidebar.tsx` as a minimal integration point; logic (face resolution, count selector) lives in a new module `apps/web/src/components/board/projectFace.ts` so it can be moved to `packages/dinocode-board` later.
 
 ## Acceptance

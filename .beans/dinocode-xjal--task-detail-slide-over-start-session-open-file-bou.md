@@ -1,12 +1,24 @@
 ---
 # dinocode-xjal
-title: 'Task detail slide-over: Start Session + Open File + bound threads'
-status: todo
+title: "Task detail slide-over: Start Session + Open File + bound threads"
+status: done
 type: task
 priority: high
 created_at: 2026-04-23T04:39:00Z
-updated_at: 2026-04-23T04:39:00Z
+updated_at: 2026-04-23T04:58:00Z
 parent: dinocode-qsqf
+---
+
+## Outcome (2026-04-23)
+
+Initial slice landed:
+
+- New component `apps/web/src/components/board/TaskDetailSheet.tsx` renders the detail as a right-side sheet via `Sheet`/`SheetPopup` from `@base-ui/react/dialog`.
+- Board route (`apps/web/src/routes/_chat.board.$environmentId.$projectId.tsx`) replaced the previous centered modal with `TaskDetailSheet`.
+- Actions wired: **Start session** (creates a new thread for the project via `useNewThreadHandler`), **Open folder** / **Copy path** (project `cwd`, since `api.shell.openInEditor` is directory-only), **Delete**.
+- Threads section + body rendering deferred to follow-up beans (dinocode-h41x, dinocode-skse); placeholder copy shown today.
+- `bun fmt && bun lint && bun typecheck && bun run test` green across the monorepo.
+
 ---
 
 Replace the current centered-modal card detail with a right-side slide-over sheet that matches the existing `DiffPanelShell` aesthetic. This is the primary action surface for a card.
@@ -16,6 +28,7 @@ Replace the current centered-modal card detail with a right-side slide-over shee
 Right-edge sheet, `w-[28rem]`, backdrop not darkened (board stays visible).
 
 Contents:
+
 ```
 TASK \u00b7 <status>
 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
@@ -36,6 +49,7 @@ Blocks:     \u2026 (clickable)
 ```
 
 Behavior:
+
 - Sheet does NOT block the board (no dark overlay); close on outside click or Esc.
 - `\u2318\u23ce` from anywhere in the sheet triggers Start Session (dinocode-skse).
 - `\u2318O` reveals `.dinocode/tasks/<id>--<slug>.md` via existing `OpenInPicker` flow (if editor available).

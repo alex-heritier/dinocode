@@ -1,6 +1,6 @@
 ---
 # dinocode-jp9q
-title: 'Fast create: press ''c'' or column ''+'' opens inline composer'
+title: "Fast create: press 'c' or column '+' opens inline composer"
 status: todo
 type: task
 priority: normal

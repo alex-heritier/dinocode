@@ -1,6 +1,6 @@
 ---
 # dinocode-90ly
-title: 'ChatHeader: project badge opens board'
+title: "ChatHeader: project badge opens board"
 status: completed
 type: task
 priority: high

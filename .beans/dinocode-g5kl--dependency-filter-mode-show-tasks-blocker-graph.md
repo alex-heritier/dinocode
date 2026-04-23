@@ -1,6 +1,6 @@
 ---
 # dinocode-g5kl
-title: 'Dependency filter mode: show task''s blocker graph'
+title: "Dependency filter mode: show task's blocker graph"
 status: todo
 type: task
 priority: low

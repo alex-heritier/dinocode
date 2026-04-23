@@ -1,6 +1,6 @@
 ---
 # dinocode-41r3
-title: 'Composer: @TASK- mention menu + chip renderer'
+title: "Composer: @TASK- mention menu + chip renderer"
 status: todo
 type: task
 priority: normal

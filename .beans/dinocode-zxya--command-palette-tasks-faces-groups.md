@@ -1,6 +1,6 @@
 ---
 # dinocode-zxya
-title: 'Command palette: Tasks + Faces groups'
+title: "Command palette: Tasks + Faces groups"
 status: todo
 type: task
 priority: normal
@@ -12,12 +12,14 @@ parent: dinocode-qsqf
 Expose the two most-used cross-cutting actions through the existing `CommandPalette`:
 
 ## Tasks group
+
 - When a project is active, shows top 10 open tasks from that project, fuzzy-filterable by title or ID.
 - `Enter` on a task \u2192 opens detail slide-over (even from chat view).
 - `\u2318\u23ce` \u2192 Start Session.
 - `\u21e7\u23ce` \u2192 insert `@TASK-<id>` into the currently-focused composer (no-op if none).
 
 ## Faces group
+
 - "Switch to Board" (`\u2318\u21e7B`)
 - "Switch to Chat" (`\u2318\u21e7B`)
 - "Open project picker" \u2014 jumps to `/board` index.

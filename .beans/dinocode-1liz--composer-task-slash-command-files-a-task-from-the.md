@@ -1,6 +1,6 @@
 ---
 # dinocode-1liz
-title: 'Composer: /task slash command files a task from the chat'
+title: "Composer: /task slash command files a task from the chat"
 status: todo
 type: task
 priority: normal
