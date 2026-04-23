@@ -1,3 +1,4 @@
+// dinocode-integration: dinocode-board kanban card draggable view.
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import type { CSSProperties } from "react";

@@ -1,17 +1,17 @@
 ---
 # dinocode-756x
-title: 'Browser: dev-server port detection (project-scoped)'
+title: "Browser: dev-server port detection (project-scoped)"
 status: todo
 type: task
 priority: normal
 tags:
-    - phase-browser
-    - phase-6-project
+  - phase-browser
+  - phase-6-project
 created_at: 2026-04-23T05:14:24Z
 updated_at: 2026-04-23T05:46:34Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-r4ns
+  - dinocode-r4ns
 ---
 
 Make "open the preview" zero-config for most project layouts.
@@ -30,7 +30,6 @@ Make "open the preview" zero-config for most project layouts.
 
 - Detector works on a Vite React app with no config (5173 sniffed).
 - Wrong guesses surface as "confidence: low" and require user confirm before auto-opening.
-
 
 ---
 

@@ -1,18 +1,18 @@
 ---
 # dinocode-crea
-title: 'Browser: persist tabs across sessions (state.json)'
+title: "Browser: persist tabs across sessions (state.json)"
 status: todo
 type: task
 priority: normal
 tags:
-    - phase-browser
-    - phase-1-view
+  - phase-browser
+  - phase-1-view
 created_at: 2026-04-23T05:14:23Z
 updated_at: 2026-04-23T05:46:34Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-ousa
-    - dinocode-bs50
+  - dinocode-ousa
+  - dinocode-bs50
 ---
 
 Reopening Dinocode restores the last browser state for each project.
@@ -28,7 +28,6 @@ Reopening Dinocode restores the last browser state for each project.
 - Quit and relaunch → same tabs appear.
 - Deleting the state file cleanly restarts from blank.
 - Unit test for `BrowserStateCodec`.
-
 
 ---
 

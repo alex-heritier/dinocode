@@ -1,18 +1,18 @@
 ---
 # dinocode-bs50
-title: 'Browser: multi-tab + tab strip'
+title: "Browser: multi-tab + tab strip"
 status: todo
 type: task
 priority: normal
 tags:
-    - phase-browser
-    - phase-1-view
+  - phase-browser
+  - phase-1-view
 created_at: 2026-04-23T05:14:23Z
 updated_at: 2026-04-23T05:46:34Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-ousa
-    - dinocode-qb85
+  - dinocode-ousa
+  - dinocode-qb85
 ---
 
 Give users a Chrome-like tab strip so they can have several pages open at once.
@@ -28,7 +28,6 @@ Give users a Chrome-like tab strip so they can have several pages open at once.
 
 - Up to 6 concurrent tabs supported; 7th returns `TOO_MANY_TABS` with a toast "Close a tab to open another".
 - Tab reordering persists across reload.
-
 
 ---
 

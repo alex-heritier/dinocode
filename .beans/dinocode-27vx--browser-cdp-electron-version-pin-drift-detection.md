@@ -1,19 +1,19 @@
 ---
 # dinocode-27vx
-title: 'Browser: CDP / Electron version pin + drift detection'
+title: "Browser: CDP / Electron version pin + drift detection"
 status: todo
 type: task
 priority: normal
 tags:
-    - phase-browser
-    - phase-7-later
-    - reliability
+  - phase-browser
+  - phase-7-later
+  - reliability
 created_at: 2026-04-23T05:46:23Z
 updated_at: 2026-04-23T05:46:35Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-u1nj
-    - dinocode-jtbw
+  - dinocode-u1nj
+  - dinocode-jtbw
 ---
 
 ## Why this bean exists

@@ -1,19 +1,19 @@
 ---
 # dinocode-6os6
-title: 'Browser: ''Agent is driving'' banner + take-over flow'
+title: "Browser: 'Agent is driving' banner + take-over flow"
 status: todo
 type: task
 priority: high
 tags:
-    - phase-browser
-    - phase-5-safety
+  - phase-browser
+  - phase-5-safety
 created_at: 2026-04-23T05:14:24Z
 updated_at: 2026-04-23T05:46:34Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-kww9
-    - dinocode-34kt
-    - dinocode-cbcb
+  - dinocode-kww9
+  - dinocode-34kt
+  - dinocode-cbcb
 ---
 
 Make it visible and reversible when the agent is manipulating the browser.
@@ -29,7 +29,6 @@ Make it visible and reversible when the agent is manipulating the browser.
 
 - Agent cannot steal input while a user is actively typing (input focus + recent user activity → interaction tools return `USER_ACTIVE` with a hint).
 - "Take over" verified in an integration test.
-
 
 ---
 

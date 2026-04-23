@@ -51,3 +51,59 @@ Docs:
 - Codex-Monitor (Tauri, feature-complete, strong reference implementation): https://github.com/Dimillian/CodexMonitor
 
 Use these as implementation references when designing protocol handling, UX flows, and operational safeguards.
+
+## Dinocode Tasks
+
+Dinocode tracks its own work as flat-file tasks in `.dinocode/tasks/` (long term) and today dogfoods the same idea via [`beans`](https://github.com/hmans/beans) in `.beans/`. Agents should treat these files as first-class context.
+
+### Discovery
+
+- Task files live under `.beans/` (migrating to `.dinocode/tasks/` per `dinocode-fj6n`).
+- Each file is Markdown + YAML front matter, named `<prefix><id>--<slug>.md`.
+- Preferred discovery: use the `beans` CLI (already primed via `beans prime`) — or, once the dinocode CLI ships (`packages/dinocode-cli`), `dinocode task list --ready`.
+
+### Working on a task
+
+1. Pick an unblocked task with `beans list --ready --json` (or `dinocode task list --ready --json`).
+2. Mark it `in-progress` before touching code: `beans update <id> -s in-progress`.
+3. Keep the body's todo checklist current as you work.
+4. On completion, add a `## Summary of Changes` section and mark the task `completed`.
+5. Include both the code changes and the task file in the same commit.
+
+### ETag optimistic concurrency
+
+All task mutations are ETag-guarded:
+
+- `beans show <id> --etag-only` to read the current ETag.
+- `beans update <id> --if-match "$ETAG" ...` to guard against clobbering.
+- The server dispatches `task.conflict` when the watcher re-ingests an external edit whose ETag no longer matches; the UI surfaces a three-way merge.
+
+### Built-in tools (coming, Phase 4)
+
+Inside provider adapters (Codex, Claude), Dinocode registers native function-calling tools that let the agent work with tasks without shelling out:
+
+- `dinocode_list_tasks`, `dinocode_view_task`, `dinocode_create_task`, `dinocode_update_task`, `dinocode_link_tasks`, `dinocode_archive_task`.
+
+These are richer than the CLI (real-time, typed, no shell escaping) but require the provider adapter to be wired. The CLI always works.
+
+### Self-priming
+
+- `beans prime` emits the canonical agent instructions for beans usage.
+- Once the dinocode CLI ships, `dinocode prime` will emit the full Dinocode-tailored reference (tasks, threads, kanban, home-agent commands). This bean (`dinocode-3v4w`) tracks shipping `dinocode prime`; in the meantime, read `.docs/dinocode-for-agents.md` for the long-form guide.
+
+### Integration-point rule
+
+Every Dinocode feature lives in a `packages/dinocode-*` package. When a change in `apps/*` or `packages/contracts/*` wires a Dinocode package in, add a one-line comment:
+
+```ts
+// dinocode-integration: <package> <feature>
+```
+
+This makes `rg 'dinocode-integration'` a complete map of the t3code ↔ dinocode coupling surface. See [`docs/dinocode-packages.md`](docs/dinocode-packages.md) for the full policy.
+
+### Further reading for agents
+
+- [`.docs/dinocode-for-agents.md`](.docs/dinocode-for-agents.md) — long-form agent guide (task schema, CLI cheat sheet, home-agent protocol).
+- [`DINOCODE.md`](DINOCODE.md) — canonical architecture + data model.
+- [`docs/dinocode-packages.md`](docs/dinocode-packages.md) — package boundaries.
+- [`docs/dinocode-browser.md`](docs/dinocode-browser.md) — built-in browser subsystem.

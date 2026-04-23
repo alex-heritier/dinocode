@@ -1,18 +1,18 @@
 ---
 # dinocode-kww9
-title: 'Browser tool: dinocode_browser_click / hover'
+title: "Browser tool: dinocode_browser_click / hover"
 status: todo
 type: task
 priority: high
 tags:
-    - phase-browser
-    - phase-4-agent-interact
+  - phase-browser
+  - phase-4-agent-interact
 created_at: 2026-04-23T05:14:24Z
 updated_at: 2026-04-23T05:46:34Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-cbcb
-    - dinocode-yne5
+  - dinocode-cbcb
+  - dinocode-yne5
 ---
 
 Simulated mouse input for the agent.
@@ -29,7 +29,6 @@ Simulated mouse input for the agent.
 
 - Clicks work for buttons, links, labels, checkboxes, native date pickers (for the visible cases).
 - Navigation-causing clicks waited on via `Page.frameStoppedLoading`.
-
 
 ---
 

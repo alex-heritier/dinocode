@@ -1,19 +1,19 @@
 ---
 # dinocode-j4ve
-title: 'Browser: pick-element overlay content-script injection'
+title: "Browser: pick-element overlay content-script injection"
 status: todo
 type: task
 priority: normal
 tags:
-    - phase-browser
-    - phase-4-agent-interact
+  - phase-browser
+  - phase-4-agent-interact
 created_at: 2026-04-23T05:46:23Z
 updated_at: 2026-04-23T05:46:35Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-ousa
-    - dinocode-u1nj
-    - dinocode-cnnp
+  - dinocode-ousa
+  - dinocode-u1nj
+  - dinocode-cnnp
 ---
 
 ## Why this bean exists

@@ -1,19 +1,19 @@
 ---
 # dinocode-cbcb
-title: 'Browser tool: dinocode_browser_query_selector (resolve + describe)'
+title: "Browser tool: dinocode_browser_query_selector (resolve + describe)"
 status: todo
 type: task
 priority: high
 tags:
-    - phase-browser
-    - phase-4-agent-interact
+  - phase-browser
+  - phase-4-agent-interact
 created_at: 2026-04-23T05:14:24Z
 updated_at: 2026-04-23T05:46:34Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-yne5
-    - dinocode-u1nj
-    - dinocode-56ga
+  - dinocode-yne5
+  - dinocode-u1nj
+  - dinocode-56ga
 ---
 
 Find an element and describe it structurally; returns a stable ref usable by click/type/fill.
@@ -28,7 +28,6 @@ Find an element and describe it structurally; returns a stable ref usable by cli
 
 - Works for common forms of selector (`#id`, `.class`, `button[aria-label="…"]`, XPath `//button[.="OK"]`).
 - Returned `box` in viewport pixels.
-
 
 ---
 

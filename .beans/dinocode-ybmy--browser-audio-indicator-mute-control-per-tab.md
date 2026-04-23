@@ -1,17 +1,17 @@
 ---
 # dinocode-ybmy
-title: 'Browser: audio indicator + mute control per tab'
+title: "Browser: audio indicator + mute control per tab"
 status: todo
 type: task
 priority: low
 tags:
-    - phase-browser
-    - phase-1-view
+  - phase-browser
+  - phase-1-view
 created_at: 2026-04-23T05:46:23Z
 updated_at: 2026-04-23T05:46:35Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-bs50
+  - dinocode-bs50
 ---
 
 ## Why this bean exists

@@ -1,18 +1,18 @@
 ---
 # dinocode-49oz
-title: 'Browser: address bar (URL, go, reload, back, forward, stop)'
+title: "Browser: address bar (URL, go, reload, back, forward, stop)"
 status: todo
 type: task
 priority: normal
 tags:
-    - phase-browser
-    - phase-1-view
+  - phase-browser
+  - phase-1-view
 created_at: 2026-04-23T05:14:23Z
 updated_at: 2026-04-23T05:46:33Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-qb85
-    - dinocode-ousa
+  - dinocode-qb85
+  - dinocode-ousa
 ---
 
 Build the Chrome-style URL bar on top of the existing `BrowserManager` + `BrowserPanel`.
@@ -30,7 +30,6 @@ Build the Chrome-style URL bar on top of the existing `BrowserManager` + `Browse
 - Navigation works for localhost URLs out of the box (after Phase 0 allowlist).
 - History persists per project under `.dinocode/browser/history.json`.
 - Pure-logic module for URL normalization + history ranking is unit tested.
-
 
 ---
 

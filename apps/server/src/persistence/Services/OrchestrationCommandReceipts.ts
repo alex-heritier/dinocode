@@ -24,6 +24,7 @@ import type { OrchestrationCommandReceiptRepositoryError } from "../Errors.ts";
 export const OrchestrationCommandReceipt = Schema.Struct({
   commandId: CommandId,
   aggregateKind: OrchestrationAggregateKind,
+  // dinocode-integration: dinocode-contracts adds TaskId to the receipt aggregate union.
   aggregateId: Schema.Union([ProjectId, ThreadId, TaskId]),
   acceptedAt: IsoDateTime,
   resultSequence: NonNegativeInt,

@@ -1,18 +1,18 @@
 ---
 # dinocode-u2p2
-title: 'Browser: keybinding scope + pass-through policy'
+title: "Browser: keybinding scope + pass-through policy"
 status: todo
 type: task
 priority: high
 tags:
-    - phase-browser
-    - phase-1-view
+  - phase-browser
+  - phase-1-view
 created_at: 2026-04-23T05:46:23Z
 updated_at: 2026-04-23T05:46:35Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-qb85
-    - dinocode-2g71
+  - dinocode-qb85
+  - dinocode-2g71
 ---
 
 ## Why this bean exists

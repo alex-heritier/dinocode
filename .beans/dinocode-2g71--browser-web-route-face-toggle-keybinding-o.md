@@ -1,17 +1,17 @@
 ---
 # dinocode-2g71
-title: 'Browser: web route + face toggle keybinding (⌘⇧O)'
+title: "Browser: web route + face toggle keybinding (⌘⇧O)"
 status: todo
 type: task
 priority: normal
 tags:
-    - phase-browser
-    - phase-1-view
+  - phase-browser
+  - phase-1-view
 created_at: 2026-04-23T05:14:23Z
 updated_at: 2026-04-23T05:46:34Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-qb85
+  - dinocode-qb85
 ---
 
 Wire the browser panel into the existing chat faces model (parallel to `⌘⇧B` for the board).
@@ -29,7 +29,6 @@ Wire the browser panel into the existing chat faces model (parallel to `⌘⇧B`
 - `⌘⇧O` toggles between chat and browser face for the active project.
 - Route works when nav'd to directly.
 - Tests for `resolveToggleBrowserFaceAction` pure-logic module (mirrors `toggleFace.logic.ts`).
-
 
 ---
 

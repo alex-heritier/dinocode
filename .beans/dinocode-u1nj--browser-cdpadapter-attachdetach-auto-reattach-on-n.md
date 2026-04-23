@@ -1,18 +1,18 @@
 ---
 # dinocode-u1nj
-title: 'Browser: CdpAdapter (attach/detach + auto-reattach on nav)'
+title: "Browser: CdpAdapter (attach/detach + auto-reattach on nav)"
 status: todo
 type: task
 priority: high
 tags:
-    - phase-browser
-    - phase-2-cdp
+  - phase-browser
+  - phase-2-cdp
 created_at: 2026-04-23T05:14:23Z
 updated_at: 2026-04-23T05:46:34Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-ousa
-    - dinocode-jtbw
+  - dinocode-ousa
+  - dinocode-jtbw
 ---
 
 A thin, testable wrapper around `webContents.debugger` that the rest of the browser subsystem depends on.
@@ -28,7 +28,6 @@ A thin, testable wrapper around `webContents.debugger` that the rest of the brow
 
 - Unit tests with a mock debugger simulate attach/detach + cross-origin nav; listeners survive both.
 - No leaked event listeners after `dispose()`.
-
 
 ---
 

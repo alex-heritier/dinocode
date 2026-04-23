@@ -1,25 +1,25 @@
 ---
 # dinocode-8t74
-title: 'Browser: headless CLI mode (reuse tool handlers without the GUI)'
+title: "Browser: headless CLI mode (reuse tool handlers without the GUI)"
 status: todo
 type: task
 priority: normal
 tags:
-    - phase-browser
-    - phase-7-later
+  - phase-browser
+  - phase-7-later
 created_at: 2026-04-23T05:14:24Z
 updated_at: 2026-04-23T05:46:34Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-w0qv
-    - dinocode-t2l9
-    - dinocode-yne5
-    - dinocode-07j6
-    - dinocode-c3lk
-    - dinocode-w19p
-    - dinocode-kww9
-    - dinocode-34kt
-    - dinocode-mexx
+  - dinocode-w0qv
+  - dinocode-t2l9
+  - dinocode-yne5
+  - dinocode-07j6
+  - dinocode-c3lk
+  - dinocode-w19p
+  - dinocode-kww9
+  - dinocode-34kt
+  - dinocode-mexx
 ---
 
 Expose the same browser tools to the `dinocode` CLI for scripted/CI use.
@@ -34,7 +34,6 @@ Expose the same browser tools to the `dinocode` CLI for scripted/CI use.
 
 - `dinocode browser eval "1+1"` prints `2` in a CI container (headless).
 - Same allowlist + error taxonomy as GUI mode.
-
 
 ---
 

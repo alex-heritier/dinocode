@@ -1,20 +1,20 @@
 ---
 # dinocode-2lh1
-title: 'Browser: download handling + artifact routing'
+title: "Browser: download handling + artifact routing"
 status: todo
 type: task
 priority: normal
 tags:
-    - phase-browser
-    - phase-1-view
-    - security
+  - phase-browser
+  - phase-1-view
+  - security
 created_at: 2026-04-23T05:46:23Z
 updated_at: 2026-04-23T05:46:35Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-ousa
-    - dinocode-ctrl
-    - dinocode-dyjh
+  - dinocode-ousa
+  - dinocode-ctrl
+  - dinocode-dyjh
 ---
 
 ## Why this bean exists

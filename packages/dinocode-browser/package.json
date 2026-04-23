@@ -1,0 +1,64 @@
+{
+  "name": "@dinocode/browser",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Dinocode built-in browser: embedded Electron WebContentsView, CDP adapter, renderer panel, and agent tool handlers.",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
+    },
+    "./main": {
+      "types": "./src/main/index.ts",
+      "import": "./src/main/index.ts"
+    },
+    "./preload": {
+      "types": "./src/preload/index.ts",
+      "import": "./src/preload/index.ts"
+    },
+    "./renderer": {
+      "types": "./src/renderer/index.ts",
+      "import": "./src/renderer/index.ts"
+    },
+    "./shared": {
+      "types": "./src/shared/index.ts",
+      "import": "./src/shared/index.ts"
+    },
+    "./tools": {
+      "types": "./src/tools/index.ts",
+      "import": "./src/tools/index.ts"
+    }
+  },
+  "scripts": {
+    "prepare": "effect-language-service patch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "effect": "catalog:"
+  },
+  "devDependencies": {
+    "@effect/language-service": "catalog:",
+    "@effect/vitest": "catalog:",
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "electron": "*",
+    "react": "*",
+    "react-dom": "*"
+  },
+  "peerDependenciesMeta": {
+    "electron": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    }
+  }
+}

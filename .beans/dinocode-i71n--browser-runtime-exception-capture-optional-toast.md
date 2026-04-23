@@ -1,18 +1,18 @@
 ---
 # dinocode-i71n
-title: 'Browser: runtime exception capture + optional toast'
+title: "Browser: runtime exception capture + optional toast"
 status: todo
 type: task
 priority: normal
 tags:
-    - phase-browser
-    - phase-2-cdp
+  - phase-browser
+  - phase-2-cdp
 created_at: 2026-04-23T05:14:24Z
 updated_at: 2026-04-23T05:46:34Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-u1nj
-    - dinocode-yn5x
+  - dinocode-u1nj
+  - dinocode-yn5x
 ---
 
 Surface uncaught exceptions proactively.
@@ -28,7 +28,6 @@ Surface uncaught exceptions proactively.
 
 - Injected uncaught error appears in ring buffer within one event loop tick.
 - Toggle behavior verified in a smoke test.
-
 
 ---
 

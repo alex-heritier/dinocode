@@ -1,18 +1,18 @@
 ---
 # dinocode-7bew
-title: 'Browser: Find in page (⌘F)'
+title: "Browser: Find in page (⌘F)"
 status: todo
 type: task
 priority: normal
 tags:
-    - phase-browser
-    - phase-1-view
+  - phase-browser
+  - phase-1-view
 created_at: 2026-04-23T05:46:23Z
 updated_at: 2026-04-23T05:46:35Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-qb85
-    - dinocode-u2p2
+  - dinocode-qb85
+  - dinocode-u2p2
 ---
 
 ## Why this bean exists

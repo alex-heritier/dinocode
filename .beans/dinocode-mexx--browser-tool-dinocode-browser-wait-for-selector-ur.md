@@ -1,19 +1,19 @@
 ---
 # dinocode-mexx
-title: 'Browser tool: dinocode_browser_wait_for (selector / url / console / network-idle)'
+title: "Browser tool: dinocode_browser_wait_for (selector / url / console / network-idle)"
 status: todo
 type: task
 priority: high
 tags:
-    - phase-browser
-    - phase-4-agent-interact
+  - phase-browser
+  - phase-4-agent-interact
 created_at: 2026-04-23T05:14:24Z
 updated_at: 2026-04-23T05:46:34Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-cbcb
-    - dinocode-yn5x
-    - dinocode-ive4
+  - dinocode-cbcb
+  - dinocode-yn5x
+  - dinocode-ive4
 ---
 
 Robust waiters so agents don't hardcode `sleep` and don't hang.
@@ -32,7 +32,6 @@ Robust waiters so agents don't hardcode `sleep` and don't hang.
 
 - Each condition tested.
 - Timeout returns `{ ok: false, code: 'TIMEOUT', hint: '<what we last observed>' }`.
-
 
 ---
 

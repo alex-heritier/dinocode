@@ -1,3 +1,4 @@
+// dinocode-integration: dinocode-board project-picker landing route.
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useMemo } from "react";
 import type { EnvironmentId, ProjectId } from "@t3tools/contracts";

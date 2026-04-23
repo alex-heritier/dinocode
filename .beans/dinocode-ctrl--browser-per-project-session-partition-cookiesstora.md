@@ -1,17 +1,17 @@
 ---
 # dinocode-ctrl
-title: 'Browser: per-project session partition (cookies/storage isolation)'
+title: "Browser: per-project session partition (cookies/storage isolation)"
 status: todo
 type: task
 priority: high
 tags:
-    - phase-browser
-    - phase-1-view
+  - phase-browser
+  - phase-1-view
 created_at: 2026-04-23T05:14:23Z
 updated_at: 2026-04-23T05:46:34Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-ousa
+  - dinocode-ousa
 ---
 
 Prevent cross-project cookie/localStorage/cache leakage.
@@ -27,7 +27,6 @@ Prevent cross-project cookie/localStorage/cache leakage.
 - Cookies, localStorage, IndexedDB, and service workers all isolated per project.
 - Switching projects does not require reopening tabs.
 - Manual QA script documented in `docs/dinocode-browser.md`.
-
 
 ---
 

@@ -22,6 +22,7 @@ import {
   type TerminalEvent,
   WS_METHODS,
   WsRpcGroup,
+  // dinocode-integration: dinocode-contracts board + task subscription errors + TaskId.
   OrchestrationSubscribeBoardError,
   OrchestrationSubscribeTaskError,
   TaskId,
@@ -258,6 +259,7 @@ const makeWsRpcLayer = (currentSessionId: AuthSessionId) =>
         never,
         never
       > => {
+        // dinocode-integration: dinocode-server board stream task event fan-out.
         if (event.type === "task.created") {
           return projectionSnapshotQuery.getTaskById(TaskId.make(event.payload.taskId)).pipe(
             Effect.map((task) =>
@@ -807,6 +809,7 @@ const makeWsRpcLayer = (currentSessionId: AuthSessionId) =>
             }),
             { "rpc.aggregate": "orchestration" },
           ),
+        // dinocode-integration: dinocode-contracts subscribeBoard RPC handler.
         [ORCHESTRATION_WS_METHODS.subscribeBoard]: (input) =>
           observeRpcStreamEffect(
             ORCHESTRATION_WS_METHODS.subscribeBoard,
@@ -847,6 +850,7 @@ const makeWsRpcLayer = (currentSessionId: AuthSessionId) =>
             }),
             { "rpc.aggregate": "orchestration" },
           ),
+        // dinocode-integration: dinocode-contracts subscribeTask RPC handler.
         [ORCHESTRATION_WS_METHODS.subscribeTask]: (input) =>
           observeRpcStreamEffect(
             ORCHESTRATION_WS_METHODS.subscribeTask,

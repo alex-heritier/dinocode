@@ -1,19 +1,19 @@
 ---
 # dinocode-6xeu
-title: 'Browser: certificate error policy (self-signed dev certs)'
+title: "Browser: certificate error policy (self-signed dev certs)"
 status: todo
 type: task
 priority: normal
 tags:
-    - phase-browser
-    - phase-1-view
-    - security
+  - phase-browser
+  - phase-1-view
+  - security
 created_at: 2026-04-23T05:46:23Z
 updated_at: 2026-04-23T05:46:35Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-ousa
-    - dinocode-sdqj
+  - dinocode-ousa
+  - dinocode-sdqj
 ---
 
 ## Why this bean exists

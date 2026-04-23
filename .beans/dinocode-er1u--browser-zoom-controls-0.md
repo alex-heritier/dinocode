@@ -1,19 +1,19 @@
 ---
 # dinocode-er1u
-title: 'Browser: zoom controls (⌘+/⌘-/⌘0)'
+title: "Browser: zoom controls (⌘+/⌘-/⌘0)"
 status: todo
 type: task
 priority: low
 tags:
-    - phase-browser
-    - phase-1-view
+  - phase-browser
+  - phase-1-view
 created_at: 2026-04-23T05:46:23Z
 updated_at: 2026-04-23T05:46:35Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-qb85
-    - dinocode-u2p2
-    - dinocode-crea
+  - dinocode-qb85
+  - dinocode-u2p2
+  - dinocode-crea
 ---
 
 ## Why this bean exists

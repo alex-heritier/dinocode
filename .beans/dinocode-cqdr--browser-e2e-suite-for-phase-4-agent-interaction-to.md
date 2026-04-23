@@ -1,26 +1,26 @@
 ---
 # dinocode-cqdr
-title: 'Browser: e2e suite for Phase 4 (agent interaction tools)'
+title: "Browser: e2e suite for Phase 4 (agent interaction tools)"
 status: todo
 type: task
 priority: high
 tags:
-    - phase-browser
-    - phase-4-agent-interact
-    - testing
+  - phase-browser
+  - phase-4-agent-interact
+  - testing
 created_at: 2026-04-23T05:46:24Z
 updated_at: 2026-04-23T05:46:35Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-cbcb
-    - dinocode-kww9
-    - dinocode-34kt
-    - dinocode-mexx
-    - dinocode-pyoi
-    - dinocode-aq1p
-    - dinocode-j4ve
-    - dinocode-te2e
-    - dinocode-wf12
+  - dinocode-cbcb
+  - dinocode-kww9
+  - dinocode-34kt
+  - dinocode-mexx
+  - dinocode-pyoi
+  - dinocode-aq1p
+  - dinocode-j4ve
+  - dinocode-te2e
+  - dinocode-wf12
 ---
 
 ## Why this bean exists

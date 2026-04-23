@@ -1,14 +1,14 @@
 ---
 # dinocode-87ah
 title: 'Browser: shared tool definitions module + register via dinocode-agent-tools'
-status: todo
+status: completed
 type: task
 priority: high
 tags:
     - phase-browser
     - phase-3-agent-read
 created_at: 2026-04-23T05:14:24Z
-updated_at: 2026-04-23T05:46:34Z
+updated_at: 2026-04-23T06:45:23Z
 parent: dinocode-ipdj
 blocked_by:
     - dinocode-cnnp
@@ -28,7 +28,6 @@ All browser agent tools live in `packages/dinocode-browser/src/tools/` and are r
 
 - Codex + Claude + Cursor adapters all see the browser tools from a single source of truth.
 - Adapter round-trip test (definition → adapter shape → back) passes.
-
 
 ---
 
@@ -106,3 +105,47 @@ Single source of truth for every browser agent-tool. Mirrors the pattern `dinoco
 - [ ] Logs and traces verified under `DINOCODE_BROWSER_DEBUG=debug`.
 
 Part of epic `dinocode-ipdj`.
+
+## Progress
+
+- Added `packages/dinocode-browser/src/tools/definitions.ts` with:
+  - `DinocodeToolResult<T>` discriminated union (`{ ok: true, data } | { ok:
+    false, code, message, hint? }`) matching the dinocode-ndam task-tool
+    shape, plus a generic `DinocodeToolResultSchema(dataSchema)` combinator
+    for contract tests and provider serialisation.
+  - `DinocodeToolContext` — minimal handler context (`traceId`, optional
+    `tabId`, `now()`, `invokeBrowser()` indirection). Designed so handlers
+    are unit-testable with a fake browser in-process.
+  - `DinocodeToolDefinition<Input, Output>` — the canonical `{ name,
+    description, inputSchema, outputSchema, handler }` record.
+  - `BROWSER_TOOL_DEFINITIONS` — the 20-tool catalogue keyed off
+    `BrowserToolNameSchema.literals` so adding/removing a tool in the shared
+    schema forces an entry here. Every tool gets a placeholder
+    `notImplementedResult` handler; downstream beans replace them.
+- Added `packages/dinocode-browser/src/tools/adapters.ts` with:
+  - `toCodexTool`, `toClaudeTool`, `toCursorTool` producing the three
+    provider-native JSON-tool shapes, driven by `Schema.toJsonSchemaDocument`.
+  - `toAllProviderShapes` bundles all three for test and bulk-registration
+    ergonomics.
+  - Adapters read through a narrow structural `AnyDef` type so variance in
+    per-tool `Input`/`Output` schemas does not poison the catalogue.
+- Barrel `src/tools/index.ts` now re-exports both files.
+- Unit tests (`src/tests/tools.test.ts`, 9 new tests):
+  - Definition/catalogue parity with `BrowserToolNameSchema` literals.
+  - Non-empty descriptions for every tool.
+  - Placeholder handlers return the structured not-implemented envelope.
+  - `DinocodeToolResultSchema` round-trips both ok and error branches.
+  - Codex/Claude/Cursor shapes produced for every definition, round-tripping
+    name + description across all three adapter forms.
+- Totals: 29 tests pass in `@dinocode/browser`; root `bun run typecheck`
+  clean across 12 workspaces; `bun run fmt` clean; `bun run lint` introduces
+  no new errors.
+- Deferred (explicit, called out here so reviewers don't expect it):
+  - Registering `BROWSER_TOOL_DEFINITIONS` through the server's
+    agent-tools adapter requires `dinocode-ndam` (task-tool registration) to
+    land first so the two share one registration path; this bean provides
+    the surface the registration needs.
+  - Replacing placeholder `inputSchema`/`outputSchema`/`handler` for each
+    tool happens in the per-tool beans (`dinocode-t2l9`, `dinocode-kww9`,
+    etc.). Those beans now depend only on editing the existing catalogue
+    entry instead of inventing the surface.

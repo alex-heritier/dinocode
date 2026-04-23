@@ -1,43 +1,43 @@
 ---
 # dinocode-cfbt
-title: 'Browser: e2e suite for Phase 1 (embedded view MVP)'
+title: "Browser: e2e suite for Phase 1 (embedded view MVP)"
 status: todo
 type: task
 priority: high
 tags:
-    - phase-browser
-    - phase-1-view
-    - testing
+  - phase-browser
+  - phase-1-view
+  - testing
 created_at: 2026-04-23T05:46:23Z
 updated_at: 2026-04-23T05:46:35Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-ousa
-    - dinocode-qb85
-    - dinocode-49oz
-    - dinocode-tb6r
-    - dinocode-oxax
-    - dinocode-2g71
-    - dinocode-bs50
-    - dinocode-crea
-    - dinocode-ctrl
-    - dinocode-2lh1
-    - dinocode-fgw7
-    - dinocode-vkd6
-    - dinocode-6xeu
-    - dinocode-xtqg
-    - dinocode-b71p
-    - dinocode-7bew
-    - dinocode-er1u
-    - dinocode-ybmy
-    - dinocode-aikp
-    - dinocode-7n6g
-    - dinocode-yqtt
-    - dinocode-m570
-    - dinocode-g5pr
-    - dinocode-2rrs
-    - dinocode-u2p2
-    - dinocode-wf12
+  - dinocode-ousa
+  - dinocode-qb85
+  - dinocode-49oz
+  - dinocode-tb6r
+  - dinocode-oxax
+  - dinocode-2g71
+  - dinocode-bs50
+  - dinocode-crea
+  - dinocode-ctrl
+  - dinocode-2lh1
+  - dinocode-fgw7
+  - dinocode-vkd6
+  - dinocode-6xeu
+  - dinocode-xtqg
+  - dinocode-b71p
+  - dinocode-7bew
+  - dinocode-er1u
+  - dinocode-ybmy
+  - dinocode-aikp
+  - dinocode-7n6g
+  - dinocode-yqtt
+  - dinocode-m570
+  - dinocode-g5pr
+  - dinocode-2rrs
+  - dinocode-u2p2
+  - dinocode-wf12
 ---
 
 ## Why this bean exists

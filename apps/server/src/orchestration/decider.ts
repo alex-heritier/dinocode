@@ -744,6 +744,7 @@ export const decideOrchestrationCommand = Effect.fn("decideOrchestrationCommand"
       };
     }
 
+    // dinocode-integration: dinocode-server task.* command cases (through "task.unarchive" below).
     case "task.create": {
       yield* requireProject({
         readModel,

@@ -1,22 +1,22 @@
 ---
 # dinocode-c3uw
-title: 'Browser: e2e suite for Phase 6 (project integration)'
+title: "Browser: e2e suite for Phase 6 (project integration)"
 status: todo
 type: task
 priority: high
 tags:
-    - phase-browser
-    - phase-6-project
-    - testing
+  - phase-browser
+  - phase-6-project
+  - testing
 created_at: 2026-04-23T05:46:24Z
 updated_at: 2026-04-23T05:46:35Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-756x
-    - dinocode-8xd5
-    - dinocode-jzfg
-    - dinocode-1mfa
-    - dinocode-wf12
+  - dinocode-756x
+  - dinocode-8xd5
+  - dinocode-jzfg
+  - dinocode-1mfa
+  - dinocode-wf12
 ---
 
 ## Why this bean exists

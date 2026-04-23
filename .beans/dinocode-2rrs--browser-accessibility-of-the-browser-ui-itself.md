@@ -1,20 +1,20 @@
 ---
 # dinocode-2rrs
-title: 'Browser: accessibility of the browser UI itself'
+title: "Browser: accessibility of the browser UI itself"
 status: todo
 type: task
 priority: normal
 tags:
-    - phase-browser
-    - phase-1-view
-    - accessibility
+  - phase-browser
+  - phase-1-view
+  - accessibility
 created_at: 2026-04-23T05:46:23Z
 updated_at: 2026-04-23T05:46:35Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-qb85
-    - dinocode-49oz
-    - dinocode-bs50
+  - dinocode-qb85
+  - dinocode-49oz
+  - dinocode-bs50
 ---
 
 ## Why this bean exists

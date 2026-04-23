@@ -33,6 +33,7 @@ const EventMetadataFromJsonString = Schema.fromJsonString(OrchestrationEventMeta
 const AppendEventRequestSchema = Schema.Struct({
   eventId: EventId,
   aggregateKind: OrchestrationAggregateKind,
+  // dinocode-integration: dinocode-contracts TaskId joins event stream union.
   streamId: Schema.Union([ProjectId, ThreadId, TaskId]),
   type: OrchestrationEventType,
   causationEventId: Schema.NullOr(EventId),

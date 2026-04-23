@@ -1,3 +1,4 @@
+// dinocode-integration: dinocode-board kanban drag-and-drop surface.
 import {
   DndContext,
   DragOverlay,

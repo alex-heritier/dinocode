@@ -144,6 +144,7 @@ export function requireThreadAbsent(input: {
   );
 }
 
+// dinocode-integration: dinocode-server task read-model invariants.
 export function findTaskById(
   readModel: OrchestrationReadModel,
   taskId: TaskId,

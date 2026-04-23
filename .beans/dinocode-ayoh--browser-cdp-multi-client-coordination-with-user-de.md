@@ -1,18 +1,18 @@
 ---
 # dinocode-ayoh
-title: 'Browser: CDP multi-client coordination with user DevTools'
+title: "Browser: CDP multi-client coordination with user DevTools"
 status: todo
 type: task
 priority: normal
 tags:
-    - phase-browser
-    - phase-7-later
+  - phase-browser
+  - phase-7-later
 created_at: 2026-04-23T05:14:24Z
 updated_at: 2026-04-23T05:46:35Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-u1nj
-    - dinocode-tb6r
+  - dinocode-u1nj
+  - dinocode-tb6r
 ---
 
 Hard-harden the shared-CDP case where both our `CdpAdapter` and Chrome DevTools are attached.
@@ -28,7 +28,6 @@ Hard-harden the shared-CDP case where both our `CdpAdapter` and Chrome DevTools 
 
 - Opening DevTools, hitting a breakpoint, resuming — our ring buffers keep capturing without gaps.
 - Documented limitations where multi-client is fundamentally lossy (if any).
-
 
 ---
 

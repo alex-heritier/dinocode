@@ -1,19 +1,19 @@
 ---
 # dinocode-g5pr
-title: 'Browser: tab discard / sleep when hidden'
+title: "Browser: tab discard / sleep when hidden"
 status: todo
 type: task
 priority: normal
 tags:
-    - phase-browser
-    - phase-1-view
-    - perf
+  - phase-browser
+  - phase-1-view
+  - perf
 created_at: 2026-04-23T05:46:23Z
 updated_at: 2026-04-23T05:46:35Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-ousa
-    - dinocode-bs50
+  - dinocode-ousa
+  - dinocode-bs50
 ---
 
 ## Why this bean exists

@@ -29,6 +29,7 @@ export const ORCHESTRATION_WS_METHODS = {
   replayEvents: "orchestration.replayEvents",
   subscribeShell: "orchestration.subscribeShell",
   subscribeThread: "orchestration.subscribeThread",
+  // dinocode-integration: dinocode-contracts task + board WS method names.
   subscribeBoard: "orchestration.subscribeBoard",
   subscribeTask: "orchestration.subscribeTask",
 } as const;
@@ -108,6 +109,7 @@ export const ProviderApprovalDecision = Schema.Literals([
 ]);
 export type ProviderApprovalDecision = typeof ProviderApprovalDecision.Type;
 
+// dinocode-integration: dinocode-contracts task domain schemas (status/type/priority/document/commands/events).
 export const TaskStatus = Schema.Literals([
   "in-progress",
   "todo",

@@ -1,18 +1,18 @@
 ---
 # dinocode-34kt
-title: 'Browser tool: dinocode_browser_type / press_key / fill_form'
+title: "Browser tool: dinocode_browser_type / press_key / fill_form"
 status: todo
 type: task
 priority: high
 tags:
-    - phase-browser
-    - phase-4-agent-interact
+  - phase-browser
+  - phase-4-agent-interact
 created_at: 2026-04-23T05:14:24Z
 updated_at: 2026-04-23T05:46:34Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-cbcb
-    - dinocode-yne5
+  - dinocode-cbcb
+  - dinocode-yne5
 ---
 
 Simulated keyboard input + high-level form fill.
@@ -28,7 +28,6 @@ Simulated keyboard input + high-level form fill.
 - Typing into a `<textarea>` with `onInput` handler triggers the handler for each keystroke.
 - `press_key` supports common editor shortcuts.
 - `fill_form` resolves by `<label for>`, `aria-labelledby`, or placeholder fallback.
-
 
 ---
 

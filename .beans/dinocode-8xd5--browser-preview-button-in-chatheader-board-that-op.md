@@ -1,19 +1,19 @@
 ---
 # dinocode-8xd5
-title: 'Browser: ''Preview'' button in ChatHeader + board that opens the dev server'
+title: "Browser: 'Preview' button in ChatHeader + board that opens the dev server"
 status: todo
 type: task
 priority: normal
 tags:
-    - phase-browser
-    - phase-6-project
+  - phase-browser
+  - phase-6-project
 created_at: 2026-04-23T05:14:24Z
 updated_at: 2026-04-23T05:46:34Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-756x
-    - dinocode-w0qv
-    - dinocode-2g71
+  - dinocode-756x
+  - dinocode-w0qv
+  - dinocode-2g71
 ---
 
 The highest-frequency entry point.
@@ -29,7 +29,6 @@ The highest-frequency entry point.
 
 - Works end-to-end with a freshly scaffolded Vite project.
 - No button shown when no dev server is detected.
-
 
 ---
 

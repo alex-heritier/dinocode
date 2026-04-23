@@ -1,17 +1,17 @@
 ---
 # dinocode-dyjh
-title: 'Browser: artifact storage conventions (.dinocode/browser/**)'
+title: "Browser: artifact storage conventions (.dinocode/browser/**)"
 status: todo
 type: task
 priority: normal
 tags:
-    - phase-browser
-    - phase-5-safety
+  - phase-browser
+  - phase-5-safety
 created_at: 2026-04-23T05:14:24Z
 updated_at: 2026-04-23T05:46:34Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-r4ns
+  - dinocode-r4ns
 ---
 
 One place, one layout, `.gitignore`'d, and user-discoverable.
@@ -34,7 +34,6 @@ One place, one layout, `.gitignore`'d, and user-discoverable.
 
 - Gitignore verified.
 - A one-line `ArtifactPaths` module exports helpers so no other module hardcodes paths.
-
 
 ---
 

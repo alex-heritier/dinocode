@@ -1,21 +1,21 @@
 ---
 # dinocode-rfz5
-title: 'Browser: session recording + replay'
+title: "Browser: session recording + replay"
 status: todo
 type: task
 priority: normal
 tags:
-    - phase-browser
-    - phase-5-safety
+  - phase-browser
+  - phase-5-safety
 created_at: 2026-04-23T05:14:24Z
 updated_at: 2026-04-23T05:46:34Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-yn5x
-    - dinocode-ive4
-    - dinocode-07j6
-    - dinocode-wjfu
-    - dinocode-dyjh
+  - dinocode-yn5x
+  - dinocode-ive4
+  - dinocode-07j6
+  - dinocode-wjfu
+  - dinocode-dyjh
 ---
 
 Record an agent's session (or a user's debugging session) so it can be replayed and embedded in a task.
@@ -31,7 +31,6 @@ Record an agent's session (or a user's debugging session) so it can be replayed 
 
 - Format documented in `docs/dinocode-browser.md`.
 - Size-capped to 200 MiB per session with graceful stop-on-cap.
-
 
 ---
 

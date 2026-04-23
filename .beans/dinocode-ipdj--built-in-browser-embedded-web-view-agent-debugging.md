@@ -1,13 +1,13 @@
 ---
 # dinocode-ipdj
-title: 'Built-in browser: embedded web view + agent debugging tools'
+title: "Built-in browser: embedded web view + agent debugging tools"
 status: todo
 type: epic
 priority: high
 tags:
-    - phase-browser
-    - infra
-    - agent-tools
+  - phase-browser
+  - infra
+  - agent-tools
 created_at: 2026-04-23T05:10:24Z
 updated_at: 2026-04-23T05:46:39Z
 ---

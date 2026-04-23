@@ -63,6 +63,7 @@ function commandToAggregateRef(command: OrchestrationCommand): {
         aggregateKind: "project",
         aggregateId: command.projectId,
       };
+    // dinocode-integration: dinocode-server task command → aggregate routing.
     case "task.create":
       return {
         aggregateKind: "task",

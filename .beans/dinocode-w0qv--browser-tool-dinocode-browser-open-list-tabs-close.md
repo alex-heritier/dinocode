@@ -1,19 +1,19 @@
 ---
 # dinocode-w0qv
-title: 'Browser tool: dinocode_browser_open / list_tabs / close'
+title: "Browser tool: dinocode_browser_open / list_tabs / close"
 status: todo
 type: task
 priority: high
 tags:
-    - phase-browser
-    - phase-3-agent-read
+  - phase-browser
+  - phase-3-agent-read
 created_at: 2026-04-23T05:14:24Z
 updated_at: 2026-04-23T05:46:34Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-87ah
-    - dinocode-ousa
-    - dinocode-sdqj
+  - dinocode-87ah
+  - dinocode-ousa
+  - dinocode-sdqj
 ---
 
 The foundational tools for tab lifecycle from the agent's side.
@@ -29,7 +29,6 @@ The foundational tools for tab lifecycle from the agent's side.
 
 - Tools callable from a headless test harness.
 - Error codes: `NAVIGATION_BLOCKED`, `TOO_MANY_TABS`, `NOT_FOUND`.
-
 
 ---
 

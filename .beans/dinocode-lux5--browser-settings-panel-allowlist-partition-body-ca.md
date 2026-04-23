@@ -1,23 +1,23 @@
 ---
 # dinocode-lux5
-title: 'Browser: settings panel (allowlist, partition, body-capture, auto-open)'
+title: "Browser: settings panel (allowlist, partition, body-capture, auto-open)"
 status: todo
 type: task
 priority: normal
 tags:
-    - phase-browser
-    - phase-5-safety
-    - settings
+  - phase-browser
+  - phase-5-safety
+  - settings
 created_at: 2026-04-23T05:46:23Z
 updated_at: 2026-04-23T05:46:35Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-sdqj
-    - dinocode-ctrl
-    - dinocode-ive4
-    - dinocode-jzfg
-    - dinocode-vkd6
-    - dinocode-gepm
+  - dinocode-sdqj
+  - dinocode-ctrl
+  - dinocode-ive4
+  - dinocode-jzfg
+  - dinocode-vkd6
+  - dinocode-gepm
 ---
 
 ## Why this bean exists

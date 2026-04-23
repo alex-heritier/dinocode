@@ -108,6 +108,7 @@ export interface ProjectionSnapshotQueryShape {
     threadId: ThreadId,
   ) => Effect.Effect<Option.Option<OrchestrationThread>, ProjectionRepositoryError>;
 
+  // dinocode-integration: dinocode-server kanban board snapshot query.
   /**
    * Read the kanban board snapshot for a project.
    */

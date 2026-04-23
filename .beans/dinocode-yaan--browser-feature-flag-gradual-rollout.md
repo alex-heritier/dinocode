@@ -1,18 +1,18 @@
 ---
 # dinocode-yaan
-title: 'Browser: feature flag + gradual rollout'
+title: "Browser: feature flag + gradual rollout"
 status: todo
 type: task
 priority: normal
 tags:
-    - phase-browser
-    - phase-0-design
-    - safety
+  - phase-browser
+  - phase-0-design
+  - safety
 created_at: 2026-04-23T05:46:23Z
 updated_at: 2026-04-23T05:46:35Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-r4ns
+  - dinocode-r4ns
 ---
 
 ## Why this bean exists

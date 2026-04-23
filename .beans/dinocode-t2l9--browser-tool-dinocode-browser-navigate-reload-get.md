@@ -1,19 +1,19 @@
 ---
 # dinocode-t2l9
-title: 'Browser tool: dinocode_browser_navigate / reload / get_url'
+title: "Browser tool: dinocode_browser_navigate / reload / get_url"
 status: todo
 type: task
 priority: high
 tags:
-    - phase-browser
-    - phase-3-agent-read
+  - phase-browser
+  - phase-3-agent-read
 created_at: 2026-04-23T05:14:24Z
 updated_at: 2026-04-23T05:46:34Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-87ah
-    - dinocode-ousa
-    - dinocode-sdqj
+  - dinocode-87ah
+  - dinocode-ousa
+  - dinocode-sdqj
 ---
 
 Cross-tab navigation primitives for the agent.
@@ -28,7 +28,6 @@ Cross-tab navigation primitives for the agent.
 
 - `navigate` returns after load with HTTP status surfaced.
 - `reload` bypass-cache verified via a `Cache-Control: max-age` fixture.
-
 
 ---
 

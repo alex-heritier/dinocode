@@ -50,6 +50,7 @@ import { RepositoryIdentityResolverLive } from "../src/project/Layers/Repository
 import { OrchestrationEngineLive } from "../src/orchestration/Layers/OrchestrationEngine.ts";
 import { OrchestrationProjectionPipelineLive } from "../src/orchestration/Layers/ProjectionPipeline.ts";
 import { OrchestrationProjectionSnapshotQueryLive } from "../src/orchestration/Layers/ProjectionSnapshotQuery.ts";
+// dinocode-integration: dinocode-server task projection wired into harness.
 import { ProjectionTaskRepositoryLive } from "../src/persistence/Layers/ProjectionTasks.ts";
 import { RuntimeReceiptBusTest } from "../src/orchestration/Layers/RuntimeReceiptBus.ts";
 import { OrchestrationReactorLive } from "../src/orchestration/Layers/OrchestrationReactor.ts";

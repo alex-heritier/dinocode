@@ -1,17 +1,17 @@
 ---
 # dinocode-jzfg
-title: 'Browser: auto-open preview on Start Session for ui/frontend tasks'
+title: "Browser: auto-open preview on Start Session for ui/frontend tasks"
 status: todo
 type: task
 priority: normal
 tags:
-    - phase-browser
-    - phase-6-project
+  - phase-browser
+  - phase-6-project
 created_at: 2026-04-23T05:14:24Z
 updated_at: 2026-04-23T05:46:34Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-8xd5
+  - dinocode-8xd5
 ---
 
 Close the loop from kanban → agent thread → live preview.
@@ -26,7 +26,6 @@ Close the loop from kanban → agent thread → live preview.
 
 - Pressing Start Session on a `ui`-tagged task opens both the chat thread AND the browser face with the preview URL.
 - Unit test for the decision function.
-
 
 ---
 

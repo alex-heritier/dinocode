@@ -1,18 +1,18 @@
 ---
 # dinocode-qb85
-title: 'Browser: renderer panel skeleton + bounds sync placeholder'
+title: "Browser: renderer panel skeleton + bounds sync placeholder"
 status: todo
 type: task
 priority: high
 tags:
-    - phase-browser
-    - phase-1-view
+  - phase-browser
+  - phase-1-view
 created_at: 2026-04-23T05:14:23Z
 updated_at: 2026-04-23T05:46:33Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-ousa
-    - dinocode-cnnp
+  - dinocode-ousa
+  - dinocode-cnnp
 ---
 
 Ship the smallest possible renderer that proves the layout-sync loop end-to-end.
@@ -29,7 +29,6 @@ Ship the smallest possible renderer that proves the layout-sync loop end-to-end.
 - Panel mounts in a dedicated route `/_chat/browser/$environmentId/$projectId` (or a dock slot; concrete placement = bean "Browser: face route + toggle keybinding").
 - Bounds stay in sync during: window resize, fullscreen toggle, chat-sidebar resize, DevTools open/close.
 - Unmounting removes the underlying `WebContentsView`.
-
 
 ---
 

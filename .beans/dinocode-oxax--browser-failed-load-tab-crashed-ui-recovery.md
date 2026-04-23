@@ -1,18 +1,18 @@
 ---
 # dinocode-oxax
-title: 'Browser: failed-load + tab-crashed UI recovery'
+title: "Browser: failed-load + tab-crashed UI recovery"
 status: todo
 type: task
 priority: normal
 tags:
-    - phase-browser
-    - phase-1-view
+  - phase-browser
+  - phase-1-view
 created_at: 2026-04-23T05:14:23Z
 updated_at: 2026-04-23T05:46:34Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-ousa
-    - dinocode-qb85
+  - dinocode-ousa
+  - dinocode-qb85
 ---
 
 Gracefully handle network failures, `ERR_CONNECTION_REFUSED` (common for a dev server that hasn't booted), and renderer crashes.
@@ -31,7 +31,6 @@ Gracefully handle network failures, `ERR_CONNECTION_REFUSED` (common for a dev s
 - Killing a dev server while the tab is open shows the failed-load UI.
 - `process.crash()` injected via evaluate → panel shows crashed UI, "Reload tab" recovers.
 - No zombie `WebContentsView` left behind after crash (memory verified).
-
 
 ---
 

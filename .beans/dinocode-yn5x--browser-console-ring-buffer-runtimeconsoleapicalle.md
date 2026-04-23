@@ -1,17 +1,17 @@
 ---
 # dinocode-yn5x
-title: 'Browser: console ring buffer + Runtime.consoleAPICalled capture'
+title: "Browser: console ring buffer + Runtime.consoleAPICalled capture"
 status: todo
 type: task
 priority: high
 tags:
-    - phase-browser
-    - phase-2-cdp
+  - phase-browser
+  - phase-2-cdp
 created_at: 2026-04-23T05:14:24Z
 updated_at: 2026-04-23T05:46:34Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-u1nj
+  - dinocode-u1nj
 ---
 
 Capture and retain the last N console messages per tab so the agent can fetch them without missing events.
@@ -28,7 +28,6 @@ Capture and retain the last N console messages per tab so the agent can fetch th
 
 - Unit tests cover level mapping, arg marshaling (incl. circular references → `[Circular]`), ring eviction.
 - Integration test: inject 2k `console.log` calls → most recent 1000 retained.
-
 
 ---
 

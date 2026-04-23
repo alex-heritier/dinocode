@@ -1,18 +1,18 @@
 ---
 # dinocode-aq1p
-title: 'Browser tool: dinocode_browser_get_dom_snapshot (coarse, opt-in)'
+title: "Browser tool: dinocode_browser_get_dom_snapshot (coarse, opt-in)"
 status: todo
 type: task
 priority: normal
 tags:
-    - phase-browser
-    - phase-4-agent-interact
+  - phase-browser
+  - phase-4-agent-interact
 created_at: 2026-04-23T05:14:24Z
 updated_at: 2026-04-23T05:46:34Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-yne5
-    - dinocode-dyjh
+  - dinocode-yne5
+  - dinocode-dyjh
 ---
 
 Full DOM dump for deep debugging. Rarely used; opt-in because it's heavy.
@@ -27,7 +27,6 @@ Full DOM dump for deep debugging. Rarely used; opt-in because it's heavy.
 
 - Size threshold respected.
 - Warning in tool description: "Prefer `get_accessibility_tree` unless you specifically need raw HTML".
-
 
 ---
 

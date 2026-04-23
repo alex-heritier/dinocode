@@ -1,18 +1,18 @@
 ---
 # dinocode-tb6r
-title: 'Browser: DevTools toggle (user Inspect Element)'
+title: "Browser: DevTools toggle (user Inspect Element)"
 status: todo
 type: task
 priority: high
 tags:
-    - phase-browser
-    - phase-1-view
+  - phase-browser
+  - phase-1-view
 created_at: 2026-04-23T05:14:23Z
 updated_at: 2026-04-23T05:46:33Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-ousa
-    - dinocode-qb85
+  - dinocode-ousa
+  - dinocode-qb85
 ---
 
 Expose Electron DevTools for the active tab so users can inspect/debug manually.
@@ -28,7 +28,6 @@ Expose Electron DevTools for the active tab so users can inspect/debug manually.
 - User can press `⌘⌥I` → detached DevTools window opens targeting the active tab.
 - Console, Network, Elements, Sources panels all work as in Chrome.
 - Closing the DevTools window leaves our agent-side CDP subscriptions intact (asserted via `Runtime.consoleAPICalled` still firing afterwards).
-
 
 ---
 

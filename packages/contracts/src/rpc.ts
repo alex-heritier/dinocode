@@ -334,6 +334,7 @@ export const WsOrchestrationSubscribeThreadRpc = Rpc.make(
   },
 );
 
+// dinocode-integration: dinocode-contracts kanban board subscription RPC.
 export const WsOrchestrationSubscribeBoardRpc = Rpc.make(ORCHESTRATION_WS_METHODS.subscribeBoard, {
   payload: OrchestrationSubscribeBoardInput,
   success: OrchestrationRpcSchemas.subscribeBoard.output,
@@ -341,6 +342,7 @@ export const WsOrchestrationSubscribeBoardRpc = Rpc.make(ORCHESTRATION_WS_METHOD
   stream: true,
 });
 
+// dinocode-integration: dinocode-contracts task detail subscription RPC.
 export const WsOrchestrationSubscribeTaskRpc = Rpc.make(ORCHESTRATION_WS_METHODS.subscribeTask, {
   payload: OrchestrationSubscribeTaskInput,
   success: OrchestrationRpcSchemas.subscribeTask.output,

@@ -1,18 +1,18 @@
 ---
 # dinocode-c3lk
-title: 'Browser tool: dinocode_browser_get_console (drain since cursor)'
+title: "Browser tool: dinocode_browser_get_console (drain since cursor)"
 status: todo
 type: task
 priority: high
 tags:
-    - phase-browser
-    - phase-3-agent-read
+  - phase-browser
+  - phase-3-agent-read
 created_at: 2026-04-23T05:14:24Z
 updated_at: 2026-04-23T05:46:34Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-87ah
-    - dinocode-yn5x
+  - dinocode-87ah
+  - dinocode-yn5x
 ---
 
 Expose the console ring buffer to the agent without duplicate delivery.
@@ -27,7 +27,6 @@ Expose the console ring buffer to the agent without duplicate delivery.
 
 - Agent can call repeatedly with `since` to paginate.
 - Level filtering works.
-
 
 ---
 

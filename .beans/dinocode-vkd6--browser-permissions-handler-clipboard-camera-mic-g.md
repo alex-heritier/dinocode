@@ -1,19 +1,19 @@
 ---
 # dinocode-vkd6
-title: 'Browser: permissions handler (clipboard / camera / mic / geo / notifications)'
+title: "Browser: permissions handler (clipboard / camera / mic / geo / notifications)"
 status: todo
 type: task
 priority: high
 tags:
-    - phase-browser
-    - phase-1-view
-    - security
+  - phase-browser
+  - phase-1-view
+  - security
 created_at: 2026-04-23T05:46:23Z
 updated_at: 2026-04-23T05:46:35Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-ousa
-    - dinocode-sdqj
+  - dinocode-ousa
+  - dinocode-sdqj
 ---
 
 ## Why this bean exists

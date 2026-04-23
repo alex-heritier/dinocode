@@ -1,18 +1,18 @@
 ---
 # dinocode-cnnp
-title: 'Browser: IPC schema + preload bridge API (shared contracts)'
-status: todo
+title: "Browser: IPC schema + preload bridge API (shared contracts)"
+status: completed
 type: task
 priority: high
 tags:
-    - phase-browser
-    - phase-0-design
+  - phase-browser
+  - phase-0-design
 created_at: 2026-04-23T05:14:23Z
-updated_at: 2026-04-23T05:46:33Z
+updated_at: 2026-04-23T06:40:44Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-3j2h
-    - dinocode-r4ns
+  - dinocode-3j2h
+  - dinocode-r4ns
 ---
 
 Lock down the IPC shapes before any renderer/main code exists so both sides build against a stable API.
@@ -30,7 +30,6 @@ Lock down the IPC shapes before any renderer/main code exists so both sides buil
 - No `any` anywhere in the bridge API.
 - Preload file stays under 80 lines (pure wiring, zero logic).
 - Added under `dinocode-integration: browser` comment in `apps/desktop/src/preload.ts` once the real exposer ships in Phase 1.
-
 
 ---
 
@@ -96,3 +95,43 @@ Both sides of the contextBridge boundary must agree on typed payloads. Fixing th
 - [ ] Logs and traces verified under `DINOCODE_BROWSER_DEBUG=debug`.
 
 Part of epic `dinocode-ipdj`.
+
+## Progress
+
+- Added every IPC payload schema to
+  `packages/dinocode-browser/src/shared/schemas.ts`:
+  `BrowserTabIdSchema`, `BrowserPartitionIdSchema`, `BrowserTraceIdSchema`,
+  `BrowserTabStatusSchema`, `BrowserTabState`, `BrowserNavigationEvent`,
+  `BrowserConsoleEntry`, `BrowserNetworkEntry`, `BrowserToolNameSchema`,
+  `BrowserToolRequest`, `BrowserToolErrorKindSchema`,
+  `BrowserToolErrorSchema`, `BrowserToolResponse`,
+  `BrowserActionActorSchema`, `BrowserActionLogEntry`,
+  `BrowserInvokeEnvelope`, `BrowserEventEnvelope`. All are Effect `Schema`
+  structs/unions with explicit constraints (patterns, length caps, numeric
+  ranges).
+- Added `packages/dinocode-browser/src/preload/bridge.ts` (71 lines — under
+  the 80-line budget from acceptance criteria): `BrowserIpcChannels`
+  constant, `DinocodeBrowserApi` interface with `invoke` + `subscribe`,
+  `BrowserBridgeDeps` that abstracts over `electron`'s own
+  `contextBridge`/`ipcRenderer` so the package stays Electron-optional, and
+  a pure-wiring `exposeDinocodeBrowserBridge(deps)` implementation.
+- Barrel updates: `src/shared/index.ts` re-exports the schemas; a new
+  `src/preload/index.ts` re-exports the bridge so consumers can do
+  `import { exposeDinocodeBrowserBridge } from "@dinocode/browser/preload"`.
+- Unit tests (vitest): `src/tests/schemas.test.ts` covers `decode ∘ encode`
+  round trips for every schema + rejection cases for malformed tab ids,
+  out-of-range `loadingProgress`, unknown tool names. `src/tests/bridge.test.ts`
+  verifies the bridge exposes the right window key, forwards to the right IPC
+  channel, wires/unsubscribes the event listener correctly. 20 tests pass.
+- Documentation: `docs/dinocode-browser.md` §3.3 (Preload) expanded with a
+  §3.3.1 IPC schema table listing each schema, direction, and purpose; the
+  integration contract for `apps/desktop/src/preload.ts` is spelled out
+  (`// dinocode-integration: dinocode-browser preload bridge.`).
+- Deferred (explicitly out of scope for this bean): re-export of schemas
+  from `packages/dinocode-contracts` — blocked by the contracts extraction
+  `dinocode-fm1h`. Server-side tool handlers will import from
+  `@dinocode/browser/shared` directly until that bean lands.
+- Verified: `bun run typecheck` passes across all 12 workspaces, `bun run fmt`
+  is clean, `bun run lint` introduces no new errors,
+  `scripts/check-t3code-drift.ts` still passes vs `HEAD~1` (zero new
+  `apps/*` or `packages/contracts/*` churn).

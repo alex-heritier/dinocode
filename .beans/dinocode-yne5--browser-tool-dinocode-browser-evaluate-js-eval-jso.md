@@ -1,18 +1,18 @@
 ---
 # dinocode-yne5
-title: 'Browser tool: dinocode_browser_evaluate (JS eval + JSON result)'
+title: "Browser tool: dinocode_browser_evaluate (JS eval + JSON result)"
 status: todo
 type: task
 priority: high
 tags:
-    - phase-browser
-    - phase-3-agent-read
+  - phase-browser
+  - phase-3-agent-read
 created_at: 2026-04-23T05:14:24Z
 updated_at: 2026-04-23T05:46:34Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-87ah
-    - dinocode-u1nj
+  - dinocode-87ah
+  - dinocode-u1nj
 ---
 
 The workhorse tool for debugging: run arbitrary JS in the active page's main world.
@@ -30,7 +30,6 @@ The workhorse tool for debugging: run arbitrary JS in the active page's main wor
 - Can evaluate DOM queries, localStorage reads, network-level fetches (`fetch().then(r => r.json())`).
 - Syntax errors + runtime errors surface under `error: { name, message, stack }`.
 - Hardened against mutating global scope accidentally (tool docs warn).
-
 
 ---
 

@@ -1,18 +1,18 @@
 ---
 # dinocode-56ga
-title: 'Browser tool: dinocode_browser_get_accessibility_tree (semantic snapshot)'
+title: "Browser tool: dinocode_browser_get_accessibility_tree (semantic snapshot)"
 status: todo
 type: task
 priority: high
 tags:
-    - phase-browser
-    - phase-3-agent-read
+  - phase-browser
+  - phase-3-agent-read
 created_at: 2026-04-23T05:14:24Z
 updated_at: 2026-04-23T05:46:34Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-87ah
-    - dinocode-u1nj
+  - dinocode-87ah
+  - dinocode-u1nj
 ---
 
 The primary structural snapshot tool for the agent — accessibility trees are orders of magnitude cheaper than raw DOM and semantically richer.
@@ -30,7 +30,6 @@ The primary structural snapshot tool for the agent — accessibility trees are o
 - Tree for https://example.com fits in <5KB JSON.
 - Refs resolve successfully in interaction tools (Phase 4).
 - Unit tests for tree normalization.
-
 
 ---
 

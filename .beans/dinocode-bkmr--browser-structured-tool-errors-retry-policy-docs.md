@@ -1,17 +1,17 @@
 ---
 # dinocode-bkmr
-title: 'Browser: structured tool errors + retry policy docs'
+title: "Browser: structured tool errors + retry policy docs"
 status: todo
 type: task
 priority: normal
 tags:
-    - phase-browser
-    - phase-5-safety
+  - phase-browser
+  - phase-5-safety
 created_at: 2026-04-23T05:14:24Z
 updated_at: 2026-04-23T05:46:34Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-87ah
+  - dinocode-87ah
 ---
 
 Tight error taxonomy so agents can self-correct.
@@ -37,7 +37,6 @@ Tight error taxonomy so agents can self-correct.
 
 - Every tool exits through the canonical error path (no raw `throw` escapes).
 - Contract test enumerates each error code.
-
 
 ---
 

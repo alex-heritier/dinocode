@@ -1,19 +1,19 @@
 ---
 # dinocode-07j6
-title: 'Browser tool: dinocode_browser_screenshot (viewport / full-page → artifact path)'
+title: "Browser tool: dinocode_browser_screenshot (viewport / full-page → artifact path)"
 status: todo
 type: task
 priority: high
 tags:
-    - phase-browser
-    - phase-3-agent-read
+  - phase-browser
+  - phase-3-agent-read
 created_at: 2026-04-23T05:14:24Z
 updated_at: 2026-04-23T05:46:34Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-87ah
-    - dinocode-u1nj
-    - dinocode-dyjh
+  - dinocode-87ah
+  - dinocode-u1nj
+  - dinocode-dyjh
 ---
 
 Capture screenshots for the agent and for session recordings.
@@ -30,7 +30,6 @@ Capture screenshots for the agent and for session recordings.
 - Full-page screenshot of a scrollable doc fits in a single PNG (within Chromium's max image size).
 - Selector-scoped screenshots clip to `getBoundingClientRect`.
 - Artifact directory respects `.gitignore` (added under `.dinocode/browser/**`).
-
 
 ---
 

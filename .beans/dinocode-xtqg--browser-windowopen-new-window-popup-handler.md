@@ -1,19 +1,19 @@
 ---
 # dinocode-xtqg
-title: 'Browser: window.open / new-window / popup handler'
+title: "Browser: window.open / new-window / popup handler"
 status: todo
 type: task
 priority: normal
 tags:
-    - phase-browser
-    - phase-1-view
+  - phase-browser
+  - phase-1-view
 created_at: 2026-04-23T05:46:23Z
 updated_at: 2026-04-23T05:46:35Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-ousa
-    - dinocode-bs50
-    - dinocode-sdqj
+  - dinocode-ousa
+  - dinocode-bs50
+  - dinocode-sdqj
 ---
 
 ## Why this bean exists

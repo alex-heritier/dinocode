@@ -649,6 +649,7 @@ export function projectEvent(
         }),
       );
 
+    // dinocode-integration: dinocode-server task.* read-model projection cases.
     case "task.created": {
       const payload = event.payload;
       const task = {

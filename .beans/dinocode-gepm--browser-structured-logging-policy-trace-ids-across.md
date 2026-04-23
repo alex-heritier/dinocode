@@ -1,19 +1,19 @@
 ---
 # dinocode-gepm
-title: 'Browser: structured logging policy + trace IDs across main/server/renderer'
+title: "Browser: structured logging policy + trace IDs across main/server/renderer"
 status: todo
 type: task
 priority: high
 tags:
-    - phase-browser
-    - phase-0-design
-    - observability
+  - phase-browser
+  - phase-0-design
+  - observability
 created_at: 2026-04-23T05:46:23Z
 updated_at: 2026-04-23T05:46:35Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-3j2h
-    - dinocode-cnnp
+  - dinocode-3j2h
+  - dinocode-cnnp
 ---
 
 ## Why this bean exists

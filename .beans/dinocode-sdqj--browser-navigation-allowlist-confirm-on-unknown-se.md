@@ -1,18 +1,18 @@
 ---
 # dinocode-sdqj
-title: 'Browser: navigation allowlist + confirm-on-unknown security model'
+title: "Browser: navigation allowlist + confirm-on-unknown security model"
 status: todo
 type: task
 priority: high
 tags:
-    - phase-browser
-    - phase-0-design
+  - phase-browser
+  - phase-0-design
 created_at: 2026-04-23T05:14:23Z
 updated_at: 2026-04-23T05:46:33Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-3j2h
-    - dinocode-cnnp
+  - dinocode-3j2h
+  - dinocode-cnnp
 ---
 
 Define and implement the security boundary that protects users from an agent wandering to arbitrary origins.
@@ -30,7 +30,6 @@ Define and implement the security boundary that protects users from an agent wan
 - Pure logic module (`Allowlist.ts`) with exhaustive unit tests.
 - Agent tool handlers wrap `navigate`/`open` in an allowlist check before calling into main.
 - Settings UI (later bean) surfaces the allowlist for edit.
-
 
 ---
 
@@ -62,7 +61,7 @@ The allowlist is the single enforcement point for origin-safety. If we don't lan
 
 ### Unit tests
 
-- Default allowlist matrix: localhost/127.0.0.1/::1/*.local accepted; other origins rejected.
+- Default allowlist matrix: localhost/127.0.0.1/::1/\*.local accepted; other origins rejected.
 - Override via `.dinocode/config.yml` honoured.
 - Per-project persistence read/write/round-trip.
 - Policy is pure — same input always yields same decision.

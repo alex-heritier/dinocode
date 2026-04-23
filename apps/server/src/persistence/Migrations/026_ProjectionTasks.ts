@@ -1,3 +1,4 @@
+// dinocode-integration: dinocode-server projection_tasks SQLite table.
 import * as SqlClient from "effect/unstable/sql/SqlClient";
 import * as Effect from "effect/Effect";
 

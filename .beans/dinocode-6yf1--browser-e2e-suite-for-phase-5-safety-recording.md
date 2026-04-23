@@ -1,24 +1,24 @@
 ---
 # dinocode-6yf1
-title: 'Browser: e2e suite for Phase 5 (safety + recording)'
+title: "Browser: e2e suite for Phase 5 (safety + recording)"
 status: todo
 type: task
 priority: high
 tags:
-    - phase-browser
-    - phase-5-safety
-    - testing
+  - phase-browser
+  - phase-5-safety
+  - testing
 created_at: 2026-04-23T05:46:24Z
 updated_at: 2026-04-23T05:46:35Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-6os6
-    - dinocode-wjfu
-    - dinocode-bkmr
-    - dinocode-rfz5
-    - dinocode-dyjh
-    - dinocode-lux5
-    - dinocode-wf12
+  - dinocode-6os6
+  - dinocode-wjfu
+  - dinocode-bkmr
+  - dinocode-rfz5
+  - dinocode-dyjh
+  - dinocode-lux5
+  - dinocode-wf12
 ---
 
 ## Why this bean exists

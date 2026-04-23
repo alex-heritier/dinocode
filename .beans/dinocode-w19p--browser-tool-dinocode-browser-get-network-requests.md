@@ -1,18 +1,18 @@
 ---
 # dinocode-w19p
-title: 'Browser tool: dinocode_browser_get_network (requests + optional body)'
+title: "Browser tool: dinocode_browser_get_network (requests + optional body)"
 status: todo
 type: task
 priority: high
 tags:
-    - phase-browser
-    - phase-3-agent-read
+  - phase-browser
+  - phase-3-agent-read
 created_at: 2026-04-23T05:14:24Z
 updated_at: 2026-04-23T05:46:34Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-87ah
-    - dinocode-ive4
+  - dinocode-87ah
+  - dinocode-ive4
 ---
 
 Expose the network ring buffer to the agent.
@@ -28,7 +28,6 @@ Expose the network ring buffer to the agent.
 
 - Regex URL filter works.
 - Requests-without-response (in-flight) show `status: null`.
-
 
 ---
 

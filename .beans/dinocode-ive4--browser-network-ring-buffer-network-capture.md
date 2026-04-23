@@ -1,17 +1,17 @@
 ---
 # dinocode-ive4
-title: 'Browser: network ring buffer + Network.* capture'
+title: "Browser: network ring buffer + Network.* capture"
 status: todo
 type: task
 priority: high
 tags:
-    - phase-browser
-    - phase-2-cdp
+  - phase-browser
+  - phase-2-cdp
 created_at: 2026-04-23T05:14:24Z
 updated_at: 2026-04-23T05:46:34Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-u1nj
+  - dinocode-u1nj
 ---
 
 Capture request/response metadata per tab. Body capture is opt-in per-tab (memory + PII).
@@ -28,7 +28,6 @@ Capture request/response metadata per tab. Body capture is opt-in per-tab (memor
 - Buffer eviction tested.
 - Body capture disabled by default; enabling it requires a `unlockNetworkBodies` browser-face action (user gesture).
 - Privacy note added to `docs/dinocode-browser.md`.
-
 
 ---
 

@@ -1,19 +1,19 @@
 ---
 # dinocode-7n6g
-title: 'Browser: print / Save-to-PDF + agent tool'
+title: "Browser: print / Save-to-PDF + agent tool"
 status: todo
 type: task
 priority: low
 tags:
-    - phase-browser
-    - phase-1-view
+  - phase-browser
+  - phase-1-view
 created_at: 2026-04-23T05:46:23Z
 updated_at: 2026-04-23T05:46:35Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-87ah
-    - dinocode-u1nj
-    - dinocode-dyjh
+  - dinocode-87ah
+  - dinocode-u1nj
+  - dinocode-dyjh
 ---
 
 ## Why this bean exists

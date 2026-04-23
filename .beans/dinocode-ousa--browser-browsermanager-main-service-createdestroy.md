@@ -1,20 +1,20 @@
 ---
 # dinocode-ousa
-title: 'Browser: BrowserManager main service (create/destroy tabs + layout sync)'
+title: "Browser: BrowserManager main service (create/destroy tabs + layout sync)"
 status: todo
 type: task
 priority: high
 tags:
-    - phase-browser
-    - phase-1-view
+  - phase-browser
+  - phase-1-view
 created_at: 2026-04-23T05:14:23Z
 updated_at: 2026-04-23T05:47:48Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-r4ns
-    - dinocode-cnnp
-    - dinocode-jtbw
-    - dinocode-gepm
+  - dinocode-r4ns
+  - dinocode-cnnp
+  - dinocode-jtbw
+  - dinocode-gepm
 ---
 
 The authoritative main-process service that owns all browser tabs.
@@ -32,7 +32,6 @@ The authoritative main-process service that owns all browser tabs.
 - `packages/dinocode-browser/src/main/BrowserManager.ts` unit-tested for lifecycle + cap.
 - Layout sync verified: resize the panel → view follows within one frame, no flicker > 16ms (manual smoke test documented).
 - Zero direct `apps/desktop` imports; `apps/desktop/src/main.ts` gets a single `installDinocodeBrowser({ mainWindow })` call with `// dinocode-integration: browser lifecycle`.
-
 
 ---
 

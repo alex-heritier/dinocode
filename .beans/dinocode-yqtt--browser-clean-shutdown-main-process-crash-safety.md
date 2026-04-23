@@ -1,20 +1,20 @@
 ---
 # dinocode-yqtt
-title: 'Browser: clean shutdown + main-process crash safety'
+title: "Browser: clean shutdown + main-process crash safety"
 status: todo
 type: task
 priority: high
 tags:
-    - phase-browser
-    - phase-1-view
-    - reliability
+  - phase-browser
+  - phase-1-view
+  - reliability
 created_at: 2026-04-23T05:46:23Z
 updated_at: 2026-04-23T05:46:35Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-ousa
-    - dinocode-ctrl
-    - dinocode-crea
+  - dinocode-ousa
+  - dinocode-ctrl
+  - dinocode-crea
 ---
 
 ## Why this bean exists

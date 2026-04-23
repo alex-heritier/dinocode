@@ -1,23 +1,23 @@
 ---
 # dinocode-yuwy
-title: 'Browser: e2e suite for Phase 2 (CDP foundations)'
+title: "Browser: e2e suite for Phase 2 (CDP foundations)"
 status: todo
 type: task
 priority: high
 tags:
-    - phase-browser
-    - phase-2-cdp
-    - testing
+  - phase-browser
+  - phase-2-cdp
+  - testing
 created_at: 2026-04-23T05:46:23Z
 updated_at: 2026-04-23T05:46:35Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-u1nj
-    - dinocode-yn5x
-    - dinocode-ive4
-    - dinocode-hnyh
-    - dinocode-i71n
-    - dinocode-wf12
+  - dinocode-u1nj
+  - dinocode-yn5x
+  - dinocode-ive4
+  - dinocode-hnyh
+  - dinocode-i71n
+  - dinocode-wf12
 ---
 
 ## Why this bean exists

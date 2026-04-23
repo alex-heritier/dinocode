@@ -156,6 +156,30 @@
         "vitest": "catalog:",
       },
     },
+    "packages/dinocode-browser": {
+      "name": "@dinocode/browser",
+      "version": "0.0.1",
+      "dependencies": {
+        "effect": "catalog:",
+      },
+      "devDependencies": {
+        "@effect/language-service": "catalog:",
+        "@effect/vitest": "catalog:",
+        "@types/node": "catalog:",
+        "typescript": "catalog:",
+        "vitest": "catalog:",
+      },
+      "peerDependencies": {
+        "electron": "*",
+        "react": "*",
+        "react-dom": "*",
+      },
+      "optionalPeers": [
+        "electron",
+        "react",
+        "react-dom",
+      ],
+    },
     "packages/effect-acp": {
       "name": "effect-acp",
       "dependencies": {
@@ -334,6 +358,8 @@
     "@clack/core": ["@clack/core@1.1.0", "", { "dependencies": { "sisteransi": "^1.0.5" } }, "sha512-SVcm4Dqm2ukn64/8Gub2wnlA5nS2iWJyCkdNHcvNHPIeBTGojpdJ+9cZKwLfmqy7irD4N5qLteSilJlE0WLAtA=="],
 
     "@clack/prompts": ["@clack/prompts@1.1.0", "", { "dependencies": { "@clack/core": "1.1.0", "sisteransi": "^1.0.5" } }, "sha512-pkqbPGtohJAvm4Dphs2M8xE29ggupihHdy1x84HNojZuMtFsHiUlRvqD24tM2+XmI+61LlfNceM3Wr7U5QES5g=="],
+
+    "@dinocode/browser": ["@dinocode/browser@workspace:packages/dinocode-browser"],
 
     "@dinocode/soil": ["@dinocode/soil@workspace:packages/soil"],
 

@@ -1,19 +1,19 @@
 ---
 # dinocode-wf12
-title: 'Browser: test harness + fixtures (foundation for all phases)'
+title: "Browser: test harness + fixtures (foundation for all phases)"
 status: todo
 type: task
 priority: high
 tags:
-    - phase-browser
-    - phase-0-design
-    - testing
+  - phase-browser
+  - phase-0-design
+  - testing
 created_at: 2026-04-23T05:46:23Z
 updated_at: 2026-04-23T05:46:35Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-r4ns
-    - dinocode-gepm
+  - dinocode-r4ns
+  - dinocode-gepm
 ---
 
 ## Why this bean exists

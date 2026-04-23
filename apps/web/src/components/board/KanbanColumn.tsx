@@ -1,3 +1,4 @@
+// dinocode-integration: dinocode-board kanban column drop target.
 import { useDroppable } from "@dnd-kit/core";
 import type { BoardColumn as BoardColumnType } from "@t3tools/contracts";
 import { KanbanCard } from "./KanbanCard.tsx";

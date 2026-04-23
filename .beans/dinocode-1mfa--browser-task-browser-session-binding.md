@@ -1,18 +1,18 @@
 ---
 # dinocode-1mfa
-title: 'Browser: task ↔ browser session binding'
+title: "Browser: task ↔ browser session binding"
 status: todo
 type: task
 priority: normal
 tags:
-    - phase-browser
-    - phase-6-project
+  - phase-browser
+  - phase-6-project
 created_at: 2026-04-23T05:14:24Z
 updated_at: 2026-04-23T05:46:34Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-rfz5
-    - dinocode-87ah
+  - dinocode-rfz5
+  - dinocode-87ah
 ---
 
 Tie recorded browser sessions to tasks so agents and users can retrieve "the browser session where I reproduced this bug".
@@ -27,7 +27,6 @@ Tie recorded browser sessions to tasks so agents and users can retrieve "the bro
 
 - Recorded sessions discoverable from the task's detail sheet.
 - Agent tool returns session list + summary metadata.
-
 
 ---
 

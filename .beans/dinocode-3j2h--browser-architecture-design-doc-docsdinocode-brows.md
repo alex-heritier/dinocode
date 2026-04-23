@@ -1,14 +1,14 @@
 ---
 # dinocode-3j2h
-title: 'Browser: architecture & design doc (docs/dinocode-browser.md)'
-status: todo
+title: "Browser: architecture & design doc (docs/dinocode-browser.md)"
+status: completed
 type: task
 priority: high
 tags:
-    - phase-browser
-    - phase-0-design
+  - phase-browser
+  - phase-0-design
 created_at: 2026-04-23T05:14:23Z
-updated_at: 2026-04-23T05:46:28Z
+updated_at: 2026-04-23T06:07:37Z
 parent: dinocode-ipdj
 ---
 
@@ -31,7 +31,6 @@ Write an architecture doc covering the full browser subsystem so every subsequen
 - `docs/dinocode-browser.md` exists, referenced from `docs/dinocode-packages.md` and `DINOCODE.md`.
 - Diagrams rendered as ASCII or mermaid (no external deps).
 - All subsequent Phase 0–7 beans reference sections of this doc for their contract.
-
 
 ---
 
@@ -94,3 +93,37 @@ The architecture doc is the single spine every other bean references. It resolve
 - [ ] Logs and traces verified under `DINOCODE_BROWSER_DEBUG=debug`.
 
 Part of epic `dinocode-ipdj`.
+
+## Summary of Changes
+
+Created `docs/dinocode-browser.md` as the architecture and design spine for the entire built-in browser epic. The doc covers:
+
+1. Overview + principles (artifacts as paths, one process surface, fork rule).
+2. High-level process/IPC diagram.
+3. Main, renderer, preload, server surfaces (package-first layout).
+4. Why `WebContentsView` (with comparison vs `<webview>` and `<iframe>`).
+5. CDP domain matrix (Runtime, Page, DOM, Accessibility, Network, Target, Input, Log) with consumer → domain mapping, plus multi-client coordination and auto-reattach policy.
+6. Per-project session partitions with cookie/storage isolation.
+7. Allowlist + navigation policy (deny-by-default for agent, allow for user + localhost).
+8. Tab lifecycle (open → running → close, crash, persistence).
+9. Artifact storage layout under `.dinocode/browser/{sessions,screenshots,pdfs,traces,recordings,dom-snapshots,logs,downloads}/`.
+10. Agent tool surface: Phase-3 read tools + Phase-4 interaction tools tabled against their owning beans, plus the full error taxonomy (`NAVIGATION_BLOCKED`, `TAB_CRASHED`, `EVALUATE_ERROR`, `TIMEOUT`, `NOT_FOUND`, `NOT_INTERACTABLE`, `USER_ACTIVE`, `PERMISSION_DENIED`, `RATE_LIMITED`, `TOO_MANY_TABS`, `INTERNAL`) and retry policy.
+11. User UX surfaces (keybinding, address bar, DevTools, tab strip, preview button, agent-is-driving banner).
+12. Logging & observability (shared `Logger`, JSON lines, redaction, trace ids).
+13. Testing strategy (unit / integration / phase e2e suites, 10-run-green CI gate).
+14. Feature flag `features.builtInBrowser`.
+15. Integration-point surface (where `dinocode-integration:` comments will live in `apps/*`).
+16. Open questions (CDP `Fetch.enable`, layout flicker, Electron upgrade drift, enterprise proxy, self-signed certs).
+17. Risks & mitigations table linking each risk to an owning bean.
+18. Change-control rule (browser-package PRs must touch this doc).
+
+Cross-references added:
+
+- `docs/dinocode-packages.md` — `Related` section now links to the browser doc.
+- `DINOCODE.md` §13.1 — new section summarizing the subsystem and pointing at `docs/dinocode-browser.md`.
+
+## Verification
+
+- `bun fmt` green (file is markdown but format pass covers it).
+- Doc is pure Markdown with ASCII diagrams (no external deps).
+- Every section named in the bean body is present; every Phase 0–7 bean can now cite it.

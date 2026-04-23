@@ -1,27 +1,27 @@
 ---
 # dinocode-hiab
-title: 'Browser: e2e suite for Phase 3 (agent read tools)'
+title: "Browser: e2e suite for Phase 3 (agent read tools)"
 status: todo
 type: task
 priority: high
 tags:
-    - phase-browser
-    - phase-3-agent-read
-    - testing
+  - phase-browser
+  - phase-3-agent-read
+  - testing
 created_at: 2026-04-23T05:46:24Z
 updated_at: 2026-04-23T05:46:35Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-87ah
-    - dinocode-w0qv
-    - dinocode-t2l9
-    - dinocode-yne5
-    - dinocode-c3lk
-    - dinocode-w19p
-    - dinocode-56ga
-    - dinocode-07j6
-    - dinocode-7n6g
-    - dinocode-wf12
+  - dinocode-87ah
+  - dinocode-w0qv
+  - dinocode-t2l9
+  - dinocode-yne5
+  - dinocode-c3lk
+  - dinocode-w19p
+  - dinocode-56ga
+  - dinocode-07j6
+  - dinocode-7n6g
+  - dinocode-wf12
 ---
 
 ## Why this bean exists

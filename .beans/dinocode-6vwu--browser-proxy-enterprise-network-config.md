@@ -1,18 +1,18 @@
 ---
 # dinocode-6vwu
-title: 'Browser: proxy + enterprise network config'
+title: "Browser: proxy + enterprise network config"
 status: todo
 type: task
 priority: low
 tags:
-    - phase-browser
-    - phase-7-later
-    - security
+  - phase-browser
+  - phase-7-later
+  - security
 created_at: 2026-04-23T05:46:23Z
 updated_at: 2026-04-23T05:46:35Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-ousa
+  - dinocode-ousa
 ---
 
 ## Why this bean exists

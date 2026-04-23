@@ -1,18 +1,18 @@
 ---
 # dinocode-hnyh
-title: 'Browser: console error badge on tab + quick-peek drawer'
+title: "Browser: console error badge on tab + quick-peek drawer"
 status: todo
 type: task
 priority: normal
 tags:
-    - phase-browser
-    - phase-2-cdp
+  - phase-browser
+  - phase-2-cdp
 created_at: 2026-04-23T05:14:24Z
 updated_at: 2026-04-23T05:46:34Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-yn5x
-    - dinocode-bs50
+  - dinocode-yn5x
+  - dinocode-bs50
 ---
 
 Make it visually obvious when a page has errors so users notice without opening DevTools.
@@ -27,7 +27,6 @@ Make it visually obvious when a page has errors so users notice without opening 
 
 - E2E: load a page with `throw` during boot → red dot appears, drawer lists the error with stack.
 - Dot + drawer respect dark/light theme.
-
 
 ---
 

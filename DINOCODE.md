@@ -897,6 +897,16 @@ The codebase follows strict conventions. New features must adhere to these patte
 
 ---
 
+## 13.1 Built-in Browser Subsystem
+
+The browser subsystem lives in `packages/dinocode-browser`. It adds a
+Chromium-grade embedded browser to the desktop app and exposes a structured
+agent tool suite over Chrome DevTools Protocol. See
+[`docs/dinocode-browser.md`](docs/dinocode-browser.md) for the full
+architecture, CDP domain matrix, artifact layout, and agent tool error
+taxonomy. The rollout plan is tracked by epic `dinocode-ipdj` and proceeds
+in phases 0–7.
+
 ## 14. Appendix: Reference Repos
 
 | Repo         | URL                                         | Role                                                              |

@@ -46,6 +46,16 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: Dinocode drift guard (t3code-internal changes)
+        if: ${{ github.event_name == 'pull_request' }}
+        env:
+          CHECK_T3CODE_DRIFT_LIMIT: "20"
+        run: |
+          git fetch --no-tags --depth=1 origin "${{ github.base_ref }}" || true
+          git rev-parse --verify --quiet "origin/${{ github.base_ref }}" >/dev/null || \
+            git fetch --no-tags --depth=50 origin "${{ github.base_ref }}"
+          node scripts/check-t3code-drift.ts
+
       - name: Format
         run: bun run fmt:check
 

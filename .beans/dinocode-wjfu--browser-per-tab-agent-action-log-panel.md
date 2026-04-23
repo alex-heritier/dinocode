@@ -1,18 +1,18 @@
 ---
 # dinocode-wjfu
-title: 'Browser: per-tab agent action log panel'
+title: "Browser: per-tab agent action log panel"
 status: todo
 type: task
 priority: normal
 tags:
-    - phase-browser
-    - phase-5-safety
+  - phase-browser
+  - phase-5-safety
 created_at: 2026-04-23T05:14:24Z
 updated_at: 2026-04-23T05:46:34Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-87ah
-    - dinocode-qb85
+  - dinocode-87ah
+  - dinocode-qb85
 ---
 
 Auditable record of everything the agent did in a tab.
@@ -27,7 +27,6 @@ Auditable record of everything the agent did in a tab.
 
 - Log persists for the life of the tab.
 - Log size capped (1000 entries); older entries dropped with a marker.
-
 
 ---
 

@@ -28,6 +28,7 @@ import {
   ProjectionTurnRepository,
 } from "../../persistence/Services/ProjectionTurns.ts";
 import { ProjectionThreadRepository } from "../../persistence/Services/ProjectionThreads.ts";
+// dinocode-integration: dinocode-server task projection repository.
 import { ProjectionTaskRepository } from "../../persistence/Services/ProjectionTasks.ts";
 import { ProjectionPendingApprovalRepositoryLive } from "../../persistence/Layers/ProjectionPendingApprovals.ts";
 import { ProjectionProjectRepositoryLive } from "../../persistence/Layers/ProjectionProjects.ts";
@@ -38,6 +39,7 @@ import { ProjectionThreadProposedPlanRepositoryLive } from "../../persistence/La
 import { ProjectionThreadSessionRepositoryLive } from "../../persistence/Layers/ProjectionThreadSessions.ts";
 import { ProjectionTurnRepositoryLive } from "../../persistence/Layers/ProjectionTurns.ts";
 import { ProjectionThreadRepositoryLive } from "../../persistence/Layers/ProjectionThreads.ts";
+// dinocode-integration: dinocode-server task projection layer wiring.
 import { ProjectionTaskRepositoryLive } from "../../persistence/Layers/ProjectionTasks.ts";
 import { ServerConfig } from "../../config.ts";
 import {
@@ -519,6 +521,7 @@ const makeOrchestrationProjectionPipeline = Effect.fn("makeOrchestrationProjecti
       }
     });
 
+    // dinocode-integration: dinocode-server task.* events → projection_tasks writer.
     const applyTasksProjection: ProjectorDefinition["apply"] = Effect.fn("applyTasksProjection")(
       function* (event, _attachmentSideEffects) {
         switch (event.type) {
@@ -1465,6 +1468,7 @@ const makeOrchestrationProjectionPipeline = Effect.fn("makeOrchestrationProjecti
         name: ORCHESTRATION_PROJECTOR_NAMES.threads,
         apply: applyThreadsProjection,
       },
+      // dinocode-integration: dinocode-server tasks projector registration.
       {
         name: ORCHESTRATION_PROJECTOR_NAMES.tasks,
         apply: applyTasksProjection,

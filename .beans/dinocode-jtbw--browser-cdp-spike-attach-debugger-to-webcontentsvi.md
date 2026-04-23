@@ -1,17 +1,17 @@
 ---
 # dinocode-jtbw
-title: 'Browser: CDP spike (attach debugger to WebContentsView, evaluate + capture events)'
+title: "Browser: CDP spike (attach debugger to WebContentsView, evaluate + capture events)"
 status: todo
 type: task
 priority: high
 tags:
-    - phase-browser
-    - phase-0-design
+  - phase-browser
+  - phase-0-design
 created_at: 2026-04-23T05:14:23Z
 updated_at: 2026-04-23T05:46:33Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-r4ns
+  - dinocode-r4ns
 ---
 
 Prove out the core CDP plumbing in a throwaway spike before building the real `BrowserManager`.
@@ -31,7 +31,6 @@ Inside a short-lived Electron test script (or `apps/desktop` smoke test), spin u
 - Spike lives in `packages/dinocode-browser/src/tests/cdpSpike.test.ts` behind an env flag (requires Electron runtime).
 - Results documented in `docs/dinocode-browser.md` "Verified assumptions" section.
 - Spike deleted or converted into a real integration test once Phase 2 lands.
-
 
 ---
 

@@ -1,3 +1,4 @@
+// dinocode-integration: dinocode-board per-project kanban route.
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
 import { scopeProjectRef } from "@t3tools/client-runtime";

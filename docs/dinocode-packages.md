@@ -35,9 +35,10 @@ well-defined integration points.
 
 ### Existing
 
-| Package         | Responsibility                                                                                                 | Status   |
-| --------------- | -------------------------------------------------------------------------------------------------------------- | -------- |
-| `packages/soil` | Task domain: schemas, parser, renderer, decider, projector, reactor, watcher, migrations. Zero t3code imports. | Shipping |
+| Package                     | Responsibility                                                                                                                                                      | Status   |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| `packages/soil`             | Task domain: schemas, parser, renderer, decider, projector, reactor, watcher, migrations. Zero t3code imports.                                                      | Shipping |
+| `packages/dinocode-browser` | Built-in browser: Electron main `BrowserManager` + CDP adapter, preload bridge, React renderer panel, shared schemas, and agent tool handlers. Zero t3code imports. | Scaffold |
 
 ### Planned
 
@@ -137,3 +138,4 @@ reviewed against this checklist during planning, not during implementation.
 - `DINOCODE.md` §1 (mission & principles)
 - `packages/soil/README.md` (reference standalone-package template)
 - `docs/soil-migrations.md` (schema-evolution contract)
+- `docs/dinocode-browser.md` (architecture & design for the built-in browser package)

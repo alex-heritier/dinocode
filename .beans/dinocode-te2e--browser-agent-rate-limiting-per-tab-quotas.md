@@ -1,19 +1,19 @@
 ---
 # dinocode-te2e
-title: 'Browser: agent rate limiting + per-tab quotas'
+title: "Browser: agent rate limiting + per-tab quotas"
 status: todo
 type: task
 priority: normal
 tags:
-    - phase-browser
-    - phase-4-agent-interact
-    - safety
+  - phase-browser
+  - phase-4-agent-interact
+  - safety
 created_at: 2026-04-23T05:46:23Z
 updated_at: 2026-04-23T05:46:35Z
 parent: dinocode-ipdj
 blocked_by:
-    - dinocode-87ah
-    - dinocode-6os6
+  - dinocode-87ah
+  - dinocode-6os6
 ---
 
 ## Why this bean exists
