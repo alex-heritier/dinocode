@@ -22,6 +22,7 @@ The result: a single interface where you can decompose work into tasks, manage t
 2. **Parallel by default**: Tasks are independent. Multiple agents can reference different tasks simultaneously without blocking each other.
 3. **Minimal chrome**: The UI gets out of the way. Keyboard-driven, low latency, no modal fatigue.
 4. **Agent-native**: The system is designed for agents to read and write tasks, not just humans.
+5. **Standalone packages on top of t3code**: This repo is a fork of [`pingdotgg/t3code`](https://github.com/pingdotgg/t3code). Every Dinocode feature lives in a standalone package (`packages/soil`, `packages/dinocode-*`) and plugs into `apps/web`, `apps/server`, and `apps/desktop` at minimal integration points. We do not rewrite t3code internals. See [`docs/dinocode-packages.md`](docs/dinocode-packages.md) for the package map and coupling rules.
 
 ### Canonical Data Model
 
