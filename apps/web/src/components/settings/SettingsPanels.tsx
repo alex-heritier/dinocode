@@ -498,6 +498,10 @@ export function useSettingsRestore(onRestored?: () => void) {
       ...(settings.confirmThreadDelete !== DEFAULT_UNIFIED_SETTINGS.confirmThreadDelete
         ? ["Delete confirmation"]
         : []),
+      ...(settings.criticalToastDesktopNotifications !==
+      DEFAULT_UNIFIED_SETTINGS.criticalToastDesktopNotifications
+        ? ["Critical toast notifications"]
+        : []),
       ...(isGitWritingModelDirty ? ["Git writing model"] : []),
       ...(areProviderSettingsDirty ? ["Providers"] : []),
     ],
@@ -506,6 +510,7 @@ export function useSettingsRestore(onRestored?: () => void) {
       isGitWritingModelDirty,
       settings.confirmThreadArchive,
       settings.confirmThreadDelete,
+      settings.criticalToastDesktopNotifications,
       settings.addProjectBaseDirectory,
       settings.repositoryIdentityPreferredRemoteName,
       settings.defaultThreadEnvMode,
@@ -1121,6 +1126,34 @@ export function GeneralSettingsPanel() {
                 updateSettings({ confirmThreadDelete: Boolean(checked) })
               }
               aria-label="Confirm thread deletion"
+            />
+          }
+        />
+
+        <SettingsRow
+          title="Desktop notifications for critical toasts"
+          description="When Dinocode isn't focused, mirror error and warning toasts to the system Notification Center. Requires browser/OS permission."
+          resetAction={
+            settings.criticalToastDesktopNotifications !==
+            DEFAULT_UNIFIED_SETTINGS.criticalToastDesktopNotifications ? (
+              <SettingResetButton
+                label="critical toast notifications"
+                onClick={() =>
+                  updateSettings({
+                    criticalToastDesktopNotifications:
+                      DEFAULT_UNIFIED_SETTINGS.criticalToastDesktopNotifications,
+                  })
+                }
+              />
+            ) : null
+          }
+          control={
+            <Switch
+              checked={settings.criticalToastDesktopNotifications}
+              onCheckedChange={(checked) =>
+                updateSettings({ criticalToastDesktopNotifications: Boolean(checked) })
+              }
+              aria-label="Mirror critical toasts to system notifications"
             />
           }
         />

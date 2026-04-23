@@ -5,7 +5,7 @@ status: completed
 type: feature
 priority: normal
 tags:
-    - contracts
+  - contracts
 created_at: 2026-04-22T07:41:25Z
 updated_at: 2026-04-23T03:09:43Z
 parent: dinocode-xd5m
@@ -24,8 +24,6 @@ Close the open question: task IDs are immutable but the filename slug can change
 - [ ] Thread references to the task remain valid (ID is stable)
 - [ ] UI: "Rename file" button in detail panel → prompts for new slug, previews new filename, confirms
 - [ ] Tests: rename mid-turn shouldn't break active thread's context chips
-
-
 
 ## Resolution
 

@@ -42,6 +42,12 @@ export const DEFAULT_REPOSITORY_IDENTITY_PREFERRED_REMOTE_NAME: RepositoryIdenti
 export const ClientSettingsSchema = Schema.Struct({
   confirmThreadArchive: Schema.Boolean.pipe(Schema.withDecodingDefault(Effect.succeed(false))),
   confirmThreadDelete: Schema.Boolean.pipe(Schema.withDecodingDefault(Effect.succeed(true))),
+  // When true, critical (error/warning) toasts created through
+  // `stackedThreadToast` are mirrored to the system Notification API while the
+  // app is not focused. Opt-in because it requires a browser permission prompt.
+  criticalToastDesktopNotifications: Schema.Boolean.pipe(
+    Schema.withDecodingDefault(Effect.succeed(false)),
+  ),
   diffWordWrap: Schema.Boolean.pipe(Schema.withDecodingDefault(Effect.succeed(false))),
   favorites: Schema.Array(
     Schema.Struct({
@@ -282,6 +288,7 @@ export type ServerSettingsPatch = typeof ServerSettingsPatch.Type;
 export const ClientSettingsPatch = Schema.Struct({
   confirmThreadArchive: Schema.optionalKey(Schema.Boolean),
   confirmThreadDelete: Schema.optionalKey(Schema.Boolean),
+  criticalToastDesktopNotifications: Schema.optionalKey(Schema.Boolean),
   diffWordWrap: Schema.optionalKey(Schema.Boolean),
   favorites: Schema.optionalKey(
     Schema.Array(

@@ -5,7 +5,7 @@ status: completed
 type: task
 priority: normal
 tags:
-    - contracts
+  - contracts
 created_at: 2026-04-22T07:41:46Z
 updated_at: 2026-04-23T03:09:43Z
 parent: dinocode-xd5m
@@ -22,8 +22,6 @@ Commit to the tentative decision: archived tasks move to `.dinocode/tasks/archiv
 - [ ] Cross-platform: inotify vs FSEvents vs ReadDirectoryChangesW — normalize to the same event shape
 - [ ] Manual-edit scenario: user drags file in their editor from tasks/ to archive/ — system adapts seamlessly
 - [ ] Tests across all 3 OSes in CI matrix
-
-
 
 ## Resolution
 

@@ -531,6 +531,7 @@ describe("wsApi", () => {
     const clientSettings = {
       confirmThreadArchive: true,
       confirmThreadDelete: false,
+      criticalToastDesktopNotifications: false,
       diffWordWrap: true,
       favorites: [],
       sidebarProjectGroupingMode: "repository_path" as const,
@@ -589,6 +590,7 @@ describe("wsApi", () => {
     const clientSettings = {
       confirmThreadArchive: true,
       confirmThreadDelete: false,
+      criticalToastDesktopNotifications: false,
       diffWordWrap: true,
       favorites: [],
       sidebarProjectGroupingMode: "repository_path" as const,

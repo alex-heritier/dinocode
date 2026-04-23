@@ -5,8 +5,8 @@ status: completed
 type: task
 priority: normal
 tags:
-    - phase-5
-    - ui
+  - phase-5
+  - ui
 created_at: 2026-04-22T07:38:56Z
 updated_at: 2026-04-23T03:08:22Z
 parent: dinocode-b6x6
@@ -25,8 +25,6 @@ Several features (unblock, conflict, subtask completion, error states) need a co
 - [ ] Desktop integration: when app is not focused, mirror critical toasts via `Notification` API (opt-in setting)
 - [ ] Accessibility: `role="status"` for info, `role="alert"` for error/warning; `aria-live` regions
 - [ ] Tests: stacking, action callbacks, timeout dismissal
-
-
 
 ## Summary of Changes
 
