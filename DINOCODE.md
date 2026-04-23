@@ -674,6 +674,31 @@ The server wraps these primitives in a thin adapter layer:
 - The server adapter feeds task commands and task events into soil decider/projector/reactor logic.
 - The CLI imports soil directly so it can operate on `.dinocode/tasks/` without going through WebSocket or HTTP.
 
+> For the full per-subpath API reference, usage examples, and the task file
+> format specification, see [`packages/soil/README.md`](./packages/soil/README.md).
+> The spec above is intentionally a summary; the README is the authoritative
+> contract for soil consumers.
+
+The following explicit subpath exports are published by `@dinocode/soil`:
+
+| Subpath                          | Purpose                                                      |
+| -------------------------------- | ------------------------------------------------------------ |
+| `@dinocode/soil/schema`          | Effect Schema for `TaskDocument`, `TaskState`, `TaskPatch`.  |
+| `@dinocode/soil/parser`          | `parseTaskFile` — Markdown + YAML front matter parser.       |
+| `@dinocode/soil/renderer`        | `renderTaskDocument`, `renderFilename` — deterministic.      |
+| `@dinocode/soil/etag`            | `computeEtag` — FNV-1a 32-bit, LF-normalized.                |
+| `@dinocode/soil/decider`         | `decideTaskCommand` — pure state machine.                    |
+| `@dinocode/soil/projector`       | `projectTaskEvent` — event folder.                           |
+| `@dinocode/soil/reactor`         | `makeSoilReactor` — filesystem writer with write-lock guard. |
+| `@dinocode/soil/watcher`         | `watchProject` — `Stream<FileChangeEvent>`.                  |
+| `@dinocode/soil/config`          | `loadProjectConfig` — reads `.dinocode/config.yml`.          |
+| `@dinocode/soil/conflict`        | `detectEtagConflict`, `threeWayMerge`.                       |
+| `@dinocode/soil/migration`       | `migrateTaskContent`, `planSlugRename`.                      |
+| `@dinocode/soil/search`          | `filterTasks`, `sortTasks`, `readyTasks`.                    |
+| `@dinocode/soil/id`              | `generateTaskId`, `generateSlug`.                            |
+| `@dinocode/soil/fractionalIndex` | `keyBetween` for kanban ordering.                            |
+| `@dinocode/soil/errors`          | Tagged `SoilError` union.                                    |
+
 ---
 
 ## 10. Storage & Persistence
@@ -703,7 +728,8 @@ The server wraps these primitives in a thin adapter layer:
 - [ ] Implement soil reactor for ordered, atomic task-file writes.
 - [ ] Implement soil conflict resolution and error taxonomy.
 - [ ] Add soil migration utilities for schema evolution and slug/path changes.
-- [ ] Add soil test suite and API documentation.
+- [ ] Add soil test suite.
+- [x] Add soil API documentation (`packages/soil/README.md` + §9.2 subpath table).
 
 ### Phase 1.5: Server Orchestration Integration
 
