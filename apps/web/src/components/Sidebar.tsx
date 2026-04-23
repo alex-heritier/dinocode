@@ -18,6 +18,9 @@ import {
   ThreadStatusLabel,
 } from "./ThreadStatusIndicators";
 import { ProjectFavicon } from "./ProjectFavicon";
+// dinocode-integration: surfaces the project's Board face alongside Chat.
+import { ProjectFacePill } from "./board/ProjectFacePill";
+import { resolveProjectFacePillViewModel } from "./board/projectFacePill.logic";
 import { autoAnimate } from "@formkit/auto-animate";
 import React, { useCallback, useEffect, memo, useMemo, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
@@ -931,6 +934,7 @@ const SidebarProjectItem = memo(function SidebarProjectItem(props: SidebarProjec
   }));
   const { updateSettings } = useUpdateSettings();
   const router = useRouter();
+  const pathname = useLocation({ select: (loc) => loc.pathname });
   const markThreadUnread = useUiStateStore((state) => state.markThreadUnread);
   const toggleProject = useUiStateStore((state) => state.toggleProject);
   const toggleThreadSelection = useThreadSelectionStore((state) => state.toggleThread);
@@ -1943,6 +1947,40 @@ const SidebarProjectItem = memo(function SidebarProjectItem(props: SidebarProjec
     ],
   );
 
+  const facePillViewModel = useMemo(
+    () =>
+      resolveProjectFacePillViewModel({
+        members: project.memberProjects.map((m) => ({
+          environmentId: m.environmentId,
+          id: m.id,
+        })),
+        threads: projectThreads.map((thread, index) => ({
+          environmentId: thread.environmentId,
+          id: thread.id,
+          archivedAt: thread.archivedAt,
+          lastVisitedAt: threadLastVisitedAts[index] ?? null,
+        })),
+        pathname,
+      }),
+    [pathname, project.memberProjects, projectThreads, threadLastVisitedAts],
+  );
+  const facePillPrimaryMember = useMemo(
+    () =>
+      facePillViewModel
+        ? (project.memberProjects.find(
+            (member) =>
+              member.environmentId === facePillViewModel.primary.environmentId &&
+              member.id === facePillViewModel.primary.id,
+          ) ?? null)
+        : null,
+    [facePillViewModel, project.memberProjects],
+  );
+  const handleFacePillCreateNewThread = useCallback(() => {
+    if (facePillPrimaryMember) {
+      createThreadForProjectMember(facePillPrimaryMember);
+    }
+  }, [createThreadForProjectMember, facePillPrimaryMember]);
+
   return (
     <>
       <div className="group/project-header relative">
@@ -2038,6 +2076,18 @@ const SidebarProjectItem = memo(function SidebarProjectItem(props: SidebarProjec
           </TooltipPopup>
         </Tooltip>
       </div>
+
+      {facePillViewModel && (
+        <ProjectFacePill
+          environmentId={facePillViewModel.chatEnvironmentId}
+          projectId={facePillViewModel.primary.id}
+          lastVisitedThreadId={facePillViewModel.lastVisitedThreadId}
+          onCreateNewThread={handleFacePillCreateNewThread}
+          isChatActive={activeRouteThreadKey !== null}
+          isBoardActive={facePillViewModel.isBoardActive}
+          openThreadCount={facePillViewModel.openThreadCount}
+        />
+      )}
 
       <SidebarProjectThreadList
         projectKey={project.projectKey}

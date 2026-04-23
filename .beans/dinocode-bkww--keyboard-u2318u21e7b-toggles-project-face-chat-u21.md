@@ -1,11 +1,11 @@
 ---
 # dinocode-bkww
 title: 'Keyboard: \u2318\u21e7B toggles project face (chat \u2194 board)'
-status: todo
+status: completed
 type: task
 priority: high
 created_at: 2026-04-23T04:38:29Z
-updated_at: 2026-04-23T04:38:29Z
+updated_at: 2026-04-23T04:50:47Z
 parent: dinocode-qsqf
 ---
 

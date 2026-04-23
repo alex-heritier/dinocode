@@ -1,5 +1,5 @@
-import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { Outlet, createFileRoute, redirect, useLocation, useRouter } from "@tanstack/react-router";
+import { useCallback, useEffect } from "react";
 
 import { useCommandPaletteStore } from "../commandPaletteStore";
 import { useHandleNewThread } from "../hooks/useHandleNewThread";
@@ -14,6 +14,11 @@ import { useThreadSelectionStore } from "../threadSelectionStore";
 import { resolveSidebarNewThreadEnvMode } from "~/components/Sidebar.logic";
 import { useSettings } from "~/hooks/useSettings";
 import { useServerKeybindings } from "~/rpc/serverState";
+// dinocode-integration: ⌘⇧B flips the active project between chat and board.
+import { resolveToggleFaceAction } from "~/components/board/toggleFace.logic";
+import { selectSidebarThreadsAcrossEnvironments, useStore } from "~/store";
+import { useUiStateStore } from "~/uiStateStore";
+import { scopeProjectRef, scopedThreadKey, scopeThreadRef } from "@t3tools/client-runtime";
 
 function ChatRouteGlobalShortcuts() {
   const clearSelection = useThreadSelectionStore((state) => state.clearSelection);
@@ -27,6 +32,68 @@ function ChatRouteGlobalShortcuts() {
       : false,
   );
   const appSettings = useSettings();
+  const router = useRouter();
+  const pathname = useLocation({ select: (loc) => loc.pathname });
+
+  const handleToggleFace = useCallback(() => {
+    const storeState = useStore.getState();
+    const sidebarThreads = selectSidebarThreadsAcrossEnvironments(storeState);
+    const visitedMap = useUiStateStore.getState().threadLastVisitedAtById;
+    const allThreads = sidebarThreads.map((thread) => ({
+      environmentId: thread.environmentId,
+      id: thread.id,
+      projectId: thread.projectId,
+      archivedAt: thread.archivedAt,
+      lastVisitedAt:
+        visitedMap[scopedThreadKey(scopeThreadRef(thread.environmentId, thread.id))] ?? null,
+    }));
+    const action = resolveToggleFaceAction({
+      pathname,
+      activeThread: activeThread
+        ? {
+            environmentId: activeThread.environmentId,
+            id: activeThread.id,
+            projectId: activeThread.projectId,
+            archivedAt: activeThread.archivedAt,
+            lastVisitedAt: null,
+          }
+        : null,
+      allThreads,
+    });
+
+    switch (action.kind) {
+      case "navigate-to-board": {
+        void router.navigate({
+          to: "/board/$environmentId/$projectId",
+          params: {
+            environmentId: action.environmentId as string,
+            projectId: action.projectId as string,
+          },
+        });
+        return;
+      }
+      case "navigate-to-thread": {
+        void router.navigate({
+          to: "/$environmentId/$threadId",
+          params: {
+            environmentId: action.environmentId as string,
+            threadId: action.threadId as string,
+          },
+        });
+        return;
+      }
+      case "create-new-thread": {
+        void handleNewThread(scopeProjectRef(action.environmentId, action.projectId), {
+          envMode: resolveSidebarNewThreadEnvMode({
+            defaultEnvMode: appSettings.defaultThreadEnvMode,
+          }),
+        });
+        return;
+      }
+      case "noop":
+        return;
+    }
+  }, [activeThread, appSettings.defaultThreadEnvMode, handleNewThread, pathname, router]);
 
   useEffect(() => {
     const onWindowKeyDown = (event: KeyboardEvent) => {
@@ -75,6 +142,13 @@ function ChatRouteGlobalShortcuts() {
           }),
           handleNewThread,
         });
+        return;
+      }
+
+      if (command === "project.toggleFace") {
+        event.preventDefault();
+        event.stopPropagation();
+        handleToggleFace();
       }
     };
 
@@ -87,6 +161,7 @@ function ChatRouteGlobalShortcuts() {
     activeThread,
     clearSelection,
     handleNewThread,
+    handleToggleFace,
     keybindings,
     defaultProjectRef,
     selectedThreadKeysSize,

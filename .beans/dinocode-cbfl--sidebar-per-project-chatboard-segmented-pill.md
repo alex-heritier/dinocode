@@ -1,11 +1,11 @@
 ---
 # dinocode-cbfl
 title: 'Sidebar: per-project Chat/Board segmented pill'
-status: todo
+status: completed
 type: task
 priority: high
 created_at: 2026-04-23T04:38:16Z
-updated_at: 2026-04-23T04:38:16Z
+updated_at: 2026-04-23T04:50:47Z
 parent: dinocode-qsqf
 ---
 
