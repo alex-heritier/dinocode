@@ -5,7 +5,7 @@ status: in-progress
 type: epic
 priority: high
 created_at: 2026-04-22T12:57:45Z
-updated_at: 2026-04-22T14:58:06Z
+updated_at: 2026-04-23T03:42:01Z
 ---
 
 Scaffold packages/soil, define task schemas, build FileStore parser/writer/ETag, implement decider/projector, add orchestration contracts, server integration, migration, and basic kanban UI.
@@ -24,3 +24,7 @@ Scaffold packages/soil, define task schemas, build FileStore parser/writer/ETag,
 - Soil: reactor (mswb), conflict resolution (lfdu), search utils (qga1), migration utils (jo0q), tests (m5em), docs (joh6)
 - Server: FileStore adapter (j3do), watcher integration (xd4c), project seeding (7xp4), conflict events (4sv1), reactor integration (6uwn)
 - Web: TaskDetailPanel, filter bar, keyboard shortcuts, empty states, DnD
+
+## Direction update (2026-04-23)
+
+All code work under this epic lands in Dinocode-owned packages, not in `apps/server/src/`, `apps/web/src/`, or `packages/contracts/src/`. Target packages per `docs/dinocode-packages.md`: `packages/soil`, `packages/dinocode-contracts`, `packages/dinocode-server`, `packages/dinocode-board`, `packages/dinocode-cli`, `packages/dinocode-agent-tools`. Integration into `apps/*` is a thin wire-up annotated with `dinocode-integration:` comments. See child beans for per-task direction notes.

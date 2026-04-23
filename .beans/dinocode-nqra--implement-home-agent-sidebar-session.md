@@ -5,7 +5,7 @@ status: todo
 type: feature
 priority: normal
 created_at: 2026-04-22T07:15:35Z
-updated_at: 2026-04-22T09:55:20Z
+updated_at: 2026-04-23T03:41:21Z
 parent: dinocode-b6x6
 blocked_by:
   - dinocode-h551
@@ -56,3 +56,7 @@ Always-visible sidebar chat panel scoped to the `__home_agent__:<projectId>` thr
 - [ ] Home agent thread is auto-created
 - [ ] Tool list filtering excludes shell/file-write
 - [ ] Conversation persists across reloads
+
+## Direction update (2026-04-23)
+
+Per `docs/dinocode-packages.md`, this task's code must live in a Dinocode package, not directly under `apps/web/src/`. Target: `packages/dinocode-board` (new; tracked by dinocode-up4r). `apps/web` gets a route-adapter import with a `dinocode-integration:` comment. No dinocode-specific fields added to t3code `ClientSettings`; use `.dinocode/config.yml` or a `dinocode.*`-prefixed localStorage key instead. Update acceptance criteria and file paths before picking this up.

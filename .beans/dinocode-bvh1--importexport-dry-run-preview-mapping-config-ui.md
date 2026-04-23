@@ -8,7 +8,7 @@ tags:
   - phase-6
   - integrations
 created_at: 2026-04-22T07:40:10Z
-updated_at: 2026-04-22T07:40:10Z
+updated_at: 2026-04-23T03:41:21Z
 parent: dinocode-0ub1
 ---
 
@@ -22,3 +22,7 @@ Shared preview flow used by both GitHub and Linear importers/exporters before an
 - [ ] "Apply" button actually runs; progress bar with per-item success/fail
 - [ ] Session log persisted for audit: `.dinocode/.sessions/imports/<provider>-<timestamp>.json`
 - [ ] Tests cover mapping persistence and resume-after-partial-failure
+
+## Direction update (2026-04-23)
+
+Per `docs/dinocode-packages.md`, this task's code must live in a Dinocode package, not directly under `apps/web/src/`. Target: `packages/dinocode-board` (new; tracked by dinocode-up4r). `apps/web` gets a route-adapter import with a `dinocode-integration:` comment. No dinocode-specific fields added to t3code `ClientSettings`; use `.dinocode/config.yml` or a `dinocode.*`-prefixed localStorage key instead. Update acceptance criteria and file paths before picking this up.

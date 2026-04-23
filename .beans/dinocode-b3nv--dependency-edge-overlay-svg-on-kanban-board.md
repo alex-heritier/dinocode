@@ -8,7 +8,7 @@ tags:
   - phase-2
   - visualization
 created_at: 2026-04-22T07:33:51Z
-updated_at: 2026-04-22T07:33:51Z
+updated_at: 2026-04-23T03:41:20Z
 parent: dinocode-lsa5
 ---
 
@@ -45,3 +45,7 @@ Render directed edges between cards to visualize `blocking`/`blocked_by` depende
 ### Settings
 
 - [ ] Toggle: "Show dependencies" boolean in board header; default on; persists in `desktopSettings`
+
+## Direction update (2026-04-23)
+
+Per `docs/dinocode-packages.md`, this task's code must live in a Dinocode package, not directly under `apps/web/src/`. Target: `packages/dinocode-board` (new; tracked by dinocode-up4r). `apps/web` gets a route-adapter import with a `dinocode-integration:` comment. No dinocode-specific fields added to t3code `ClientSettings`; use `.dinocode/config.yml` or a `dinocode.*`-prefixed localStorage key instead. Update acceptance criteria and file paths before picking this up.

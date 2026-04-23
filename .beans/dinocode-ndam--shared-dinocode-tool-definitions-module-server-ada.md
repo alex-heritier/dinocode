@@ -8,7 +8,7 @@ tags:
   - phase-4
   - tools
 created_at: 2026-04-22T07:36:33Z
-updated_at: 2026-04-22T07:36:33Z
+updated_at: 2026-04-23T03:41:10Z
 parent: dinocode-lhp0
 ---
 
@@ -47,3 +47,7 @@ Single source of truth for the built-in tool schemas and handlers. Both Codex an
 
 - [ ] Each tool end-to-end via test harness
 - [ ] Adapter conversion round-trip (definition → adapter shape → back)
+
+## Direction update (2026-04-23)
+
+Per `docs/dinocode-packages.md`, this task's code must live in a Dinocode package, not directly under `apps/server/src/`. Target: `packages/dinocode-server` (new; tracked by dinocode-k7pm). `apps/server` gets a single-line layer mount with a `dinocode-integration:` comment. No new types in `@t3tools/contracts` — task schemas live in `packages/dinocode-contracts` (tracked by dinocode-fm1h). Update acceptance criteria and file paths before picking this up.

@@ -1,5 +1,14 @@
 # CodexMonitor Parity Audit
 
+> **Scope note (2026-04-23)**: The gap rows in this audit describe features that
+> belong to the **t3code** application, not to Dinocode. Per
+> [`docs/dinocode-packages.md`](dinocode-packages.md), the default direction
+> for any gap here is to **upstream it to `pingdotgg/t3code`** rather than
+> modify this fork's `apps/*`. The filed gap beans (`dinocode-50yd`,
+> `dinocode-ewuu`, `dinocode-j9i1`, `dinocode-8p7z`, `dinocode-90rk`,
+> `dinocode-94q9`, `dinocode-57a1`, `dinocode-d1ot`) are tracked here for
+> visibility, but each carries a direction note to prefer upstreaming.
+
 **Status**: Completed 2026-04-23
 **Owner**: dinocode-q22h
 

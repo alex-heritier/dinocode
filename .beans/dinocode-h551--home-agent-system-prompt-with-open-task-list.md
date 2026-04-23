@@ -5,7 +5,7 @@ status: todo
 type: task
 priority: normal
 created_at: 2026-04-22T07:14:50Z
-updated_at: 2026-04-22T09:55:18Z
+updated_at: 2026-04-23T03:41:10Z
 parent: dinocode-0apu
 blocked_by:
   - dinocode-56yo
@@ -42,3 +42,7 @@ When the `__home_agent__:<projectId>` thread starts a turn, inject a compact lis
 
 - [ ] Snapshot test of composed prompt for fixture project (stable IDs/dates)
 - [ ] Truncation kicks in at exactly 41 tasks
+
+## Direction update (2026-04-23)
+
+Per `docs/dinocode-packages.md`, this task's code must live in a Dinocode package, not directly under `apps/server/src/`. Target: `packages/dinocode-server` (new; tracked by dinocode-k7pm). `apps/server` gets a single-line layer mount with a `dinocode-integration:` comment. No new types in `@t3tools/contracts` — task schemas live in `packages/dinocode-contracts` (tracked by dinocode-fm1h). Update acceptance criteria and file paths before picking this up.

@@ -5,7 +5,7 @@ status: todo
 type: task
 priority: high
 created_at: 2026-04-22T07:14:22Z
-updated_at: 2026-04-22T07:33:36Z
+updated_at: 2026-04-23T03:41:20Z
 parent: dinocode-lsa5
 ---
 
@@ -24,3 +24,7 @@ Compact inline form that appears at the top of any column when the user clicks "
 - [ ] Keyboard shortcut: pressing `N` on the board focuses the "Todo" column's inline form
 - [ ] Accessibility: `role="form"`, `aria-label="Create new task"`, labelled inputs
 - [ ] Tests: submit creates, Escape cancels, keeps focus in form after Shift+Enter, optimistic card appears immediately
+
+## Direction update (2026-04-23)
+
+Per `docs/dinocode-packages.md`, this task's code must live in a Dinocode package, not directly under `apps/web/src/`. Target: `packages/dinocode-board` (new; tracked by dinocode-up4r). `apps/web` gets a route-adapter import with a `dinocode-integration:` comment. No dinocode-specific fields added to t3code `ClientSettings`; use `.dinocode/config.yml` or a `dinocode.*`-prefixed localStorage key instead. Update acceptance criteria and file paths before picking this up.

@@ -1,11 +1,11 @@
 ---
 # dinocode-mdhg
-title: 'Data migration: schema evolution strategy for future task-schema changes'
+title: "Data migration: schema evolution strategy for future task-schema changes"
 status: completed
 type: task
 priority: low
 tags:
-    - migration
+  - migration
 created_at: 2026-04-22T07:42:21Z
 updated_at: 2026-04-23T03:23:49Z
 parent: dinocode-xd5m
@@ -21,8 +21,6 @@ Task front-matter will evolve. Define a forward/backward-compatible evolution st
 - [ ] Migration runner: `dinocode migrate` CLI walks tasks, applies registered migrations
 - [ ] Versioned migrations under `apps/cli/src/migrations/v1-to-v2.ts`, `v2-to-v3.ts`
 - [ ] Dry-run mode default; write needs `--apply`
-
-
 
 ## Resolution
 

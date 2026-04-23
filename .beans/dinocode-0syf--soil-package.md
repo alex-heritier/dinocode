@@ -5,7 +5,7 @@ status: in-progress
 type: epic
 priority: high
 created_at: 2026-04-22T08:28:26Z
-updated_at: 2026-04-22T15:25:42Z
+updated_at: 2026-04-23T03:42:01Z
 parent: dinocode-nvvq
 ---
 
@@ -33,3 +33,7 @@ Standalone file-first task domain package (packages/soil). Owns YAML front-matte
 
 - apps/server — via thin adapter (dinocode-r7mw)
 - apps/cli — direct imports, no server required
+
+## Direction update (2026-04-23)
+
+All code work under this epic lands in Dinocode-owned packages, not in `apps/server/src/`, `apps/web/src/`, or `packages/contracts/src/`. Target packages per `docs/dinocode-packages.md`: `packages/soil`, `packages/dinocode-contracts`, `packages/dinocode-server`, `packages/dinocode-board`, `packages/dinocode-cli`, `packages/dinocode-agent-tools`. Integration into `apps/*` is a thin wire-up annotated with `dinocode-integration:` comments. See child beans for per-task direction notes.

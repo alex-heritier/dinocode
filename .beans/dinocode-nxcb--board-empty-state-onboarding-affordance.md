@@ -8,7 +8,7 @@ tags:
   - phase-2
   - ui
 created_at: 2026-04-22T07:34:35Z
-updated_at: 2026-04-22T07:34:35Z
+updated_at: 2026-04-23T03:41:20Z
 parent: dinocode-lsa5
 ---
 
@@ -23,3 +23,7 @@ When `.dinocode/` exists but `tasks/` is empty, show a welcoming onboarding stat
 - [ ] Secondary CTA: "Seed example tasks" → dispatches 3–5 example `task.create` commands (demo content)
 - [ ] Tertiary: "Read the guide" → opens DINOCODE.md in editor via `shell.openInEditor`
 - [ ] Dismissible, remembered per-project
+
+## Direction update (2026-04-23)
+
+Per `docs/dinocode-packages.md`, this task's code must live in a Dinocode package, not directly under `apps/web/src/`. Target: `packages/dinocode-board` (new; tracked by dinocode-up4r). `apps/web` gets a route-adapter import with a `dinocode-integration:` comment. No dinocode-specific fields added to t3code `ClientSettings`; use `.dinocode/config.yml` or a `dinocode.*`-prefixed localStorage key instead. Update acceptance criteria and file paths before picking this up.

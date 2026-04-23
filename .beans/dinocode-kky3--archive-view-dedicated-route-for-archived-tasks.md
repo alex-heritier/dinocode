@@ -8,7 +8,7 @@ tags:
   - phase-2
   - archive
 created_at: 2026-04-22T07:34:31Z
-updated_at: 2026-04-22T09:56:16Z
+updated_at: 2026-04-23T03:41:20Z
 parent: dinocode-lsa5
 blocked_by:
   - dinocode-y7dm
@@ -26,3 +26,7 @@ Completed/scrapped tasks live in the regular board columns; archived tasks (phys
 - [ ] "Unarchive" dispatches `task.unarchive` → file moves back to `tasks/`
 - [ ] Link from board header: "Archived (N)" count → navigates to archive view
 - [ ] Keyboard: `G A` → archive view
+
+## Direction update (2026-04-23)
+
+Per `docs/dinocode-packages.md`, this task's code must live in a Dinocode package, not directly under `apps/web/src/`. Target: `packages/dinocode-board` (new; tracked by dinocode-up4r). `apps/web` gets a route-adapter import with a `dinocode-integration:` comment. No dinocode-specific fields added to t3code `ClientSettings`; use `.dinocode/config.yml` or a `dinocode.*`-prefixed localStorage key instead. Update acceptance criteria and file paths before picking this up.
