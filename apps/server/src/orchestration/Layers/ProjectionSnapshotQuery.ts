@@ -1426,6 +1426,17 @@ const makeProjectionSnapshotQuery = Effect.gen(function* () {
     projectId,
   ) =>
     Effect.gen(function* () {
+      const projectRow = yield* getActiveProjectRowById({ projectId }).pipe(
+        Effect.mapError(
+          toPersistenceSqlOrDecodeError(
+            "ProjectionSnapshotQuery.getBoardSnapshotByProjectId:getProject:query",
+            "ProjectionSnapshotQuery.getBoardSnapshotByProjectId:getProject:decodeRow",
+          ),
+        ),
+      );
+      if (Option.isNone(projectRow)) {
+        return Option.none();
+      }
       const taskRows = yield* taskRepository
         .listByProjectId(projectId)
         .pipe(
@@ -1433,18 +1444,15 @@ const makeProjectionSnapshotQuery = Effect.gen(function* () {
             toPersistenceSqlError("ProjectionSnapshotQuery.getBoardSnapshotByProjectId:listTasks"),
           ),
         );
-      if (taskRows.length === 0) {
-        return Option.none();
-      }
       type MutableColumn = {
         id: BoardSnapshot["columns"][number]["id"];
         title: string;
         cards: Array<BoardSnapshot["columns"][number]["cards"][number]>;
       };
       const columns: MutableColumn[] = [
-        { id: "in-progress", title: "In Progress", cards: [] },
-        { id: "todo", title: "Todo", cards: [] },
         { id: "draft", title: "Draft", cards: [] },
+        { id: "todo", title: "Todo", cards: [] },
+        { id: "in-progress", title: "In Progress", cards: [] },
         { id: "completed", title: "Completed", cards: [] },
         { id: "scrapped", title: "Scrapped", cards: [] },
       ];
@@ -1468,7 +1476,7 @@ const makeProjectionSnapshotQuery = Effect.gen(function* () {
       const snapshot: BoardSnapshot = {
         snapshotSequence: 0,
         projectId,
-        columns: columns.filter((c) => c.cards.length > 0),
+        columns,
         updatedAt: new Date().toISOString(),
       };
       return Option.some(snapshot);
