@@ -1,7 +1,7 @@
 ---
 # dinocode-dyjh
 title: "Browser: artifact storage conventions (.dinocode/browser/**)"
-status: todo
+status: completed
 type: task
 priority: normal
 tags:
@@ -34,6 +34,15 @@ One place, one layout, `.gitignore`'d, and user-discoverable.
 
 - Gitignore verified.
 - A one-line `ArtifactPaths` module exports helpers so no other module hardcodes paths.
+
+## Progress
+
+- Landed `packages/dinocode-browser/src/artifacts/ArtifactPaths.ts` — the single source of truth for every path the browser subsystem writes. Helpers: `artifactRoot`, `screenshotPath`, `networkBodyPath`, `domSnapshotPath`, `sessionManifestPath`, `tracePath`, `dailyLogPath`. Root-level files (`allowlist.json`, `state.json`, `history.json`) are exported as constants so startup wiring can enumerate them.
+- Directory layout matches the bean's spec: `.dinocode/browser/{screenshots,network-bodies,dom-snapshots,sessions,traces,logs}/` scoped by `<tabId>`. The only deviation from the bean's literal text is the ISO colon → `-` rewrite (`12:34:56.789Z` → `12-34-56.789Z`) so the paths are Windows-friendly; the timestamp is still fully recoverable.
+- Safety: every helper validates its inputs with strict regexes. `tabId` must match `BrowserTabIdSchema` (`[a-z0-9][a-z0-9_-]{0,63}`); ISO timestamps must match the `YYYY-MM-DDTHH:MM:SS(.sss)?Z` shape; request ids and extensions are filtered through a conservative slug. A caller cannot smuggle `..`, `/`, or control characters through the helper — an invalid input throws at the boundary.
+- `.gitignore`: added `.dinocode/browser/` and `.dinocode/browser/**`, covering every subdirectory regardless of how deep the tool call buries an artifact.
+- Package exports: new `@dinocode/browser/artifacts` subpath plus root barrel re-export. Tests `src/tests/artifactPaths.test.ts` (13 assertions) cover happy-path path building, directory-traversal rejection, and constant-list integrity. Full package suite is 92/92 green.
+- Docs: rewrote `docs/dinocode-browser.md` §9 "Artifact storage" with the authoritative layout, callouts to the validation behavior, and the "Open browser data folder" action in the settings drawer anchored to the `ARTIFACT_ROOT_SEGMENT` constant.
 
 ---
 

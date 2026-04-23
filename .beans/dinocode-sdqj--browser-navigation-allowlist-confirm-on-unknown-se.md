@@ -1,7 +1,7 @@
 ---
 # dinocode-sdqj
 title: "Browser: navigation allowlist + confirm-on-unknown security model"
-status: todo
+status: completed
 type: task
 priority: high
 tags:
@@ -30,6 +30,17 @@ Define and implement the security boundary that protects users from an agent wan
 - Pure logic module (`Allowlist.ts`) with exhaustive unit tests.
 - Agent tool handlers wrap `navigate`/`open` in an allowlist check before calling into main.
 - Settings UI (later bean) surfaces the allowlist for edit.
+
+## Progress
+
+- Landed `packages/dinocode-browser/src/security/Allowlist.ts` — a pure decision module. Exports `evaluateAllowlist({ url, initiator, policy }) → { decision: "allowed" | "denied" | "confirmRequired", reason?, matchedPattern?, host?, origin? }`. No FS, no network, no clock; same input always yields the same decision (asserted by test).
+- Workspace defaults: `DEFAULT_WORKSPACE_ALLOWLIST` = `['localhost', '127.0.0.1', '::1', '*.local']`. `DEFAULT_DENYLIST` covers common credential-phishing / OAuth / SSO targets: `accounts.google.com`, `login.microsoftonline.com`, `login.live.com`, `github.com/login`, `github.com/sessions`, `appleid.apple.com`, `id.apple.com`, `auth0.com`, `*.okta.com`. `buildPolicy({ allowedOrigins?, deniedOrigins? })` merges the `.dinocode/config.yml` overrides on top.
+- Pattern syntax is constrained on purpose: exact host, `*.` subdomain wildcard, or `host/path-prefix`. `parseHostPattern` throws on mid-label wildcards so settings UIs can surface the error. IPv6 literals are normalised by stripping `[...]` brackets.
+- Deny beats allow — even if a user adds `accounts.google.com` to the allow-list, `evaluateAllowlist` still returns `denied` with `reason: "Denylisted"`. The path-prefix scoping means `github.com/login` is blocked while `github.com/alex/project` can be confirmed.
+- Agents never see `confirmRequired` — agent-initiated navigation outside the allow-list returns `denied` with `reason: "NotInAllowlist"`, which tool handlers map to the `NavigationBlocked` browser error (`BROWSER_ERROR_DEFAULT_HINTS.NavigationBlocked` from `dinocode-bkmr`). User-initiated navigation gets `confirmRequired`, and the renderer is expected to show the standard "Allow once / Always allow / Cancel" modal; `addToAllowList` is the one-liner the "Always allow" path calls before persistence.
+- Tests: `src/tests/allowlist.test.ts` covers (22 cases): pattern parser happy path + wildcard rejection, IPv6 normalisation, default-policy matrix for `localhost`, `127.0.0.1`, `::1`, `*.local`, unknown hosts (agent/user), deny-list including path-prefix and wildcard variants, deny-beats-allow, `buildPolicy` extension, `addToAllowList` idempotence, and purity. Full package suite is 72/72 green.
+- Persistence (reading/writing `.dinocode/browser/allowlist.json`) is deferred — it lives in the main-process `BrowserManager` bean (`dinocode-ousa`) which owns the FS. The decision module already exposes `addToAllowList(policy, origin)` so the manager can thread the update through without any logic duplication.
+- Package exports: new `@dinocode/browser/security` subpath and root re-export for convenience. Added `docs/dinocode-browser.md` §3.4 "Navigation allowlist & security model" with the decision matrix, pattern syntax, and the user-facing confirm copy.
 
 ---
 

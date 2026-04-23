@@ -156,7 +156,7 @@ Integration contract: `apps/desktop/src/preload.ts` imports
 passes Electron's own `contextBridge` + `ipcRenderer`. No other
 `apps/desktop` file touches dinocode-browser IPC.
 
-### 3.4 Server (`apps/server`)
+### 3.7 Server (`apps/server`)
 
 Hosts:
 
@@ -166,6 +166,61 @@ Hosts:
 - The agent tool registrations, which delegate to the main-process
   `BrowserManager` over IPC when running inside Electron, and to a headless
   adapter when running under CLI (Phase 7).
+
+### 3.4 Navigation allowlist & security model
+
+The allowlist is the single enforcement point for origin safety. It
+lives in `packages/dinocode-browser/src/security/Allowlist.ts` as a
+pure decision module (`input → decision`, no FS/network/clock) so the
+same function powers the main-process tool handlers, the renderer
+confirm dialog, and unit/integration tests.
+
+**Default workspace allow-list.** `localhost`, `127.0.0.1`, `::1`,
+`*.local`, plus any origins declared in
+`.dinocode/config.yml → browser.allowedOrigins`. Persistence of
+user-granted origins lives under `.dinocode/browser/allowlist.json`
+(workspace-scoped, gitignored) and is read/written by the
+`BrowserManager` (see `dinocode-ousa`).
+
+**Default deny-list.** Common credential-phishing / OAuth / SSO
+targets: `accounts.google.com`, `login.microsoftonline.com`,
+`login.live.com`, `github.com/login`, `github.com/sessions`,
+`appleid.apple.com`, `id.apple.com`, `auth0.com`, `*.okta.com`. Users
+can extend via `.dinocode/config.yml → browser.deniedOrigins`. **Deny
+beats allow** — you cannot override a deny-list entry from the
+allow-list.
+
+**Decision matrix** — agents see three outcomes: `allowed`, `denied`,
+or the equivalent error. Users also get `confirmRequired`.
+
+| Initiator | Host known allow | Host known deny | Unknown host       |
+| --------- | ---------------- | --------------- | ------------------ |
+| agent     | `allowed`        | `denied`        | `denied`           |
+| user      | `allowed`        | `denied`        | `confirmRequired`  |
+
+`denied` carries one of: `InvalidUrl` (unparseable URL), `Denylisted`
+(matched a deny entry), or `NotInAllowlist`. Agent-initiated navigation
+outside the allow-list returns a `NavigationBlocked` browser error with
+the default hint (see §3.5).
+
+**Pattern syntax** is deliberately small:
+- `example.com` — exact host match (case-insensitive).
+- `*.example.com` — any subdomain (at least one label); the bare apex
+  does not match.
+- `host/path-prefix` — path-scoped entry (used by the deny-list to
+  target e.g. `github.com/login` without blocking the whole site).
+- IPv4/IPv6 literals — matched exactly after bracket normalisation.
+
+Anything more exotic (mid-label wildcards, regex) is a policy bug;
+`parseHostPattern` throws so settings UIs can surface the error.
+
+User-facing confirm copy reads:
+> "This project's agent has not been granted access to `<origin>`.
+> Allow once / Always allow / Cancel."
+
+"Always allow" calls `addToAllowList({ policy, origin })` and persists
+the updated policy back to `.dinocode/browser/allowlist.json`. The
+decision module itself never persists; that stays in the manager.
 
 ### 3.5 Error taxonomy & retry policy
 
@@ -390,42 +445,53 @@ pending artifacts to flush, then closes views.
 
 All artifacts live under the repository's `.dinocode/browser/` directory
 so they are always discoverable from the project root and gitignored by
-default:
+default. The canonical layout is owned by
+`packages/dinocode-browser/src/artifacts/ArtifactPaths.ts` — no other
+module hardcodes any of these paths; every write site imports a helper
+(`screenshotPath`, `networkBodyPath`, `domSnapshotPath`,
+`sessionManifestPath`, `tracePath`, `dailyLogPath`) so the layout stays
+coherent.
 
 ```
-.dinocode/
-  .gitignore                          # ignores browser/**
-  browser/
-    sessions/
-      <projectId>/
-        state.json                    # tab persistence
-        cookies.sqlite                # owned by Chromium, read-only to us
-    screenshots/
-      <projectId>/
-        <ISO8601>--<tabId>--<trace>.png
-    pdfs/
-      <projectId>/
-        <ISO8601>--<tabId>--<trace>.pdf
-    traces/
-      <projectId>/
-        <ISO8601>--<tabId>--<trace>.trace.json
-    recordings/
-      <projectId>/
-        <ISO8601>--<tabId>--<trace>.rrweb.jsonl
-    dom-snapshots/
-      <projectId>/
-        <ISO8601>--<tabId>--<trace>.snapshot.json
+<project>/
+  .gitignore                          # excludes .dinocode/browser/**
+  .dinocode/browser/
+    allowlist.json                    # navigation allowlist (dinocode-sdqj)
+    state.json                        # tab persistence (dinocode-crea)
+    history.json                      # address bar history (dinocode-49oz)
     logs/
-      <projectId>/
-        <YYYY-MM-DD>.jsonl            # rotated daily, 30-day retention
-    downloads/
-      <projectId>/
-        ...                           # user + agent downloads
+      <yyyy-mm-dd>.log                # rotating logger sink (dinocode-gepm)
+    screenshots/
+      <tabId>/
+        <ISO8601>.png
+    network-bodies/
+      <tabId>/
+        <requestId>.<ext>
+    dom-snapshots/
+      <tabId>/
+        <ISO8601>.html
+    sessions/
+      <tabId>-<ISO8601>/
+        manifest.json                 # + per-frame assets
+    traces/
+      <tabId>/
+        <ISO8601>.json
 ```
 
-Every tool that produces an artifact returns the absolute path. Every
-artifact filename includes a `trace` suffix so the Phase 5 session-recording
-replay can correlate artifacts to tool calls.
+Every helper validates its inputs — `tabId`, ISO timestamps, request
+ids, and extensions are filtered through strict regexes so a caller
+cannot escape the artifact root via `..`. The ISO colon is rewritten
+to `-` because Windows and some tar tooling dislike colons in
+filenames; the underlying timestamp is still fully recoverable.
+
+Tools that produce an artifact return the project-relative path in
+their structured response. The `manifest.json` under `sessions/`
+records `{ tool, traceId, tabId, startedAt, finishedAt }` so session
+recording (Phase 5) can correlate artifacts to tool calls.
+
+An "Open browser data folder" action in the browser settings drawer
+reveals the root in the OS file manager — `ARTIFACT_ROOT_SEGMENT`
+(`.dinocode/browser`) is the single constant it resolves against.
 
 ## 10. Agent tool surface
 
@@ -560,13 +626,53 @@ runs green 10 consecutive times on CI.
 
 ## 14. Feature flag & rollout
 
-`features.builtInBrowser` (tracked by `dinocode-yaan`):
+`features.builtInBrowser` is the single gate for the entire subsystem.
+It lives on the client settings object and is resolved through
+`resolveBuiltInBrowserFlag({ settings, channel, env })` in
+`packages/dinocode-browser/src/config/featureFlag.ts`. Every surface
+that needs to consult the flag (face toggle, agent tool registration,
+preview button, `BrowserManager.install`) calls
+`isBuiltInBrowserEnabled(...)` — no other code path reads the setting
+directly.
 
-- Default `off` on the `main` channel.
-- Default `on` for the `beta` channel.
-- Can be flipped at runtime from the settings panel without restart.
-- When `off`, the browser menu/keybinding/preview button are hidden and
-  no CDP, session partition, or `WebContentsView` is created.
+**Resolution order (highest wins):**
+
+1. Explicit `settings.features.builtInBrowser` (user toggled the
+   switch). Emits `source: "settings"`.
+2. `DINOCODE_BROWSER_FLAG` env var (`1`/`true`/`on` or
+   `0`/`false`/`off`), set by the launcher, CI, or manual overrides.
+   Emits `source: "env"`.
+3. Release-channel default: `master` → `false`, `alpha`/`beta` →
+   `true`. Emits `source: "channel"`.
+
+The resolution object carries `{ enabled, source, channel }` so the
+logger can emit one structured `flag.resolve` record at startup and a
+`flag.toggle` record whenever the user flips the switch. Dead-code
+rot is prevented by a "both-paths" CI matrix (run the suite once with
+the flag forced on and once forced off via
+`DINOCODE_BROWSER_FLAG=1` / `=0`).
+
+**Expected wiring.** Integration points in `apps/*` follow this shape:
+
+```ts
+// dinocode-integration: dinocode-browser feature flag gate.
+import {
+  isBuiltInBrowserEnabled,
+  resolveBuiltInBrowserFlag,
+} from "@dinocode/browser/config";
+
+const flag = resolveBuiltInBrowserFlag({
+  settings: clientSettings,
+  channel: RELEASE_CHANNEL,
+  env: process.env,
+});
+if (!isBuiltInBrowserEnabled(flag)) return;
+```
+
+When `off`, the browser menu/keybinding/preview button are hidden, the
+agent tool list served over WS omits `dinocode_browser_*` tools, and
+the main process does not install `BrowserManager` (no CDP session,
+no `WebContentsView`, no per-project partition is created).
 
 ## 15. Integration points (`dinocode-integration:` surface)
 

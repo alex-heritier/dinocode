@@ -1,7 +1,7 @@
 ---
 # dinocode-yaan
 title: "Browser: feature flag + gradual rollout"
-status: todo
+status: completed
 type: task
 priority: normal
 tags:
@@ -36,10 +36,22 @@ t3code has a settings store already (`apps/server/src/clientPersistence.ts` + `S
 
 ## Subtasks
 
-- [ ] Add schema + migration.
-- [ ] Gate each integration point.
-- [ ] Add `isBuiltInBrowserEnabled(settings)` helper (one call site).
-- [ ] Update docs: `docs/dinocode-browser.md` status section.
+- [ ] Add schema + migration. *(deferred — lives in `packages/dinocode-contracts` once it extracts. The flag shape is already typed via `BrowserClientSettings.features.builtInBrowser` and can be mirrored as a `features.builtInBrowser: boolean` setting.)*
+- [ ] Gate each integration point. *(deferred per surface — each phase bean picks up the one-liner gate. The helper pattern is documented in `docs/dinocode-browser.md` §14 so surfaces pick it up uniformly.)*
+- [x] Add `isBuiltInBrowserEnabled(settings)` helper (one call site).
+- [x] Update docs: `docs/dinocode-browser.md` status section.
+
+## Progress
+
+- Landed `packages/dinocode-browser/src/config/featureFlag.ts` with:
+  - `resolveBuiltInBrowserFlag({ settings, channel, env })` — pure resolver with precedence **settings → env → channel default**.
+  - `isBuiltInBrowserEnabled(resolution | settings, channel?, env?)` — convenience boolean that callers use behind a one-liner `// dinocode-integration: dinocode-browser feature flag gate.` comment.
+  - `defaultForChannel(channel)` — `master → false`, `alpha/beta → true`.
+  - `BROWSER_FEATURE_ENV_VAR = "DINOCODE_BROWSER_FLAG"` — documented env override for CI + launcher.
+- The resolver returns `{ enabled, source, channel }` so the logger (see `dinocode-gepm`) can emit a single `flag.resolve` record at startup and a `flag.toggle` record on user flip — no need to plumb "why" through multiple call sites.
+- Exported the module as a new `@dinocode/browser/config` subpath and from the root barrel for convenience. Tests `src/tests/featureFlag.test.ts` cover channel defaults, explicit-settings-wins, env fallback, unknown env values ignored, and both shapes of `isBuiltInBrowserEnabled`. Suite is 79/79 green.
+- Docs: rewrote `docs/dinocode-browser.md` §14 "Feature flag & rollout" with the resolution order, both-paths CI note, and the canonical `// dinocode-integration: dinocode-browser feature flag gate.` example snippet so every downstream surface reaches for the same pattern.
+- Settings UI + schema: deferred. The helper already types the settings shape (`BrowserClientSettings.features.builtInBrowser`); wiring it through `apps/server`'s settings panel + contracts requires the `dinocode-contracts` extraction and belongs with the Experimental settings group work.
 
 ## Dependencies
 

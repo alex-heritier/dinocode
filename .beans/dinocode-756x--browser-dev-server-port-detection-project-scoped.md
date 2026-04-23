@@ -1,7 +1,7 @@
 ---
 # dinocode-756x
 title: "Browser: dev-server port detection (project-scoped)"
-status: todo
+status: completed
 type: task
 priority: normal
 tags:
@@ -30,6 +30,17 @@ Make "open the preview" zero-config for most project layouts.
 
 - Detector works on a Vite React app with no config (5173 sniffed).
 - Wrong guesses surface as "confidence: low" and require user confirm before auto-opening.
+
+## Progress
+
+- Landed `packages/dinocode-browser/src/devserver/DevServerDetector.ts` — pure pipeline `detectDevServer({ workspaceConfig, packageJson, listeningSockets? }) → ReadonlyArray<DevServerCandidate>`. The first candidate is the preferred one; the rest are kept so the UI can offer "other detected servers" when the user overrides.
+- Confidence ladder matches the bean's intent: `configured` (workspace config) → `declared` (`package.json.dinocode.browser.devServerUrl`) → `sniffed` (matched a known dev-script) → `probed` (observed LISTEN socket on a known dev port) → `guess` (fallback to `localhost:3000`). `isAutoOpenSafe(candidate)` returns true only for the first three — `probed` and `guess` require a confirmation, matching "Wrong guesses surface as low-confidence".
+- `SCRIPT_RULES` maps the common dev-runners to their default ports: `vite` → 5173, `next dev` → 3000, `bun dev` / `bun run dev` → 3000, `astro dev` → 4321, `remix dev` → 3000, `rails server` → 3000, plus a `tsx ... start` rule for TanStack Start. Each rule honours an explicit `--port` / `-p` override in the script body, so `"dev": "vite --port 4000"` correctly detects port 4000.
+- `sniffScripts()` prefers a `dev` script, then `start`, then any other match — so a project that runs `"dev": "vite"` alongside `"docs": "astro dev"` gets `localhost:5173` as the headline candidate while keeping `localhost:4321` available as an alternative.
+- Socket probe is passed in, not performed: the detector takes a `listeningSockets: { port, host }[]` snapshot and adds a `probed` candidate only when the port matches `KNOWN_DEV_PORTS` and hasn't already been surfaced by sniffing. This keeps the module free of Node APIs so the renderer and tests can use it directly; the main-process service owns the real probe.
+- Validation: URLs are normalised through `new URL(...)` and required to be `http(s)`; invalid entries are silently dropped (the next detector runs). Unknown socket ports are ignored.
+- Tests: `src/tests/devServerDetector.test.ts` (20 assertions) covers precedence order, explicit-port overrides for vite/next/astro, `bun run dev`, rails with custom port, `isAutoOpenSafe` booleans, probe-only detection, de-dup when sniff + probe agree, and the 3000 fallback. Full package suite is 106/106 green.
+- Package exports: new `@dinocode/browser/devserver` subpath plus root re-export. The integration contract for the preview button is "read `.dinocode/config.yml` + `package.json`, call `detectDevServer(...)`, auto-open if `isAutoOpenSafe(result[0])`" with a `// dinocode-integration: dinocode-browser preview button detector` annotation.
 
 ---
 

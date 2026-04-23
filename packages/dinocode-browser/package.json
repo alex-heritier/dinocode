@@ -29,6 +29,22 @@
       "types": "./src/logging/index.ts",
       "import": "./src/logging/index.ts"
     },
+    "./security": {
+      "types": "./src/security/index.ts",
+      "import": "./src/security/index.ts"
+    },
+    "./config": {
+      "types": "./src/config/index.ts",
+      "import": "./src/config/index.ts"
+    },
+    "./artifacts": {
+      "types": "./src/artifacts/index.ts",
+      "import": "./src/artifacts/index.ts"
+    },
+    "./devserver": {
+      "types": "./src/devserver/index.ts",
+      "import": "./src/devserver/index.ts"
+    },
     "./tools": {
       "types": "./src/tools/index.ts",
       "import": "./src/tools/index.ts"
