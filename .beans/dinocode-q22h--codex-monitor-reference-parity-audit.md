@@ -5,7 +5,7 @@ status: completed
 type: task
 priority: low
 tags:
-    - research
+  - research
 created_at: 2026-04-22T07:42:21Z
 updated_at: 2026-04-23T03:19:57Z
 parent: dinocode-xd5m
@@ -19,8 +19,6 @@ Cross-reference CodexMonitor (per AGENTS.md) for UX details in diff/review and s
 - [ ] Identify which belong in Dinocode (vs generic t3code concerns)
 - [ ] File sub-tasks under appropriate epics for the ones we want
 - [ ] Document out-of-scope features with rationale in DINOCODE.md
-
-
 
 ## Resolution
 

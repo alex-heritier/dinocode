@@ -368,6 +368,74 @@ describe("migration", () => {
   });
 });
 
+describe("schema migration registry", () => {
+  it("DEFAULT_MIGRATIONS is an empty chain at v1", async () => {
+    const { DEFAULT_MIGRATIONS, CURRENT_TASK_SCHEMA_VERSION, assertMigrationsFormChain } =
+      await import("./migration.ts");
+    expect(CURRENT_TASK_SCHEMA_VERSION).toBe(1);
+    expect(DEFAULT_MIGRATIONS).toEqual([]);
+    expect(() => assertMigrationsFormChain(DEFAULT_MIGRATIONS)).not.toThrow();
+  });
+
+  it("runSchemaMigrations is a no-op at the current version", async () => {
+    const { runSchemaMigrations } = await import("./migration.ts");
+    const raw = { id: "dnc-r1", title: "Hello" };
+    const result = await Effect.runPromise(runSchemaMigrations(raw));
+    expect(result.appliedFrom).toBe(1);
+    expect(result.appliedTo).toBe(1);
+    expect(result.trace).toEqual([]);
+    expect(result.raw).toEqual(raw);
+    expect(result.raw).not.toBe(raw);
+  });
+
+  it("rejects downgrades through runSchemaMigrations without explicit inverter", async () => {
+    const { runSchemaMigrations } = await import("./migration.ts");
+    const raw = { id: "dnc-r2", schema_version: 2 };
+    const outcome = await Effect.runPromiseExit(runSchemaMigrations(raw, { to: 1 }));
+    expect(outcome._tag).toBe("Failure");
+  });
+
+  it("rejects a synthetic non-chain registry", async () => {
+    const { assertMigrationsFormChain } = await import("./migration.ts");
+    const badRegistry = [
+      {
+        fromVersion: 1,
+        toVersion: 3,
+        description: "skip v2",
+        apply: (r: Record<string, unknown>) => Effect.succeed(r),
+      },
+    ] as const;
+    expect(() => assertMigrationsFormChain(badRegistry as any)).toThrow();
+  });
+
+  it("applies a synthetic v1→v2 migration end to end", async () => {
+    const { runSchemaMigrations } = await import("./migration.ts");
+    const v1ToV2 = {
+      fromVersion: 1,
+      toVersion: 2,
+      description: "rename `old` → `new`",
+      apply: (r: Record<string, unknown>) =>
+        Effect.succeed({
+          ...Object.fromEntries(Object.entries(r).filter(([k]) => k !== "old")),
+          new: r.old ?? null,
+        }),
+    } as const;
+
+    const raw = { id: "dnc-r3", old: "value" };
+    const result = await Effect.runPromise(
+      runSchemaMigrations(raw, {
+        from: 1,
+        to: 2,
+        registry: [v1ToV2],
+      }),
+    );
+    expect(result.appliedTo).toBe(2);
+    expect(result.raw).toMatchObject({ id: "dnc-r3", new: "value", schema_version: 2 });
+    expect(result.raw).not.toHaveProperty("old");
+    expect(result.trace.map((t) => t.description)).toEqual(["rename `old` → `new`"]);
+  });
+});
+
 describe("reactor + watcher integration", () => {
   let workdir: string;
 

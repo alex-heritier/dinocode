@@ -1,6 +1,6 @@
 ---
 # dinocode-50yd
-title: 'Composer: Queue vs Steer follow-up + one-shot toggle'
+title: "Composer: Queue vs Steer follow-up + one-shot toggle"
 status: todo
 type: feature
 priority: normal

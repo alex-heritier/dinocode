@@ -68,23 +68,23 @@ hashes stable.
 
 ## Subpath Exports
 
-| Subpath                          | Purpose                                                                                       |
-| -------------------------------- | --------------------------------------------------------------------------------------------- |
-| `@dinocode/soil/schema`          | Effect Schema definitions for `TaskDocument`, `TaskState`, `TaskPatch`, `ProjectConfig`.      |
-| `@dinocode/soil/id`              | `generateTaskId(prefix)`, `generateSlug(title)`.                                              |
-| `@dinocode/soil/fractionalIndex` | `keyBetween(a, b)` for kanban ordering.                                                       |
-| `@dinocode/soil/parser`          | `parseTaskFile(content, path)` → `Effect<ParsedTask, SoilParseError \| SoilValidationError>`. |
-| `@dinocode/soil/renderer`        | `renderTaskDocument(doc)`, `renderFilename(doc)`. Deterministic.                              |
-| `@dinocode/soil/etag`            | `computeEtag(content)` — FNV-1a 32-bit hex, LF-normalized.                                    |
-| `@dinocode/soil/decider`         | `decideTaskCommand(state, command)` — pure state machine over `TaskCommand` → `TaskEvent`.    |
-| `@dinocode/soil/projector`       | `projectTaskEvent(state, event)` — folds task events into a `Record<string, TaskState>`.      |
-| `@dinocode/soil/reactor`         | `makeSoilReactor({ context })` — IO layer that writes `.md` files and tracks write locks.     |
-| `@dinocode/soil/watcher`         | `watchProject({ context })` — `Stream<FileChangeEvent>` over the tasks directory.             |
-| `@dinocode/soil/config`          | `loadProjectConfig(workspaceRoot)` — reads `.dinocode/config.yml`.                            |
-| `@dinocode/soil/conflict`        | `detectEtagConflict`, `threeWayMerge` — pure conflict resolution helpers.                     |
-| `@dinocode/soil/migration`       | `migrateTaskContent`, `planSlugRename` — schema and filename migrations.                      |
-| `@dinocode/soil/search`          | `filterTasks`, `sortTasks`, `readyTasks` — in-memory query helpers.                           |
-| `@dinocode/soil/errors`          | `SoilError` union and tagged error classes.                                                   |
+| Subpath                          | Purpose                                                                                                                                                                                                                        |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `@dinocode/soil/schema`          | Effect Schema definitions for `TaskDocument`, `TaskState`, `TaskPatch`, `ProjectConfig`.                                                                                                                                       |
+| `@dinocode/soil/id`              | `generateTaskId(prefix)`, `generateSlug(title)`.                                                                                                                                                                               |
+| `@dinocode/soil/fractionalIndex` | `keyBetween(a, b)` for kanban ordering.                                                                                                                                                                                        |
+| `@dinocode/soil/parser`          | `parseTaskFile(content, path)` → `Effect<ParsedTask, SoilParseError \| SoilValidationError>`.                                                                                                                                  |
+| `@dinocode/soil/renderer`        | `renderTaskDocument(doc)`, `renderFilename(doc)`. Deterministic.                                                                                                                                                               |
+| `@dinocode/soil/etag`            | `computeEtag(content)` — FNV-1a 32-bit hex, LF-normalized.                                                                                                                                                                     |
+| `@dinocode/soil/decider`         | `decideTaskCommand(state, command)` — pure state machine over `TaskCommand` → `TaskEvent`.                                                                                                                                     |
+| `@dinocode/soil/projector`       | `projectTaskEvent(state, event)` — folds task events into a `Record<string, TaskState>`.                                                                                                                                       |
+| `@dinocode/soil/reactor`         | `makeSoilReactor({ context })` — IO layer that writes `.md` files and tracks write locks.                                                                                                                                      |
+| `@dinocode/soil/watcher`         | `watchProject({ context })` — `Stream<FileChangeEvent>` over the tasks directory.                                                                                                                                              |
+| `@dinocode/soil/config`          | `loadProjectConfig(workspaceRoot)` — reads `.dinocode/config.yml`.                                                                                                                                                             |
+| `@dinocode/soil/conflict`        | `detectEtagConflict`, `threeWayMerge` — pure conflict resolution helpers.                                                                                                                                                      |
+| `@dinocode/soil/migration`       | `migrateTaskContent`, `planSlugRename`, `runSchemaMigrations`, `CURRENT_TASK_SCHEMA_VERSION`, `DEFAULT_MIGRATIONS` — schema + filename + versioned migrations. See [`docs/soil-migrations.md`](../../docs/soil-migrations.md). |
+| `@dinocode/soil/search`          | `filterTasks`, `sortTasks`, `readyTasks` — in-memory query helpers.                                                                                                                                                            |
+| `@dinocode/soil/errors`          | `SoilError` union and tagged error classes.                                                                                                                                                                                    |
 
 ## Architecture
 

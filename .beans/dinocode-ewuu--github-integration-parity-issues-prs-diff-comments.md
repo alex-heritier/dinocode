@@ -1,6 +1,6 @@
 ---
 # dinocode-ewuu
-title: 'GitHub integration parity: issues + PRs + diff + comments via gh'
+title: "GitHub integration parity: issues + PRs + diff + comments via gh"
 status: todo
 type: feature
 priority: normal

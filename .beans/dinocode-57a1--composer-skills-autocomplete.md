@@ -1,6 +1,6 @@
 ---
 # dinocode-57a1
-title: 'Composer: $ skills autocomplete'
+title: "Composer: $ skills autocomplete"
 status: todo
 type: feature
 priority: low
