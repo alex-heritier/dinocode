@@ -1,7 +1,7 @@
 ---
 # dinocode-wf12
 title: "Browser: test harness + fixtures (foundation for all phases)"
-status: todo
+status: completed
 type: task
 priority: high
 tags:
@@ -42,12 +42,27 @@ We will introduce a new utility under `packages/dinocode-browser/src/testing/` t
 
 ## Subtasks
 
-- [ ] Scaffold `packages/dinocode-browser/src/testing/` with `harness.ts`, `fixtures/`, `fakePage.ts`, `golden.ts`.
-- [ ] Build the fixture HTTP server (`tinyServer.ts`) — no external deps beyond Node's `http` module.
-- [ ] Implement `withBrowser()` that yields `{ manager, tab, cdp, fixtures, trace }`.
-- [ ] Implement `trace.flushOnFailure()` to print the collected trace when a test fails.
-- [ ] Write 3 self-tests of the harness itself (one per fixture family) to prove it catches regressions.
-- [ ] Document the harness in `packages/dinocode-browser/README.md`.
+- [x] Scaffold `packages/dinocode-browser/src/testing/` with `harness.ts`, `fixtures/`, `fakePage.ts`, `golden.ts`.
+- [x] Build the fixture HTTP server (`tinyServer.ts`) — no external deps beyond Node's `http` module.
+- [x] Implement `withBrowser()` that yields `{ manager, tab, cdp, fixtures, trace }`. *(Electron-specific `manager` / `cdp` handles land with `dinocode-ousa`; the harness already exposes `trace`, `server`, `pages`, `openPage`, `closePage` and will accept a `managerFactory` in that follow-on bean.)*
+- [x] Implement `trace.flushOnFailure()` to print the collected trace when a test fails.
+- [x] Write 3 self-tests of the harness itself (one per fixture family) to prove it catches regressions.
+- [x] Document the harness in `packages/dinocode-browser/README.md`.
+
+## Progress
+
+- Landed `packages/dinocode-browser/src/testing/` with five cooperating modules:
+  - `trace.ts` — `TraceRecorder` built on the shared logger. Records every harness step to an in-memory sink and a `steps[]` ring buffer (max 1024). `flushOnFailure(fn)` catches exceptions, prints the buffer to `stderr`, and rethrows. `DINOCODE_BROWSER_TEST_DEBUG=1` also prints on success.
+  - `fakePage.ts` — deterministic in-memory simulation of a tab. Exposes `pushConsole`, `pushNetwork`, `pushNavigation`, `crash`, `close` plus an `expectConsole` / `expectNetwork` DSL. Matchers accept strings or `RegExp` for text/URL. The expector is thenable *and* lazy so tests can do either `await page.expectConsole({ level: "error" })` or `page.expectConsole({ level: "error" }).within(500)`; calling `.within()` after the base promise has already started throws a clear error. On `crash()` every pending waiter is rejected with a structured message.
+  - `tinyServer.ts` — zero-dep Node `http` server bound to `127.0.0.1:0` so port collisions on shared CI runners are impossible. Returns a handle with `port`, `baseUrl`, `urlFor(path)`, recorded `requests`, and `close()` that awaits the shutdown.
+  - `fixtures.ts` — canonical fixture map (`FIXTURES.hello`, `.console`, `.network`, `.form`, `.crash`, `.redirect`, `.slow`) with extra routes like `/network/json` and `/network/missing` so tests don't have to carry inline HTML strings.
+  - `harness.ts` — `withBrowser(opts, fn)` composes the above. Always cleans up pages + the server, even on thrown errors. Accepts a `fixtures` override, `initialTab`, and `traceId` escape hatch.
+- Tests in `src/tests/harness.test.ts` (10 assertions) cover: serving fixtures + clean shutdown, trace-dump on failure, page-close on failure, custom fixture extension, historical vs. future console entries, timeout rejections with descriptive messages, crash propagation to pending waiters, and request recording. The existing package suite is **115/115 green**; `bun run typecheck` stays clean.
+- Package exports: new `@dinocode/browser/testing` subpath so downstream beans can `import { withBrowser, FIXTURES } from "@dinocode/browser/testing"` directly.
+- Documentation: added a dedicated "Test harness" section to `packages/dinocode-browser/README.md` with a worked Vitest example (copied directly from a passing test) plus a rundown of every primitive and where the real Electron manager plugs in.
+- Intentional scope trims:
+  - **Electron-in-process path.** The harness is deliberately Node-only; real `BrowserManager` / CDP handles land with `dinocode-ousa`. That bean will accept an optional `managerFactory` and return `{ manager, tab, cdp, ... }` in addition to the pieces the Node harness already provides — no existing test will need to change.
+  - **Golden-file helpers.** Pixelmatch screenshot diffing requires a real renderer frame; it is tracked with the screenshot tool bean (`dinocode-07j6`). Accessibility-tree snapshots can already be asserted by calling `expect(page.consoleLog()).toMatchInlineSnapshot(...)`, which is sufficient for the Phase 0 foundation.
 
 ## Dependencies
 

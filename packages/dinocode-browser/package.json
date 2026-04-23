@@ -45,6 +45,10 @@
       "types": "./src/devserver/index.ts",
       "import": "./src/devserver/index.ts"
     },
+    "./testing": {
+      "types": "./src/testing/index.ts",
+      "import": "./src/testing/index.ts"
+    },
     "./tools": {
       "types": "./src/tools/index.ts",
       "import": "./src/tools/index.ts"

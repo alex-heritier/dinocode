@@ -31,6 +31,48 @@ dom`, or Node-only modules.
 - **Tests** (`src/tests/`) — unit + spike tests. Integration tests that need a
   real Electron runtime live under `apps/desktop/tests/` and import this
   package.
+- **Testing** (`src/testing/`) — the in-process harness
+  (`withBrowser`, `FakePage`, `TinyServer`, `TraceRecorder`) used by
+  every downstream test. Zero Electron dependency; pure Node.
+
+## Test harness
+
+Every downstream bean composes its tests via `withBrowser(opts, fn)` so
+the setup stays consistent and the trace dump on failure is uniform:
+
+```ts
+import { describe, expect, it } from "vitest";
+import { FIXTURES, withBrowser } from "@dinocode/browser/testing";
+
+describe("console capture", () => {
+  it("reports error entries within 1s", async () => {
+    await withBrowser({}, async ({ openPage, server }) => {
+      const page = openPage({ tabId: "tab-1", url: server.urlFor(FIXTURES.console) });
+      page.pushConsole({ level: "error", text: "boom" });
+      const hit = await page.expectConsole({ level: "error" }).within(1000);
+      expect(hit.text).toBe("boom");
+    });
+  });
+});
+```
+
+Key primitives:
+
+- `withBrowser(opts, fn)` — async scope that starts a `TinyServer` on
+  `127.0.0.1:0`, hands you a `TraceRecorder`, and cleans everything up
+  on both success and exception paths.
+- `FakePage` — deterministic in-memory simulator exposing
+  `pushConsole`, `pushNetwork`, `pushNavigation`, `crash`, `close`, plus
+  `expectConsole` / `expectNetwork` matchers with `.within(ms)` timeouts.
+- `standardFixtures()` + `FIXTURES` — canned HTML pages for `/hello`,
+  `/console`, `/network`, `/form`, `/crash`, `/redirect`, `/slow`.
+- `TraceRecorder` — captures every harness step; dumps to `stderr` on
+  test failure. Set `DINOCODE_BROWSER_TEST_DEBUG=1` to also print on
+  success.
+
+The real Electron-in-process path lands with `dinocode-ousa`; that bean
+will plug a live `BrowserManager` into the same `withBrowser` entry
+point without changing any existing tests.
 
 ## Integration points
 
