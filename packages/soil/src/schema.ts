@@ -26,7 +26,12 @@ export const Tag = Schema.String.pipe(
 );
 export type Tag = typeof Tag.Type;
 
-export const FractionalIndex = Schema.String.pipe(Schema.check(Schema.isPattern(/^[A-Za-z0-9]+$/)));
+// The fractional-index alphabet is `0-9A-Za-z-_` (see `fractionalIndex.ts`).
+// Both `-` and `_` are valid position characters, so the schema must accept
+// them or round-tripping generated keys through parse/validate will fail.
+export const FractionalIndex = Schema.String.pipe(
+  Schema.check(Schema.isPattern(/^[A-Za-z0-9_-]+$/)),
+);
 export type FractionalIndex = typeof FractionalIndex.Type;
 
 export const TaskDocument = Schema.Struct({

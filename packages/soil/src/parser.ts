@@ -50,24 +50,39 @@ export function parseTaskFile(
     const filenameIdMatch = filename.match(/^([a-z0-9]+-[a-zA-Z0-9_-]+)--/);
     const idFromFilename = filenameIdMatch ? filenameIdMatch[1] : undefined;
 
-    const id = (raw.id as string | undefined) ?? idFromComment ?? idFromFilename ?? "";
-    const slug =
-      (raw.slug as string | undefined) ?? filename.replace(/\.md$/, "").split("--").pop() ?? "";
+    // Unquoted YAML scalars that look numeric/boolean arrive here as non-string
+    // values. Coerce them back to strings so schema validation doesn't reject
+    // a hand-authored `order: 42` or `title: 2026`.
+    const coerce = (v: unknown): string | undefined => {
+      if (v === undefined || v === null) return undefined;
+      if (typeof v === "string") return v;
+      if (typeof v === "number" || typeof v === "boolean" || typeof v === "bigint") {
+        return String(v);
+      }
+      return undefined;
+    };
+    const coerceArray = (v: unknown): string[] => {
+      if (!Array.isArray(v)) return [];
+      return v.map((item) => coerce(item) ?? "").filter((s) => s.length > 0);
+    };
+
+    const id = coerce(raw.id) ?? idFromComment ?? idFromFilename ?? "";
+    const slug = coerce(raw.slug) ?? filename.replace(/\.md$/, "").split("--").pop() ?? "";
 
     const document = {
       id,
       slug,
-      title: (raw.title as string) ?? "",
-      status: (raw.status as string) ?? "todo",
-      type: (raw.type as string) ?? "task",
-      priority: (raw.priority as string) ?? "normal",
-      tags: Array.isArray(raw.tags) ? (raw.tags as string[]) : [],
-      createdAt: (raw.created_at as string) ?? new Date().toISOString(),
-      updatedAt: (raw.updated_at as string) ?? new Date().toISOString(),
-      order: (raw.order as string) ?? "a",
-      parent: (raw.parent as string | null) ?? null,
-      blocking: Array.isArray(raw.blocking) ? (raw.blocking as string[]) : [],
-      blockedBy: Array.isArray(raw.blocked_by) ? (raw.blocked_by as string[]) : [],
+      title: coerce(raw.title) ?? "",
+      status: coerce(raw.status) ?? "todo",
+      type: coerce(raw.type) ?? "task",
+      priority: coerce(raw.priority) ?? "normal",
+      tags: coerceArray(raw.tags),
+      createdAt: coerce(raw.created_at) ?? new Date().toISOString(),
+      updatedAt: coerce(raw.updated_at) ?? new Date().toISOString(),
+      order: coerce(raw.order) ?? "a",
+      parent: coerce(raw.parent) ?? null,
+      blocking: coerceArray(raw.blocking),
+      blockedBy: coerceArray(raw.blocked_by),
       body: extracted.body.trimStart(),
     };
 
