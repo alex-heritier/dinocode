@@ -49,6 +49,10 @@
       "types": "./src/testing/index.ts",
       "import": "./src/testing/index.ts"
     },
+    "./capture": {
+      "types": "./src/capture/index.ts",
+      "import": "./src/capture/index.ts"
+    },
     "./tools": {
       "types": "./src/tools/index.ts",
       "import": "./src/tools/index.ts"

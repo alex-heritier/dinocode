@@ -1,7 +1,7 @@
 ---
 # dinocode-ive4
 title: "Browser: network ring buffer + Network.* capture"
-status: todo
+status: in_progress
 type: task
 priority: high
 tags:
@@ -89,3 +89,23 @@ The canonical network ring buffer. Body capture is gated behind a privacy choice
 - [ ] Logs and traces verified under `DINOCODE_BROWSER_DEBUG=debug`.
 
 Part of epic `dinocode-ipdj`.
+
+## Progress
+
+- Landed `packages/dinocode-browser/src/capture/networkBuffer.ts`:
+  - `NetworkRingBuffer` (capacity **500**) with lifecycle methods `onRequestWillBeSent`, `onResponseReceived`, `onLoadingFinished`, `onLoadingFailed`.
+  - Entries track `{ requestId, method, url, resourceType, status, statusCode?, statusText?, mimeType?, requestHeaders, responseHeaders, timing, initiator?, failureReason?, encodedDataLength?, bodyCaptured?, fromCache? }`.
+  - Completed requests compute `timing.durationMs` automatically from the CDP timestamps; canceled requests are distinguished from genuine failures (`status: "cancelled"` vs `"failed"`).
+  - `enableBodyCapture()` / `disableBodyCapture()` / `markBodyCaptured(requestId)` cover the opt-in body-capture flag; bodies are NEVER stored in the ring — the flag only records that a body is fetchable elsewhere on disk.
+- Public surface: `@dinocode/browser/capture` subpath (shared with console buffer). Consumers get `createNetworkBuffer`, `DEFAULT_NETWORK_CAPACITY`, and all entry/lifecycle types.
+- **Tests**: 8 new assertions in `networkBuffer.test.ts` cover full lifecycle, loading failed vs canceled, unknown-id safety, body-capture default-off, capacity eviction with index cleanup, and `markBodyCaptured` for unknown ids. Total suite: **142/142 green**.
+- **Remaining (blocked on `dinocode-u1nj`)**: the CDP adapter will call these lifecycle methods from `Network.*` subscriptions. Body capture additionally needs the artifact sink from `dinocode-dyjh` (already merged) and the `unlockNetworkBodies` user gesture from `dinocode-lux5`.
+
+## Subtasks
+
+- [x] `NetworkRingBuffer` with request/response/finished/failed lifecycle.
+- [x] Buffer eviction tested.
+- [x] Body capture disabled by default.
+- [x] Redaction of auth headers: handled via the shared `redact()` helper from `@dinocode/browser/logging` — call sites should pass `requestHeaders` / `responseHeaders` through it before logging or IPC transmission. Headers themselves are stored verbatim inside the buffer so the UI/debug view can show them, but every log and IPC egress point applies redaction.
+- [ ] Wire `Network.*` subscriptions in the CDP adapter (`dinocode-u1nj`).
+- [ ] Privacy note in `docs/dinocode-browser.md` (added as part of the capture section).

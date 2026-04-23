@@ -20,3 +20,4 @@ export * from "./security/index.ts";
 export * from "./config/index.ts";
 export * from "./artifacts/index.ts";
 export * from "./devserver/index.ts";
+export * from "./capture/index.ts";

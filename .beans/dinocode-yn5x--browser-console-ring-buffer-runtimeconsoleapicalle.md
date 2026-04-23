@@ -1,7 +1,7 @@
 ---
 # dinocode-yn5x
 title: "Browser: console ring buffer + Runtime.consoleAPICalled capture"
-status: todo
+status: in_progress
 type: task
 priority: high
 tags:
@@ -88,3 +88,21 @@ The canonical store of console events per tab. Every agent-side console feature 
 - [ ] Logs and traces verified under `DINOCODE_BROWSER_DEBUG=debug`.
 
 Part of epic `dinocode-ipdj`.
+
+## Progress
+
+- Landed the pure data layer under `packages/dinocode-browser/src/capture/`:
+  - `ringBuffer.ts` — bounded FIFO with monotonic `seq` cursor that never resets across evictions. `drain({ since, limit })` reports `droppedBefore` so clients can detect gap windows even when they fall behind.
+  - `marshalArg.ts` — argument marshaller with circular-safe JSON, error-stack extraction, primitive round-tripping, RegExp/Date/Function formatting, and a configurable string ceiling (default 4 KiB).
+  - `consoleBuffer.ts` — `ConsoleRingBuffer` (capacity **1000**) with `ingestConsoleApiCall` and `ingestException`. Level strings normalise the way CDP emits them (`warning→warn`, `assert→error`, `dir/dirxml/table→log`). Each entry carries `{ ts, level, origin, args[], stackTrace[], executionContextId?, url? }`.
+- Public surface: `@dinocode/browser/capture` subpath. Consumers get `createConsoleRingBuffer`, `DEFAULT_CONSOLE_CAPACITY`, `CONSOLE_LEVELS_ALL`, `isConsoleLevel`, and all entry types.
+- **Tests**: 24 new assertions across `ringBuffer.test.ts`, `marshalArg.test.ts`, and `consoleBuffer.test.ts` cover eviction, pagination, circular references, level normalisation, exception capture, and cursor correctness. Total suite: **142/142 green**.
+- **Remaining (blocked on `dinocode-u1nj`)**: the CDP adapter will call `ingestConsoleApiCall` on `Runtime.consoleAPICalled` and `ingestException` on `Runtime.exceptionThrown`. This bean is structured so that wiring is a ~20-line change plus the existing tests.
+
+## Subtasks
+
+- [x] Pure data module (ring buffer + marshalling + eviction + pagination).
+- [x] Unit tests for level mapping, arg marshalling (incl. circular references → `[Circular]`), ring eviction.
+- [ ] Wire `Runtime.consoleAPICalled` + `Runtime.exceptionThrown` subscriptions in the CDP adapter (`dinocode-u1nj`).
+- [ ] Stream-emit to renderer and to server for the agent tool (`dinocode-c3lk` + `dinocode-hnyh`).
+- [ ] Integration test: inject 2k `console.log` calls → most recent 1000 retained (needs live Electron; `dinocode-yuwy`).

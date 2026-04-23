@@ -363,6 +363,41 @@ clients receive events. Constraints:
 - Input events go through regardless of DevTools state. The "Agent is
   driving" banner still surfaces to the user.
 
+### 5.1.1 Capture buffers (console + network)
+
+Both observability surfaces are backed by a shared bounded ring buffer
+(`packages/dinocode-browser/src/capture/`). The buffers are pure data
+structures — the CDP adapter feeds them, and agent tools + renderer
+widgets consume them, but the buffers themselves never import `electron`
+or touch I/O. This keeps them trivially testable and reusable.
+
+| Buffer                 | Capacity | Feeds (CDP)                                                                        | Consumers                                                       |
+| ---------------------- | -------- | ---------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `ConsoleRingBuffer`    | 1000     | `Runtime.consoleAPICalled`, `Runtime.exceptionThrown`, `Log.entryAdded`            | `dinocode_browser_get_console`, tab error badge, recording.     |
+| `NetworkRingBuffer`    | 500      | `Network.requestWillBeSent`, `Network.responseReceived`, `Network.loadingFinished` / `Network.loadingFailed` | `dinocode_browser_get_network_requests`, recording, settings.   |
+
+Key guarantees:
+
+- **Monotonic cursor.** Every entry gets a strictly increasing `seq`
+  number that is never reused across evictions, so pagination via
+  `drain({ since, limit })` cannot skip or duplicate entries even when
+  the consumer falls behind; `droppedBefore` on the response tells the
+  consumer how many entries were evicted from the window they missed.
+- **Argument marshalling** (console only) collapses arbitrary
+  `RemoteObject`-shaped values into a compact `{ kind, text, json? }`
+  form with circular-reference safety (`[Circular]`) and a configurable
+  string ceiling (default 4 KiB). Errors decompose to
+  `{ name, message, stack }`.
+- **Body capture is opt-in.** The network buffer only stores metadata;
+  response bodies are fetched on demand via `Network.getResponseBody`
+  and streamed to `.dinocode/browser/network-bodies/<tabId>/` (see
+  Section 9). The `unlockNetworkBodies` face is the user gesture that
+  flips the flag.
+- **Redaction at egress.** Headers are stored verbatim so users can
+  inspect them, but every log line and IPC hop routes through the
+  shared `redact()` helper from `@dinocode/browser/logging` so
+  authorization tokens never leak off-device.
+
 ### 5.2 Auto-reattach
 
 `webContents.debugger.detach()` fires on any cross-origin navigation or
