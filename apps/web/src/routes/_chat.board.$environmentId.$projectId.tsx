@@ -1,7 +1,7 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
 
-import { KanbanBoard } from "../components/board/KanbanBoard.tsx";
+import { KanbanBoard, type KanbanDropResult } from "../components/board/KanbanBoard.tsx";
 import { TaskCreateForm } from "../components/board/TaskCreateForm.tsx";
 import { SidebarInset } from "../components/ui/sidebar.tsx";
 import type { BoardSnapshot, EnvironmentId, ProjectId, TaskId } from "@t3tools/contracts";
@@ -21,6 +21,30 @@ function BoardRouteComponent() {
   const { snapshot, error } = useBoardSubscription(environmentId, projectId);
   const [selectedCard, setSelectedCard] = useState<BoardCard | null>(null);
   const [detailError, setDetailError] = useState<string | null>(null);
+  const [boardError, setBoardError] = useState<string | null>(null);
+
+  const handleCardDrop = useCallback(
+    async (drop: KanbanDropResult) => {
+      const api = readEnvironmentApi(environmentId);
+      if (!api) {
+        setBoardError("Environment API unavailable.");
+        return;
+      }
+      setBoardError(null);
+      try {
+        await api.orchestration.dispatchCommand({
+          type: "task.update",
+          commandId: newCommandId(),
+          taskId: drop.cardId,
+          patch: { status: drop.to, order: drop.order },
+        });
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to move task.";
+        setBoardError(message);
+      }
+    },
+    [environmentId],
+  );
 
   const handleDeleteTask = useCallback(
     async (taskId: TaskId) => {
@@ -60,6 +84,12 @@ function BoardRouteComponent() {
 
         <TaskCreateForm environmentId={environmentId} projectId={projectId} />
 
+        {boardError !== null && (
+          <div className="rounded-md border border-destructive/50 bg-destructive/10 p-2 text-xs text-destructive">
+            {boardError}
+          </div>
+        )}
+
         {error !== null ? (
           <div className="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
             Failed to load board: {error}
@@ -70,7 +100,11 @@ function BoardRouteComponent() {
           </div>
         ) : (
           <div className="min-h-0 flex-1 overflow-hidden">
-            <KanbanBoard snapshot={snapshot} onCardClick={setSelectedCard} />
+            <KanbanBoard
+              snapshot={snapshot}
+              onCardClick={setSelectedCard}
+              onCardDrop={handleCardDrop}
+            />
           </div>
         )}
 

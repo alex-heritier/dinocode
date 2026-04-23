@@ -1,3 +1,4 @@
+import { useDroppable } from "@dnd-kit/core";
 import type { BoardColumn as BoardColumnType } from "@t3tools/contracts";
 import { KanbanCard } from "./KanbanCard.tsx";
 
@@ -15,8 +16,16 @@ const COLUMN_TITLES: Record<string, string> = {
 };
 
 export function KanbanColumn({ column, onCardClick }: KanbanColumnProps) {
+  const { setNodeRef, isOver } = useDroppable({ id: column.id });
+
   return (
-    <div className="flex min-w-[16rem] flex-1 flex-col gap-3 rounded-xl border bg-muted/30 p-3">
+    <div
+      ref={setNodeRef}
+      data-testid={`kanban-column-${column.id}`}
+      className={`flex min-w-[16rem] flex-1 flex-col gap-3 rounded-xl border p-3 transition-colors ${
+        isOver ? "border-primary/60 bg-primary/5" : "bg-muted/30"
+      }`}
+    >
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           {COLUMN_TITLES[column.id] ?? column.title}
@@ -25,9 +34,9 @@ export function KanbanColumn({ column, onCardClick }: KanbanColumnProps) {
           {column.cards.length}
         </span>
       </div>
-      <div className="flex flex-col gap-2">
+      <div className="flex min-h-[4rem] flex-col gap-2">
         {column.cards.map((card) => (
-          <KanbanCard key={card.id} card={card} onClick={onCardClick} />
+          <KanbanCard key={card.id} card={card} draggable onClick={onCardClick} />
         ))}
       </div>
     </div>
