@@ -8,7 +8,7 @@ created_at: 2026-04-22T08:29:21Z
 updated_at: 2026-04-22T15:25:32Z
 parent: dinocode-0syf
 blocked_by:
-    - dinocode-cy2j
+  - dinocode-cy2j
 ---
 
 Detect and resolve task file conflicts (task.conflict event). ETag mismatch detection with three-way merge strategy. Pure functions.
