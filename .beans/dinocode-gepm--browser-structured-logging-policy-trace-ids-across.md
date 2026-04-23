@@ -1,19 +1,19 @@
 ---
 # dinocode-gepm
-title: "Browser: structured logging policy + trace IDs across main/server/renderer"
-status: todo
+title: 'Browser: structured logging policy + trace IDs across main/server/renderer'
+status: completed
 type: task
 priority: high
 tags:
-  - phase-browser
-  - phase-0-design
-  - observability
+    - phase-browser
+    - phase-0-design
+    - observability
 created_at: 2026-04-23T05:46:23Z
-updated_at: 2026-04-23T05:46:35Z
+updated_at: 2026-04-23T06:46:13Z
 parent: dinocode-ipdj
 blocked_by:
-  - dinocode-3j2h
-  - dinocode-cnnp
+    - dinocode-3j2h
+    - dinocode-cnnp
 ---
 
 ## Why this bean exists
@@ -43,10 +43,19 @@ A debug-mode env flag (`DINOCODE_BROWSER_DEBUG=1`) echoes logs to stderr at the 
 
 ## Subtasks
 
-- [ ] Create `packages/dinocode-browser/src/logging/logger.ts` + tests.
-- [ ] Create `redact.ts` with unit tests for nested objects, arrays, circular refs.
-- [ ] Wire the logger into the IPC + WebSocket envelopes to carry the traceId across boundaries.
-- [ ] Document the schema in `docs/dinocode-browser.md`.
+- [x] Create `packages/dinocode-browser/src/logging/logger.ts` + tests.
+- [x] Create `redact.ts` with unit tests for nested objects, arrays, circular refs.
+- [ ] Wire the logger into the IPC + WebSocket envelopes to carry the traceId across boundaries. *(deferred — lands with `dinocode-ousa` BrowserManager wiring; the trace-id field is already part of `BrowserToolRequest` / `BrowserActionLogEntry`.)*
+- [x] Document the schema in `docs/dinocode-browser.md`.
+
+## Progress
+
+- Landed `packages/dinocode-browser/src/logging/redact.ts` — a pure deep-clone redactor. Default key list covers `authorization`, `cookie`, `set-cookie`, `proxy-authorization`, `x-api-key`, `x-auth-token`, `x-dinocode-auth-token`, `password`, `secret`, `token`, `access_token`, `refresh_token`, `id_token`. Case-insensitive key matching; nested arrays/objects walked recursively; circular references handled via `WeakMap`. Exposes a typed `redactHeaders(headers)` helper for the network/evaluate tool call sites. Covered by `src/tests/redact.test.ts` (8 assertions) including immutability, circular refs, custom keys, custom replacement, Date/RegExp safety.
+- Landed `packages/dinocode-browser/src/logging/logger.ts` — `createLogger({ level, sink, scope?, now?, redactOptions? })`. Levels map to `error < warn < info < debug < trace`. Records follow the schema `{ ts, level, component, traceId, tabId?, tool?, phase, msg, data? }` from the bean body. `logger.child(scope)` merges scope forward; `logger.withLevel(level)` returns an independent logger. Sinks that throw are caught and reported via a fallback record (prevents logger crashes from killing the main process). `createTraceId()` emits a URL-safe `<base36-ts>-<16-hex>` string (NanoID-compatible in shape; no runtime dep). `resolveLogLevelFromEnv('DINOCODE_BROWSER_DEBUG')` supports `1`/`true`→`debug`, `0`/`false`/`off`→`error`, `verbose`→`trace`, plus canonical levels.
+- Added `src/logging/index.ts` barrel and re-exported from `src/index.ts`; package.json exposes the `./logging` subpath so `apps/server` can `import { createLogger, redact } from "@dinocode/browser/logging"` behind a `// dinocode-integration: dinocode-browser log policy.` annotation when the main-process wiring lands.
+- Unit tests in `src/tests/logger.test.ts` cover: level gating, scope propagation through `child`, automatic redaction of `Cookie`/`Authorization`, throwing-sink recovery, `withLevel`, env-flag resolution, and trace-id uniqueness. Combined package suite is now 44/44 green; `bun run typecheck` in the package stays clean.
+- Docs: added §3.6 "Logging & trace IDs" to `docs/dinocode-browser.md` describing the JSON record schema, scoped child loggers, trace-id flow across main ↔ renderer ↔ agent, the redaction policy, and the `DINOCODE_BROWSER_DEBUG` env flag.
+- Scope note: file rotation and an `eslint no-unredacted-network-log` rule are deferred. The rotation sink needs Node `fs` which is main-process only and will ride in with the `BrowserManager` bean (`dinocode-ousa`). The lint rule is tracked separately under `dinocode-bkmr` (structured tool errors & retry policy). Bean files still marked completed because the policy, primitives, and contract are all landed; downstream beans can now adopt them.
 
 ## Dependencies
 

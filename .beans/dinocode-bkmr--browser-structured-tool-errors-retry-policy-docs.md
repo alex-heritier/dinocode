@@ -1,7 +1,7 @@
 ---
 # dinocode-bkmr
 title: "Browser: structured tool errors + retry policy docs"
-status: todo
+status: completed
 type: task
 priority: normal
 tags:
@@ -37,6 +37,15 @@ Tight error taxonomy so agents can self-correct.
 
 - Every tool exits through the canonical error path (no raw `throw` escapes).
 - Contract test enumerates each error code.
+
+## Progress
+
+- `packages/dinocode-browser/src/shared/errors.ts` rewritten to own the canonical taxonomy. `BROWSER_ERROR_KINDS` is the authoritative tuple (`NavigationBlocked`, `TabCrashed`, `LoadFailed`, `EvaluateError`, `Timeout`, `NotFound`, `NotInteractable`, `UserActive`, `PermissionDenied`, `TooManyTabs`, `BufferOverflow`, `RateLimited`, `CdpDetached`, `Internal`) — PascalCase on the wire for TS idiom, 1:1 with the bean's canonical list plus the infrastructure-only codes (`BufferOverflow`, `RateLimited`, `CdpDetached`) that agents also need to disambiguate.
+- Added `BROWSER_ERROR_RETRY_POLICY` table classifying each kind as `retryable` or `fatal`, and `BROWSER_ERROR_DEFAULT_HINTS` mapping each to a short, agent-targeted next-step string. `BrowserError(kind, message)` now auto-populates `retryable` from the policy and `hint` from the defaults, while still letting call sites override either.
+- `BrowserToolErrorKindSchema` in `shared/schemas.ts` was re-aligned to the same literal set, and `BrowserToolErrorSchema` gained an optional `hint` field (max 512). Round-trip tests keep `RateLimited`/`NavigationBlocked` green; the new `errors.test.ts` (7 assertions) asserts runtime↔wire parity and that every hint fits under the schema's length cap.
+- Updated `src/tests/scaffold.test.ts` to use the new kinds (`NotFound`, `Timeout`) and to verify the canonical retry default is applied.
+- Docs: added `docs/dinocode-browser.md` §3.5 "Error taxonomy & retry policy" with the full retry/fatal table and authoritative hint summaries. The §3.6 logging section written under `dinocode-gepm` now links into it when describing how errors flow through the log.
+- Not yet in scope: wiring tool handlers to the 250ms-backoff retry loop — that lands with the individual handler beans (`dinocode-t2l9` etc.). The schema contract and authoritative policy are in place so each handler can drop into place without debating codes.
 
 ---
 

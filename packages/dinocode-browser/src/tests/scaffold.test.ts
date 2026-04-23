@@ -13,18 +13,19 @@ describe("@dinocode/browser scaffold", () => {
   });
 
   it("constructs structured errors with sane defaults", () => {
-    const err = BrowserError("TabNotFound", "tab 123 not found");
-    expect(err.kind).toBe("TabNotFound");
-    expect(err.retryable).toBe(false);
+    const err = BrowserError("NotFound", "tab 123 not found");
+    expect(err.kind).toBe("NotFound");
+    expect(err.retryable).toBe(true);
+    expect(err.hint).toMatch(/selector|tab id/i);
     expect(err.details).toBeUndefined();
   });
 
   it("honors opt-in details + retryable flags", () => {
-    const err = BrowserError("NavigationTimeout", "10s exceeded", {
-      retryable: true,
+    const err = BrowserError("Timeout", "10s exceeded", {
+      retryable: false,
       details: { url: "https://example.com" },
     });
-    expect(err.retryable).toBe(true);
+    expect(err.retryable).toBe(false);
     expect(err.details).toEqual({ url: "https://example.com" });
   });
 });

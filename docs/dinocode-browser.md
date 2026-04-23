@@ -167,6 +167,99 @@ Hosts:
   `BrowserManager` over IPC when running inside Electron, and to a headless
   adapter when running under CLI (Phase 7).
 
+### 3.5 Error taxonomy & retry policy
+
+Every browser tool exits through the canonical error union in
+`packages/dinocode-browser/src/shared/errors.ts`. No tool is allowed to
+throw past the handler boundary; the IPC and WebSocket layers validate
+the response shape via `BrowserToolErrorSchema`.
+
+Each error carries a `kind`, a short human `message`, a `retryable`
+boolean, a short agent-targeted `hint`, and optional `details`.
+
+**Retry-safe vs. fatal**
+
+| Kind                 | Class     | Default hint (abbrev.)                                         |
+| -------------------- | --------- | -------------------------------------------------------------- |
+| `NavigationBlocked`  | fatal     | Ask the user to allowlist this host.                           |
+| `TabCrashed`         | fatal     | Reload the tab or open a fresh one.                            |
+| `LoadFailed`         | retryable | Retry once; then check URL or network.                         |
+| `EvaluateError`      | fatal     | Inspect `get_console` and fix the expression.                  |
+| `Timeout`            | retryable | Increase timeout or retry; verify selector/URL.                |
+| `NotFound`           | retryable | Query accessibility tree to confirm the element exists.        |
+| `NotInteractable`    | retryable | Scroll into view; wait for enabled state.                      |
+| `UserActive`         | retryable | Wait for the takeover banner to clear.                         |
+| `PermissionDenied`   | fatal     | Ask the user to re-enable agent control.                       |
+| `TooManyTabs`        | fatal     | Close an existing tab via `close_tab`.                         |
+| `BufferOverflow`     | fatal     | Request a newer cursor.                                        |
+| `RateLimited`        | retryable | Back off briefly; the per-tab quota will refill.               |
+| `CdpDetached`        | retryable | Manager auto-reattaches; retry the action.                     |
+| `Internal`           | fatal     | Capture `traceId` from logs and file a bean.                   |
+
+Handlers SHOULD retry `retryable` errors once with ~250 ms backoff
+before surfacing to the agent. `fatal` errors MUST be returned
+immediately so the agent can pick a different strategy (or defer to
+the user). The authoritative policy lives in
+`BROWSER_ERROR_RETRY_POLICY` and is exercised by
+`src/tests/errors.test.ts` against the wire schema literals to prevent
+drift.
+
+Hints are static defaults; call sites can override per-invocation by
+passing `{ hint }` into `BrowserError(...)`, e.g. including the
+observed selector or URL.
+
+### 3.6 Logging & trace IDs
+
+Every process in the browser subsystem uses a shared logger living in
+`packages/dinocode-browser/src/logging`. The shape was chosen so we never
+have to reconstruct causality after the fact.
+
+**Log record schema** (JSON-line):
+
+```json
+{
+  "ts": "2026-04-23T12:34:56.789Z",
+  "level": "info",
+  "component": "dinocode-browser.main",
+  "traceId": "lq3x8a2-f4a19b3c0d5e6721",
+  "tabId": "tab-1",
+  "tool": "dinocode_browser_navigate",
+  "phase": "request",
+  "msg": "navigate requested",
+  "data": { "url": "https://example.com" }
+}
+```
+
+**Trace-id lifecycle.** A trace id is minted (`createTraceId()`) at the
+outermost boundary — typically the agent SDK adapter that receives a tool
+call from the provider, or the renderer event handler that initiates a
+user gesture. The id rides on `BrowserToolRequest.traceId` across the
+preload bridge and lands in `BrowserToolResponse` and every
+`BrowserActionLogEntry`. Main-process handlers attach the id to every
+log record they emit (`logger.child({ traceId, tool })`) so a single
+tool call produces correlated records across agent → server → main →
+CDP → renderer layers.
+
+**Levels** (`error < warn < info < debug < trace`) gate emission; the
+default is `info`. `DINOCODE_BROWSER_DEBUG` controls the stderr echo
+level: `1`/`true` → `debug`, `verbose` → `trace`, `0`/`false`/`off`
+silences everything but errors. Unknown values fall back to `info`.
+
+**Redaction.** Network and `evaluate` tool handlers MUST pass headers
+and argument bags through `redact()` before logging. Default keys
+(`authorization`, `cookie`, `set-cookie`, `proxy-authorization`,
+`x-api-key`, `x-auth-token`, `x-dinocode-auth-token`, `password`,
+`secret`, `token`, `access_token`, `refresh_token`, `id_token`) are
+replaced with `"[REDACTED]"`; call sites can extend the set but cannot
+relax it. Redaction is deep, case-insensitive, immutable, and cycle-safe.
+
+**Sinks.** The package ships a memory sink (for tests) and a no-op
+sink. The Electron main process wires in a file-rotating sink writing to
+`.dinocode/browser/logs/<date>.log` (gitignored, 10 MiB × 7 files); the
+rotation sink lives with the `BrowserManager` bean because it needs
+`node:fs`. Sinks that throw are caught and reported via a fallback
+record so a broken sink never crashes the main process.
+
 ## 4. Why `WebContentsView` (not `<webview>` or `<iframe>`)
 
 | Option              | Pros                                                                                                        | Cons                                                                         | Decision                                |

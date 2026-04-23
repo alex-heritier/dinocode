@@ -15,3 +15,4 @@
  */
 
 export * from "./shared/index.ts";
+export * from "./logging/index.ts";

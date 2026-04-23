@@ -160,16 +160,19 @@ export const BrowserToolRequest = Schema.Struct({
 export type BrowserToolRequest = typeof BrowserToolRequest.Type;
 
 export const BrowserToolErrorKindSchema = Schema.Literals([
-  "TabNotFound",
-  "TabCrashed",
-  "CdpDetached",
-  "SelectorNotFound",
   "NavigationBlocked",
-  "NavigationTimeout",
-  "ElementNotVisible",
+  "TabCrashed",
+  "LoadFailed",
+  "EvaluateError",
+  "Timeout",
+  "NotFound",
+  "NotInteractable",
+  "UserActive",
   "PermissionDenied",
-  "RateLimited",
+  "TooManyTabs",
   "BufferOverflow",
+  "RateLimited",
+  "CdpDetached",
   "Internal",
 ]);
 export type BrowserToolErrorKind = typeof BrowserToolErrorKindSchema.Type;
@@ -178,6 +181,7 @@ export const BrowserToolErrorSchema = Schema.Struct({
   kind: BrowserToolErrorKindSchema,
   message: trimmedMaxLen(1024),
   retryable: Schema.Boolean,
+  hint: Schema.optional(trimmedMaxLen(512)),
   details: Schema.optional(Schema.Record(Schema.String, Schema.Unknown)),
 });
 export type BrowserToolError = typeof BrowserToolErrorSchema.Type;

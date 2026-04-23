@@ -25,6 +25,10 @@
       "types": "./src/shared/index.ts",
       "import": "./src/shared/index.ts"
     },
+    "./logging": {
+      "types": "./src/logging/index.ts",
+      "import": "./src/logging/index.ts"
+    },
     "./tools": {
       "types": "./src/tools/index.ts",
       "import": "./src/tools/index.ts"
